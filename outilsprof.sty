@@ -2,12 +2,12 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.2
-% Date : 2026/09/11
+% Version : 1.3
+% Date : 2026/09/15
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/09/11 v1.2 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/09/15 v1.3 Outils pour l'enseignement]
 
 % ============================================================
 % DÉPENDANCES
@@ -33,12 +33,6 @@
 % Syntaxe des points :
 %   nom/position           → intérieur rouge (défaut)
 %   nom/position/couleur   → intérieur de la couleur spécifiée
-%
-% Exemples :
-%   \axegradue
-%   \axegradue[longueur=0.8, fin=400, pas=100, nombre=5]
-%   \axegradue[debut=100, fin=500, pas=100, nombre=5]
-%   \axegradue[points={A/120, B/340/blue, C/60/green}]
 % ============================================================
 
 \ExplSyntaxOn
@@ -146,24 +140,6 @@
 %   points   : liste {A/(4,5), B/(-2,3)/blue}               [défaut : vide]
 %   affichernom    : afficher le nom du point               [défaut : true]
 %   affichercoords : afficher les coordonnées du point      [défaut : false]
-%
-% Étiquette de l'intersection :
-%   Si l'origine est (0,0), l'étiquette est "$O$".
-%   Sinon, l'étiquette est "$\Omega(a;b)$" avec les coordonnées
-%   de l'intersection.
-%
-% IMPORTANT (bg, hd, origine) : valeurs avec virgule à protéger
-% par des accolades :
-%   \reperegradue[bg={(-5,-5)}, hd={(5,5)}, origine={(0,0)}]
-%
-% La liste `points` accepte la syntaxe naturelle, sans accolades
-% supplémentaires autour des points :
-%   \reperegradue[points={A/(4,5), B/(-2,3)/blue, C/(1,-2)/green}]
-% Les virgules internes aux parenthèses sont automatiquement protégées.
-%
-% Syntaxe des points :
-%   nom/(x,y)            → intérieur rouge (défaut), étiquette noire
-%   nom/(x,y)/couleur    → intérieur de la couleur spécifiée
 % ============================================================
 
 \ExplSyntaxOn
@@ -208,7 +184,6 @@
     \tl_set:Nx \repereNombreX  { \l__repere_nombrex_tl }
     \tl_set:Nx \repereNombreY  { \l__repere_nombrey_tl }
     \tl_set:Nx \reperePoints   { \l__repere_points_tl }
-    % Booléens : on les copie dans des macros LaTeX standard
     \bool_if:NTF \l__repere_affichernom_bool
         { \def\repereAfficherNom{1} }
         { \def\repereAfficherNom{0} }
@@ -222,8 +197,6 @@
 % EXTRACTION DES COORDONNÉES (pur LaTeX)
 % ============================================================
 
-% --- Extrait x et y d'une chaîne "(x,y)" ---
-% #1 : chaîne "(x,y)"   #2 : macro recevant x   #3 : macro recevant y
 \newcommand{\repereExtraireCoords}[3]{%
     \StrDel{#1}{(}[\tmpSansParenG]%
     \StrDel{\tmpSansParenG}{)}[\tmpCoords]%
@@ -232,21 +205,14 @@
     \edef#3{\tmpY}%
 }
 
-% --- Découpe un point "nom/(x,y)" ou "nom/(x,y)/couleur" ---
-% #1 : chaîne du point
-% #2 : macro recevant le nom
-% #3 : macro recevant les coordonnées "(x,y)"
-% #4 : macro recevant la couleur
 \newcommand{\repereDecouperPoint}[4]{%
     \StrCount{#1}{/}[\tmpNbSlash]%
     \ifnum\tmpNbSlash=1
-        % Cas nom/(x,y) → couleur rouge par défaut
         \StrCut{#1}{/}{\tmpNom}{\tmpCoords}%
         \edef#2{\tmpNom}%
         \edef#3{\tmpCoords}%
         \def#4{red}%
     \else
-        % Cas nom/(x,y)/couleur
         \StrCut{#1}{/}{\tmpNom}{\tmpReste}%
         \StrCut{\tmpReste}{/}{\tmpCoords}{\tmpCouleur}%
         \edef#2{\tmpNom}%
@@ -258,12 +224,6 @@
 % ============================================================
 % DÉCOUPAGE DE LA LISTE `points` SUR LES VIRGULES DE NIVEAU 0
 % ============================================================
-% Analyse #1 caractère par caractère et construit dans
-% \repereListeElements une liste de la forme :
-%   {premier}, {deuxième}, {troisième}
-% où chaque élément a été protégé par des accolades et séparé par
-% une virgule. Les virgules internes aux parenthèses sont ainsi
-% ignorées.
 \newcounter{repereProfondeur}
 \def\repereListeElements{}
 \def\repereElementCourant{}
@@ -280,8 +240,6 @@
     \fi
 }
 
-% Ajoute \repereElementCourant à \repereListeElements
-% (avec une virgule séparatrice sauf pour le premier élément).
 \newcommand{\repereAjouterElement}{%
     \ifreperePremierElement
         \reperePremierElementfalse
@@ -296,7 +254,6 @@
 
 \def\repereDecouperListeAux#1{%
     \ifx#1\@nil
-        % Fin de la chaîne
     \else
         \ifx#1(%
             \stepcounter{repereProfondeur}%
@@ -333,18 +290,13 @@
 % COMMANDE PRINCIPALE : \reperegradue
 % ============================================================
 \NewDocumentCommand{\reperegradue}{O{}}{%
-    % --- Récupération des clés ---
     \csname __repere_recuperer:n\endcsname {#1}%
-    % --- Extraction des coordonnées de la fenêtre ---
     \repereExtraireCoords{\repereBG}{\bgX}{\bgY}%
     \repereExtraireCoords{\repereHD}{\hdX}{\hdY}%
     \repereExtraireCoords{\repereOrigine}{\oriX}{\oriY}%
-    % --- Découpage de la liste des points ---
     \expandafter\repereDecouperListe\expandafter{\reperePoints}%
-    % --- Largeur en points ---
     \setlength{\largeurPt}{\repereLongueur\textwidth}%
     \pgfmathsetmacro{\largeurTotale}{\largeurPt/1pt}%
-    % --- Échelle ---
     \pgfmathsetmacro{\etendueX}{\hdX-\bgX}%
     \pgfmathsetmacro{\etendueY}{\hdY-\bgY}%
     \pgfmathsetmacro{\unite}{\largeurTotale/\etendueX}%
@@ -417,8 +369,6 @@
         }%
 
         % --- Étiquette de l'intersection des axes ---
-        % Si l'origine est (0,0), afficher "$O$".
-        % Sinon, afficher "$\Omega(a;b)$" avec les coordonnées.
         \pgfmathparse{abs(\oriX) < 0.001 && abs(\oriY) < 0.001 ? 1 : 0}%
         \ifnum\pgfmathresult=1
             \node[below left, font=\small, xshift=1pt, yshift=-2pt]
@@ -466,13 +416,11 @@
             \pgfmathsetmacro{\pyFig}{(\py-\bgY)*\unite}%
             \fill[\couleurPoint] (\pxFig pt,\pyFig pt) circle (2.5pt);
             \draw[black, thick] (\pxFig pt,\pyFig pt) circle (2.5pt);
-            % --- Étiquette du nom ---
             \ifnum\repereAfficherNom=1
                 \node[above right, font=\small\bfseries, black,
                       xshift=2pt, yshift=1pt]
                     at (\pxFig pt,\pyFig pt) {\nomPoint};
             \fi
-            % --- Étiquette des coordonnées ---
             \ifnum\repereAfficherCoords=1
                 \node[below right, font=\scriptsize, black,
                       xshift=2pt, yshift=-1pt]
@@ -492,14 +440,12 @@
 % SECTION 2 : BOÎTES COLORÉES
 % ============================================================
 
-% --- Couleurs par défaut ---
 \definecolor{couleurRetenir}{RGB}{0,102,204}    % Bleu
 \definecolor{couleurVigilance}{RGB}{204,0,0}    % Rouge
 \definecolor{couleurMethode}{RGB}{0,153,76}     % Vert
 
 % ============================================================
-% BOÎTE À RETENIR (bleu par défaut)
-% Paramètre optionnel : couleur
+% BOÎTE À RETENIR
 % ============================================================
 \NewDocumentCommand{\boiteRetenir}{O{couleurRetenir} m}{%
     \begin{tcolorbox}[
@@ -517,8 +463,7 @@
 }
 
 % ============================================================
-% BOÎTE VIGILANCE (rouge par défaut)
-% Paramètre optionnel : couleur
+% BOÎTE VIGILANCE
 % ============================================================
 \NewDocumentCommand{\boiteVigilance}{O{couleurVigilance} m}{%
     \begin{tcolorbox}[
@@ -536,8 +481,7 @@
 }
 
 % ============================================================
-% BOÎTE MÉTHODE (vert par défaut)
-% Paramètre optionnel : couleur
+% BOÎTE MÉTHODE
 % ============================================================
 \NewDocumentCommand{\boiteMethode}{O{couleurMethode} m}{%
     \begin{tcolorbox}[
@@ -556,8 +500,6 @@
 
 % ============================================================
 % BOÎTE CALCUL
-% Commande avec 2 arguments optionnels + contenu obligatoire
-% Par défaut : largeur = 10cm, hauteur = 3cm
 % ============================================================
 \NewDocumentCommand{\boitecalcul}{O{10cm} O{3cm} +m}{%
     \begin{tcolorbox}[
@@ -575,10 +517,9 @@
 }
 
 % ============================================================
-% VARIANTES AVEC ENVIRONNEMENTS (pour compatibilité)
+% VARIANTES AVEC ENVIRONNEMENTS
 % ============================================================
 
-% Environnement retenir (bleu par défaut)
 \NewDocumentEnvironment{retenir}{O{couleurRetenir}}{%
     \begin{tcolorbox}[
         colback=#1!10,
@@ -594,7 +535,6 @@
     \end{tcolorbox}%
 }
 
-% Environnement vigilance (rouge par défaut)
 \NewDocumentEnvironment{vigilance}{O{couleurVigilance}}{%
     \begin{tcolorbox}[
         colback=#1!10,
@@ -610,7 +550,6 @@
     \end{tcolorbox}%
 }
 
-% Environnement methode (vert par défaut)
 \NewDocumentEnvironment{methode}{O{couleurMethode}}{%
     \begin{tcolorbox}[
         colback=#1!5,
@@ -624,6 +563,548 @@
     ]
 }{%
     \end{tcolorbox}%
+}
+
+% ============================================================
+% SECTION 3 : OPÉRATIONS POSÉES
+% ============================================================
+% Commandes :
+%   \addition[options]{nombres}
+%   \soustraction[options]{nombres}
+%   \multiplication[options]{nombres}
+%   \division[options]{dividende}{diviseur}     (tabular)
+%   \divisionTikz{dividende}{diviseur}          (TikZ)
+%
+% Paramètres nommés :
+%   solution : afficher le résultat (true/false)   [défaut : false]
+%   taille   : taille des caractères               [défaut : normalsize]
+%              (utiliser sans backslash : taille=large)
+% ============================================================
+
+\ExplSyntaxOn
+
+% ------------------------------------------------------------
+% Variables internes (communes)
+% ------------------------------------------------------------
+\seq_new:N    \l__op_liste_seq
+\int_new:N    \l__op_somme_int
+\int_new:N    \l__op_i_int
+\int_new:N    \l__op_n_int
+\int_new:N    \l__op_a_int
+\int_new:N    \l__op_b_int
+\tl_new:N     \l__op_taille_tl
+\tl_new:N     \l__op_resultat_tl
+
+\keys_define:nn { outilsprof / operation }
+{
+    solution .bool_set:N = \l__op_solution_bool,
+    solution .initial:n  = false,
+    taille   .tl_set:N   = \l__op_taille_tl,
+    taille   .initial:n  = normalsize,
+}
+
+\cs_new_protected:Npn \__op_appliquer_taille:
+{
+    \csname \l__op_taille_tl \endcsname
+}
+
+\cs_new_protected:Npn \__op_parse:n #1
+{
+    \seq_clear:N \l__op_liste_seq
+    \clist_map_inline:nn { #1 }
+    {
+        \tl_set:Nn \l_tmpa_tl {##1}
+        \tl_trim_spaces:N \l_tmpa_tl
+        \tl_if_empty:NF \l_tmpa_tl
+            { \seq_put_right:NV \l__op_liste_seq \l_tmpa_tl }
+    }
+    \int_set:Nn \l__op_n_int { \seq_count:N \l__op_liste_seq }
+}
+
+\cs_new_protected:Npn \__op_calculer_somme:
+{
+    \int_zero:N \l__op_somme_int
+    \seq_map_inline:Nn \l__op_liste_seq
+    {
+        \int_set:Nn \l_tmpa_int {##1}
+        \int_add:Nn \l__op_somme_int { \l_tmpa_int }
+    }
+}
+
+\cs_new_protected:Npn \__op_calculer_difference:
+{
+    \int_zero:N \l__op_somme_int
+    \int_zero:N \l__op_i_int
+    \seq_map_inline:Nn \l__op_liste_seq
+    {
+        \int_incr:N \l__op_i_int
+        \int_set:Nn \l_tmpa_int {##1}
+        \int_compare:nTF { \l__op_i_int == 1 }
+            { \int_set:Nn \l__op_somme_int { \l_tmpa_int } }
+            { \int_sub:Nn \l__op_somme_int { \l_tmpa_int } }
+    }
+}
+
+\cs_new_protected:Npn \__op_calculer_produit:
+{
+    \int_set:Nn \l__op_somme_int { 1 }
+    \seq_map_inline:Nn \l__op_liste_seq
+    {
+        \int_set:Nn \l_tmpa_int {##1}
+        \int_set:Nn \l__op_somme_int
+            { \l__op_somme_int * \l_tmpa_int }
+    }
+}
+
+% ============================================================
+% ADDITION
+% ============================================================
+\cs_new_protected:Npn \__op_rendre_addition:nn #1 #2
+{
+    \group_begin:
+    \keys_set:nn { outilsprof / operation } { #1 }
+    \__op_parse:n { #2 }
+    \__op_calculer_somme:
+    \tl_set:Nx \l__op_resultat_tl { \int_use:N \l__op_somme_int }
+    \__op_appliquer_taille:
+
+    \begin{center}
+    \begin{tabular}{@{}r@{}}
+        \seq_item:Nn \l__op_liste_seq { 1 } \\
+        \int_step_inline:nn { \l__op_n_int - 1 }
+        {
+            + \, \seq_item:Nn \l__op_liste_seq { ##1 + 1 } \\
+        }
+        \\[-1ex]
+        \cline{1-1}
+        \\[-1ex]
+        \bool_if:NTF \l__op_solution_bool
+            { \l__op_resultat_tl }
+            { \phantom{0} }
+    \end{tabular}
+    \end{center}
+    \group_end:
+}
+
+% ============================================================
+% SOUSTRACTION
+% ============================================================
+\cs_new_protected:Npn \__op_rendre_soustraction:nn #1 #2
+{
+    \group_begin:
+    \keys_set:nn { outilsprof / operation } { #1 }
+    \__op_parse:n { #2 }
+    \int_compare:nTF { \l__op_n_int == 2 }
+    {
+        \tl_set:Nx \l_tmpa_tl { \seq_item:Nn \l__op_liste_seq { 1 } }
+        \tl_set:Nx \l_tmpb_tl { \seq_item:Nn \l__op_liste_seq { 2 } }
+        \int_set:Nn \l_tmpa_int { \l_tmpa_tl }
+        \int_set:Nn \l_tmpb_int { \l_tmpb_tl }
+        \int_compare:nTF { \l_tmpa_int >= \l_tmpb_int }
+        {
+            \tl_set_eq:NN \l_tmpc_tl \l_tmpa_tl
+            \tl_set_eq:NN \l_tmpd_tl \l_tmpb_tl
+            \int_set:Nn \l__op_somme_int { \l_tmpa_int - \l_tmpb_int }
+        }
+        {
+            \tl_set_eq:NN \l_tmpc_tl \l_tmpb_tl
+            \tl_set_eq:NN \l_tmpd_tl \l_tmpa_tl
+            \int_set:Nn \l__op_somme_int { \l_tmpb_int - \l_tmpa_int }
+        }
+        \tl_set:Nx \l__op_resultat_tl { \int_use:N \l__op_somme_int }
+        \__op_appliquer_taille:
+
+        \begin{center}
+        \begin{tabular}{@{}r@{}}
+            \l_tmpc_tl \\
+            - \, \l_tmpd_tl \\
+            \\[-1ex]
+            \cline{1-1}
+            \\[-1ex]
+            \bool_if:NTF \l__op_solution_bool
+                { \l__op_resultat_tl }
+                { \phantom{0} }
+        \end{tabular}
+        \end{center}
+    }
+    {
+        \GenericError{}
+            {outilsprof : \soustraction~attend~exactement~2~termes}
+            {Voir~la~documentation~de~outilsprof}
+            {Exemple~:~\soustraction\{853,~476\}}
+    }
+    \group_end:
+}
+
+% ============================================================
+% MULTIPLICATION
+% ============================================================
+\int_new:N \l__mul_a_int
+\int_new:N \l__mul_b_int
+\int_new:N \l__mul_nb_int
+\int_new:N \l__mul_i_int
+\int_new:N \l__mul_chiffre_int
+\int_new:N \l__mul_puissance_int
+\int_new:N \l__mul_produit_int
+\tl_new:N  \l__mul_multiplicande_tl
+\tl_new:N  \l__mul_multiplicateur_tl
+\tl_new:N  \l__mul_produit_final_tl
+\seq_new:N \l__mul_produits_seq
+
+\cs_new_protected:Npn \__op_rendre_multiplication:nn #1 #2
+{
+    \group_begin:
+    \keys_set:nn { outilsprof / operation } { #1 }
+    \__op_parse:n { #2 }
+
+    \int_compare:nTF { \l__op_n_int == 2 }
+    {
+        \tl_set:Nx \l__mul_multiplicande_tl
+            { \seq_item:Nn \l__op_liste_seq { 1 } }
+        \tl_set:Nx \l__mul_multiplicateur_tl
+            { \seq_item:Nn \l__op_liste_seq { 2 } }
+        \int_set:Nn \l__mul_a_int { \l__mul_multiplicande_tl }
+        \int_set:Nn \l__mul_b_int { \l__mul_multiplicateur_tl }
+
+        \int_set:Nn \l__mul_nb_int
+            { \tl_count:N \l__mul_multiplicateur_tl }
+
+        \tl_set:Nx \l__mul_produit_final_tl
+            { \int_eval:n { \l__mul_a_int * \l__mul_b_int } }
+
+        \seq_clear:N \l__mul_produits_seq
+        \int_compare:nT { \l__mul_nb_int > 1 }
+        {
+            \int_set:Nn \l__mul_puissance_int { 1 }
+            \int_step_inline:nn { \l__mul_nb_int }
+            {
+                \int_set:Nn \l__mul_chiffre_int
+                    { \int_mod:nn
+                        { \int_div_truncate:nn
+                            { \l__mul_b_int }
+                            { \l__mul_puissance_int } }
+                        { 10 } }
+                \int_set:Nn \l__mul_produit_int
+                    { \l__mul_a_int * \l__mul_chiffre_int * \l__mul_puissance_int }
+                \seq_put_right:Nx \l__mul_produits_seq
+                    { \int_use:N \l__mul_produit_int }
+                \int_set:Nn \l__mul_puissance_int
+                    { \l__mul_puissance_int * 10 }
+            }
+        }
+
+        \__op_appliquer_taille:
+        \begin{center}
+        \begin{tabular}{@{}r@{}}
+            \l__mul_multiplicande_tl \\
+            $\times$ \, \l__mul_multiplicateur_tl \\
+            \\[-1ex]
+            \cline{1-1}
+            \\[-1ex]
+            \seq_map_inline:Nn \l__mul_produits_seq
+                { ##1 \\ }
+            \int_compare:nT { \l__mul_nb_int > 1 }
+            {
+                \\[-1ex]
+                \cline{1-1}
+                \\[-1ex]
+            }
+            \bool_if:NTF \l__op_solution_bool
+                { \l__mul_produit_final_tl }
+                { \phantom{0} }
+        \end{tabular}
+        \end{center}
+    }
+    {
+        \GenericError{}
+            {outilsprof : \multiplication~attend~exactement~2~facteurs}
+            {Voir~la~documentation~de~outilsprof}
+            {Exemple~:~\multiplication\{234,~56\}}
+    }
+    \group_end:
+}
+
+% ============================================================
+% DIVISION EUCLIDIENNE — rendu en tabular
+% ============================================================
+\int_new:N \l__div_dividende_int
+\int_new:N \l__div_diviseur_int
+\int_new:N \l__div_quotient_int
+\int_new:N \l__div_reste_int
+\int_new:N \l__div_nbchiffres_int
+\int_new:N \l__div_puissance_int
+\int_new:N \l__div_chiffre_int
+\int_new:N \l__div_partiel_int
+\int_new:N \l__div_produit_int
+\bool_new:N \l__div_premiere_bool
+\seq_new:N \l__div_etapes_seq
+\tl_new:N  \l__div_dividende_tl
+\tl_new:N  \l__div_diviseur_tl
+\tl_new:N  \l__div_quotient_tl
+\tl_new:N  \l__div_reste_tl
+
+\newcounter{divEtape}
+\newlength{\chiffreLargeur}
+\AtBeginDocument{\settowidth{\chiffreLargeur}{0}}
+
+\cs_new_protected:Npn \__div_afficher_etape_aux:n #1
+{
+    \exp_after:wN \__div_afficher_etape_auxii:nn #1
+}
+\cs_new_protected:Npn \__div_afficher_etape_auxii:nn #1 #2
+{
+    \tl_if_blank:nTF {#1}
+        {
+            \hspace*{\dimexpr\numexpr\thedivEtape+1\relax\chiffreLargeur\relax}%
+            \begin{tabular}[t]{@{}r@{}}
+                #2 \\
+                \cline{1-1}
+                \phantom{0} \\
+            \end{tabular}
+        }
+        {
+            \hspace*{\dimexpr\thedivEtape\chiffreLargeur\relax}%
+            \begin{tabular}[t]{@{}r@{}}
+                #1 \\
+                #2 \\
+                \cline{1-1}
+                \the\numexpr #1 - #2 \relax \\
+            \end{tabular}
+        }
+}
+
+\cs_new_protected:Npn \__op_rendre_division:nnn #1 #2 #3
+{
+    \group_begin:
+    \keys_set:nn { outilsprof / operation } { #1 }
+    \__op_appliquer_taille:
+
+    \tl_set:Nn \l__div_dividende_tl {#2}
+    \tl_set:Nn \l__div_diviseur_tl  {#3}
+    \int_set:Nn \l__div_dividende_int {#2}
+    \int_set:Nn \l__div_diviseur_int  {#3}
+    \int_set:Nn \l__div_nbchiffres_int
+        { \tl_count:N \l__div_dividende_tl }
+
+    \int_compare:nTF { \l__div_diviseur_int == 0 }
+    {
+        \tl_set:Nn \l__div_quotient_tl { 0 }
+        \tl_set:Nn \l__div_reste_tl    { 0 }
+        \seq_clear:N \l__div_etapes_seq
+    }
+    {
+        \tl_set:Nx \l__div_quotient_tl
+            { \int_eval:n
+                { \l__div_dividende_int / \l__div_diviseur_int } }
+        \int_set:Nn \l__div_quotient_int { \l__div_quotient_tl }
+        \int_set:Nn \l_tmpa_int
+            { \int_mod:nn { \l__div_dividende_int } { \l__div_diviseur_int } }
+        \tl_set:Nx \l__div_reste_tl { \int_use:N \l_tmpa_int }
+
+        % --- Pré-calcul des étapes ---
+        \seq_clear:N \l__div_etapes_seq
+        \int_zero:N \l__div_partiel_int
+        \int_set:Nn \l__div_puissance_int { 1 }
+        \int_step_inline:nn { \l__div_nbchiffres_int - 1 }
+            { \int_set:Nn \l__div_puissance_int
+                { \l__div_puissance_int * 10 } }
+
+        \bool_set_true:N \l__div_premiere_bool
+        \int_step_inline:nn { \l__div_nbchiffres_int }
+        {
+            \int_set:Nn \l__div_chiffre_int
+                { \int_div_truncate:nn
+                    { \l__div_dividende_int }
+                    { \l__div_puissance_int } }
+            \int_set:Nn \l__div_chiffre_int
+                { \int_mod:nn { \l__div_chiffre_int } { 10 } }
+            \int_set:Nn \l__div_partiel_int
+                { \l__div_partiel_int * 10 + \l__div_chiffre_int }
+
+            \int_compare:nT { \l__div_partiel_int >= \l__div_diviseur_int }
+            {
+                \int_set:Nn \l__div_produit_int
+                    { \int_div_truncate:nn
+                        { \l__div_partiel_int }
+                        { \l__div_diviseur_int } }
+                \int_set:Nn \l__div_produit_int
+                    { \l__div_produit_int * \l__div_diviseur_int }
+
+                \bool_if:NTF \l__div_premiere_bool
+                    {
+                        \seq_put_right:Nx \l__div_etapes_seq
+                            { { } { \int_use:N \l__div_produit_int } }
+                        \bool_set_false:N \l__div_premiere_bool
+                    }
+                    {
+                        \seq_put_right:Nx \l__div_etapes_seq
+                            { { \int_use:N \l__div_partiel_int }
+                              { \int_use:N \l__div_produit_int } }
+                    }
+
+                \int_set:Nn \l__div_partiel_int
+                    { \l__div_partiel_int - \l__div_produit_int }
+            }
+
+            \int_set:Nn \l__div_puissance_int
+                { \l__div_puissance_int / 10 }
+        }
+    }
+
+    % =====================================================
+    % AFFICHAGE
+    % =====================================================
+    \begin{center}
+    \begin{tabular}{@{}r@{\hspace{4pt}}|@{\hspace{4pt}}l@{}}
+        \l__div_dividende_tl & \l__div_diviseur_tl \\
+        \cline{2-2}
+         & \bool_if:NTF \l__op_solution_bool
+             { \l__div_quotient_tl }
+             { \phantom{0} } \\
+    \end{tabular}
+
+    \bool_if:NTF \l__op_solution_bool
+    {
+        \int_compare:nT { \l__div_diviseur_int > 0 }
+        {
+            \par\vspace{6pt}
+            \setcounter{divEtape}{-3}%
+            \begin{tabular}{@{}l@{}}
+                \seq_map_inline:Nn \l__div_etapes_seq
+                {
+                    \__div_afficher_etape_aux:n {##1} \\[2pt]
+                    \global\advance\c@divEtape by 1\relax
+                }
+            \end{tabular}
+        }
+    }
+    { }
+    \end{center}
+    \group_end:
+}
+
+\ExplSyntaxOff
+
+% ============================================================
+% DIVISION POSÉE EN TIKZ
+% ============================================================
+\newcounter{divLigne}
+
+\newcommand{\divPlaceNombre}[4]{%
+    \foreach \chiffre [count=\i from 0] in {#1} {%
+        \pgfmathsetmacro{\pos}{#3 - (#2 - 1 - \i)}%
+        \node[anchor=center, inner sep=0pt] at (\pos, -#4) {\chiffre};%
+    }%
+}
+
+\newcommand{\divTraceTrait}[3]{%
+    \pgfmathsetmacro{\xdebut}{#2 - #1 + 0.8}%
+    \pgfmathsetmacro{\xfin}{#2 + 0.2}%
+    \draw[thick] (\xdebut, -#3 - 0.35) -- (\xfin, -#3 - 0.35);%
+}
+
+\newcommand{\divAfficheEtape}[5]{%
+    \ifx\relax#1\relax\else
+        \divPlaceNombre{#1}{#2}{#5}{\thedivLigne}%
+        \stepcounter{divLigne}%
+    \fi
+    \ifx\relax#3\relax\else
+        \divPlaceNombre{#3}{#4}{#5}{\thedivLigne}%
+        \divTraceTrait{#4}{#5}{\thedivLigne}%
+        \stepcounter{divLigne}%
+    \fi
+}
+
+\newcommand{\divTikzDebut}[5]{%
+    \begin{tikzpicture}[x=0.6cm, y=0.8cm, every node/.style={font=\normalsize}]
+        \useasboundingbox (-0.5, 0.8) rectangle (#4 + 4, -#5);
+
+        \foreach \chiffre [count=\i from 0] in {#1} {
+            \node[anchor=center, inner sep=0pt] at (\i, 0) {\chiffre};
+        }
+
+        \draw[thick] (#4 - 0.3, 0.6) -- (#4 - 0.3, -1.5);
+        \node[anchor=west] at (#4 + 0.2, 0) {#2};
+        \node[anchor=west] at (#4 + 0.2, -1) {#3};
+        \draw[thick] (#4 - 0.1, -0.5) -- (#4 + 1.8, -0.5);
+
+        \setcounter{divLigne}{1}%
+}
+
+\newcommand{\divTikzFin}{%
+    \end{tikzpicture}%
+}
+
+\newcommand{\divCalculerEtapes}[2]{%
+    \gdef\divEtapesTexte{}%
+    \pgfmathsetmacro{\divQuotient}{int(#1 / #2)}%
+    \pgfmathsetmacro{\divReste}{#1 - \divQuotient * #2}%
+    \StrLen{#1}[\divNbChiffres]%
+    \def\divPartiel{0}%
+    \def\divNbPartiel{0}%
+    \def\divColFin{0}%
+    \gdef\divDejaAffiche{0}%
+    \foreach \chiffre [count=\i from 1] in {#1} {%
+        \ifnum\divPartiel=0
+            \xdef\divPartiel{\chiffre}%
+            \xdef\divNbPartiel{1}%
+        \else
+            \xdef\divPartiel{\divPartiel\chiffre}%
+            \xdef\divNbPartiel{\the\numexpr\divNbPartiel+1\relax}%
+        \fi
+        \ifnum\divPartiel<\numexpr#2\relax\else
+            \pgfmathsetmacro{\divChiffreQ}{int(\divPartiel / #2)}%
+            \pgfmathsetmacro{\divProduit}{\divChiffreQ * #2}%
+            \pgfmathsetmacro{\divNouveauPartiel}{\divPartiel - \divProduit}%
+            \xdef\divColFin{\i}%
+            \StrLen{\divProduit}[\divNbProduit]%
+            \ifnum\divDejaAffiche=0
+                \xdef\divEtapesTexte{\divEtapesTexte
+                    \noexpand\divAfficheEtape{}{0}{\divProduit}{\divNbProduit}{\divColFin}}%
+                \gdef\divDejaAffiche{1}%
+            \else
+                \xdef\divEtapesTexte{\divEtapesTexte
+                    \noexpand\divAfficheEtape{\divPartiel}{\divNbPartiel}{\divProduit}{\divNbProduit}{\divColFin}}%
+            \fi
+            \xdef\divPartiel{\divNouveauPartiel}%
+            \ifnum\divPartiel=0
+                \xdef\divNbPartiel{0}%
+            \else
+                \StrLen{\divPartiel}[\divNbPartiel]%
+            \fi
+        \fi
+    }%
+    \ifnum\divReste>0
+        \StrLen{\divReste}[\divNbReste]%
+        \xdef\divEtapesTexte{\divEtapesTexte
+            \noexpand\divAfficheEtape{}{0}{\divReste}{\divNbReste}{\divNbChiffres}}%
+    \fi
+}
+
+\newcommand{\divisionTikz}[2]{%
+    \divCalculerEtapes{#1}{#2}%
+    \pgfmathsetmacro{\divQuotient}{int(#1 / #2)}%
+    \StrLen{#1}[\divNbChiffres]%
+    \pgfmathsetmacro{\divHauteur}{2 + 3 * (\divNbChiffres + 1)}%
+    \divTikzDebut{#1}{#2}{\divQuotient}{\divNbChiffres}{\divHauteur}%
+    \divEtapesTexte
+    \divTikzFin
+}
+
+% ============================================================
+% COMMANDES PUBLIQUES
+% ============================================================
+\NewDocumentCommand{\addition}{O{} m}{%
+    \csname __op_rendre_addition:nn\endcsname {#1}{#2}%
+}
+\NewDocumentCommand{\soustraction}{O{} m}{%
+    \csname __op_rendre_soustraction:nn\endcsname {#1}{#2}%
+}
+\NewDocumentCommand{\multiplication}{O{} m}{%
+    \csname __op_rendre_multiplication:nn\endcsname {#1}{#2}%
+}
+\NewDocumentCommand{\division}{O{} m m}{%
+    \csname __op_rendre_division:nnn\endcsname {#1}{#2}{#3}%
 }
 
 \endinput
