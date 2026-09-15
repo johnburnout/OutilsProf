@@ -2,12 +2,12 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.3
-% Date : 2026/09/15
+% Version : 1.5
+% Date : 2026/09/16
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/09/15 v1.3 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/09/16 v1.4 Outils pour l'enseignement]
 
 % ============================================================
 % DÉPENDANCES
@@ -69,21 +69,16 @@
 \NewDocumentCommand{\axegradue}{O{}}{%
     \csname __axe_recuperer:n\endcsname {#1}%
     \begin{tikzpicture}[every node/.style={font=\small}]
-        % --- Largeur en nombre pur ---
         \setlength{\largeurPt}{\axeLongueur\textwidth}%
         \pgfmathsetmacro{\largeurTotale}{\largeurPt/1pt}%
-
-        % --- Calculs ---
         \pgfmathsetmacro{\nbIntervallesPrincipaux}{int((\axeFin-\axeDebut)/\axePas)}%
         \pgfmathsetmacro{\pasPrincipal}{\largeurTotale/\nbIntervallesPrincipaux}%
         \pgfmathsetmacro{\pasSecondaire}{\pasPrincipal/\axeNombre}%
         \pgfmathsetmacro{\depassement}{0.08*\largeurTotale}%
         \pgfmathsetmacro{\largeurAxe}{\largeurTotale+\depassement}%
 
-        % --- Axe principal ---
         \draw[->, thick, >=stealth] (0,0) -- (\largeurAxe pt,0);
 
-        % --- Graduations principales ---
         \foreach \i in {0,1,...,\nbIntervallesPrincipaux} {%
             \pgfmathsetmacro{\x}{\i*\pasPrincipal}%
             \pgfmathsetmacro{\valeur}{\axeDebut+\i*\axePas}%
@@ -91,7 +86,6 @@
                 node[below, font=\small, yshift=-2pt] {\valeur};
         }
 
-        % --- Graduations secondaires ---
         \pgfmathsetmacro{\nbSecondaires}{\nbIntervallesPrincipaux*\axeNombre}%
         \foreach \i in {1,...,\nbSecondaires} {%
             \pgfmathtruncatemacro{\estPrincipal}{mod(\i,\axeNombre)==0 ? 1 : 0}%
@@ -101,7 +95,6 @@
             \fi
         }
 
-        % --- Placement des points ---
         \foreach \point in \axePoints {%
             \StrCount{\point}{/}[\nbSlash]%
             \ifnum\nbSlash=1
@@ -126,20 +119,6 @@
 
 % ============================================================
 % SECTION 1-B : REPÈRE GRADUÉ
-% ============================================================
-% Paramètres nommés :
-%   longueur : largeur relative (0.8 = 80% de \textwidth)   [défaut : 0.8]
-%   bg       : coin bas-gauche (x,y)                        [défaut : {(-10,-10)}]
-%   hd       : coin haut-droit (x,y)                        [défaut : {(10,10)}]
-%   origine  : point d'intersection des axes (x,y)          [défaut : {(0,0)}]
-%   grille   : pas de la grille fine (0 = pas de grille)    [défaut : 1]
-%   pasx     : pas entre repères sur l'axe des abscisses    [défaut : 1]
-%   pasy     : pas entre repères sur l'axe des ordonnées    [défaut : 1]
-%   nombrex  : nb de sous-intervalles entre repères (x)     [défaut : 1]
-%   nombrey  : nb de sous-intervalles entre repères (y)     [défaut : 1]
-%   points   : liste {A/(4,5), B/(-2,3)/blue}               [défaut : vide]
-%   affichernom    : afficher le nom du point               [défaut : true]
-%   affichercoords : afficher les coordonnées du point      [défaut : false]
 % ============================================================
 
 \ExplSyntaxOn
@@ -193,10 +172,6 @@
 }
 \ExplSyntaxOff
 
-% ============================================================
-% EXTRACTION DES COORDONNÉES (pur LaTeX)
-% ============================================================
-
 \newcommand{\repereExtraireCoords}[3]{%
     \StrDel{#1}{(}[\tmpSansParenG]%
     \StrDel{\tmpSansParenG}{)}[\tmpCoords]%
@@ -221,9 +196,6 @@
     \fi
 }
 
-% ============================================================
-% DÉCOUPAGE DE LA LISTE `points` SUR LES VIRGULES DE NIVEAU 0
-% ============================================================
 \newcounter{repereProfondeur}
 \def\repereListeElements{}
 \def\repereElementCourant{}
@@ -286,9 +258,6 @@
     \fi
 }
 
-% ============================================================
-% COMMANDE PRINCIPALE : \reperegradue
-% ============================================================
 \NewDocumentCommand{\reperegradue}{O{}}{%
     \csname __repere_recuperer:n\endcsname {#1}%
     \repereExtraireCoords{\repereBG}{\bgX}{\bgY}%
@@ -307,7 +276,6 @@
     \begin{tikzpicture}[every node/.style={font=\small}]
         \useasboundingbox (0,0) rectangle (\largeurTotale pt,\hauteurTotale pt);
 
-        % --- Grille fine (optionnelle) ---
         \pgfmathparse{\repereGrille > 0 ? 1 : 0}%
         \ifnum\pgfmathresult=1
             \pgfmathsetmacro{\nbGrilleX}{int(\etendueX/\repereGrille)}%
@@ -326,13 +294,11 @@
             }%
         \fi
 
-        % --- Axes principaux (avec flèches) ---
         \draw[->, thick, >=stealth]
             (0,\oriYfig pt) -- (\largeurTotale pt,\oriYfig pt);
         \draw[->, thick, >=stealth]
             (\oriXfig pt,0) -- (\oriXfig pt,\hauteurTotale pt);
 
-        % --- Graduations principales : axe des abscisses ---
         \pgfmathsetmacro{\nbX}{int((\hdX-\bgX)/\reperePasX)}%
         \foreach \i in {0,1,...,\nbX} {%
             \pgfmathsetmacro{\x}{\bgX+\i*\reperePasX}%
@@ -350,7 +316,6 @@
             \fi
         }%
 
-        % --- Graduations principales : axe des ordonnées ---
         \pgfmathsetmacro{\nbY}{int((\hdY-\bgY)/\reperePasY)}%
         \foreach \i in {0,1,...,\nbY} {%
             \pgfmathsetmacro{\y}{\bgY+\i*\reperePasY}%
@@ -368,7 +333,6 @@
             \fi
         }%
 
-        % --- Étiquette de l'intersection des axes ---
         \pgfmathparse{abs(\oriX) < 0.001 && abs(\oriY) < 0.001 ? 1 : 0}%
         \ifnum\pgfmathresult=1
             \node[below left, font=\small, xshift=1pt, yshift=-2pt]
@@ -380,7 +344,6 @@
                           \pgfmathprintnumber[fixed,precision=2]{\oriY})$};
         \fi
 
-        % --- Graduations secondaires (sous-intervalles) ---
         \pgfmathsetmacro{\nbSecX}{\nbX*\repereNombreX}%
         \foreach \i in {1,...,\nbSecX} {%
             \pgfmathparse{mod(\i,\repereNombreX)==0 ? 1 : 0}%
@@ -408,7 +371,6 @@
             \fi
         }%
 
-        % --- Placement des points ---
         \foreach \point in \repereListeElements {%
             \repereDecouperPoint{\point}{\nomPoint}{\coordsPoint}{\couleurPoint}%
             \repereExtraireCoords{\coordsPoint}{\px}{\py}%
@@ -440,13 +402,10 @@
 % SECTION 2 : BOÎTES COLORÉES
 % ============================================================
 
-\definecolor{couleurRetenir}{RGB}{0,102,204}    % Bleu
-\definecolor{couleurVigilance}{RGB}{204,0,0}    % Rouge
-\definecolor{couleurMethode}{RGB}{0,153,76}     % Vert
+\definecolor{couleurRetenir}{RGB}{0,102,204}
+\definecolor{couleurVigilance}{RGB}{204,0,0}
+\definecolor{couleurMethode}{RGB}{0,153,76}
 
-% ============================================================
-% BOÎTE À RETENIR
-% ============================================================
 \NewDocumentCommand{\boiteRetenir}{O{couleurRetenir} m}{%
     \begin{tcolorbox}[
         colback=#1!10,
@@ -462,9 +421,6 @@
     \end{tcolorbox}%
 }
 
-% ============================================================
-% BOÎTE VIGILANCE
-% ============================================================
 \NewDocumentCommand{\boiteVigilance}{O{couleurVigilance} m}{%
     \begin{tcolorbox}[
         colback=#1!10,
@@ -480,9 +436,6 @@
     \end{tcolorbox}%
 }
 
-% ============================================================
-% BOÎTE MÉTHODE
-% ============================================================
 \NewDocumentCommand{\boiteMethode}{O{couleurMethode} m}{%
     \begin{tcolorbox}[
         colback=#1!5,
@@ -498,10 +451,7 @@
     \end{tcolorbox}%
 }
 
-% ============================================================
-% BOÎTE CALCUL
-% ============================================================
-\NewDocumentCommand{\boitecalcul}{O{10cm} O{3cm} +m}{%
+\NewDocumentCommand{\boitecalcul}{O{10cm} O{3cm} O{}}{%
     \begin{tcolorbox}[
         colback=white,
         colframe=gray!30,
@@ -515,10 +465,6 @@
         #3
     \end{tcolorbox}%
 }
-
-% ============================================================
-% VARIANTES AVEC ENVIRONNEMENTS
-% ============================================================
 
 \NewDocumentEnvironment{retenir}{O{couleurRetenir}}{%
     \begin{tcolorbox}[
@@ -566,19 +512,117 @@
 }
 
 % ============================================================
-% SECTION 3 : OPÉRATIONS POSÉES
+% SECTION 3-A : DIVISION EN TIKZ
 % ============================================================
-% Commandes :
-%   \addition[options]{nombres}
-%   \soustraction[options]{nombres}
-%   \multiplication[options]{nombres}
-%   \division[options]{dividende}{diviseur}     (tabular)
-%   \divisionTikz{dividende}{diviseur}          (TikZ)
-%
-% Paramètres nommés :
-%   solution : afficher le résultat (true/false)   [défaut : false]
-%   taille   : taille des caractères               [défaut : normalsize]
-%              (utiliser sans backslash : taille=large)
+% IMPORTANT : ce bloc doit être placé AVANT \ExplSyntaxOn
+% pour que \foreach et \StrLen fonctionnent correctement.
+% ============================================================
+
+\newcounter{divLigne}
+
+\newcommand{\divPlaceNombre}[4]{%
+    \foreach \chiffre [count=\i from 0] in {#1} {%
+        \pgfmathsetmacro{\pos}{#3 - (#2 - 1 - \i)}%
+        \node[anchor=center, inner sep=0pt] at (\pos, -#4) {\chiffre};%
+    }%
+}
+
+\newcommand{\divTraceTrait}[3]{%
+    \pgfmathsetmacro{\xdebut}{#2 - #1 + 0.8}%
+    \pgfmathsetmacro{\xfin}{#2 + 0.2}%
+    \draw[thick] (\xdebut, -#3 - 0.35) -- (\xfin, -#3 - 0.35);%
+}
+
+\newcommand{\divAfficheEtape}[5]{%
+    \ifx\relax#1\relax\else
+        \divPlaceNombre{#1}{#2}{#5}{\thedivLigne}%
+        \stepcounter{divLigne}%
+    \fi
+    \ifx\relax#3\relax\else
+        \divPlaceNombre{#3}{#4}{#5}{\thedivLigne}%
+        \divTraceTrait{#4}{#5}{\thedivLigne}%
+        \stepcounter{divLigne}%
+    \fi
+}
+
+\newcommand{\divTikzDebut}[5]{%
+    \begin{tikzpicture}[x=0.6cm, y=0.8cm, every node/.style={font=\normalsize}]
+        \useasboundingbox (-0.5, 0.8) rectangle (#4 + 4, -#5);
+
+        \foreach \chiffre [count=\i from 0] in {#1} {
+            \node[anchor=center, inner sep=0pt] at (\i, 0) {\chiffre};
+        }
+
+        \draw[thick] (#4 - 0.3, 0.6) -- (#4 - 0.3, -1.5);
+        \node[anchor=west] at (#4 + 0.2, 0) {#2};
+        \node[anchor=west] at (#4 + 0.2, -1) {#3};
+        \draw[thick] (#4 - 0.1, -0.5) -- (#4 + 1.8, -0.5);
+
+        \setcounter{divLigne}{1}%
+}
+
+\newcommand{\divTikzFin}{%
+    \end{tikzpicture}%
+}
+
+\newcommand{\divCalculerEtapes}[2]{%
+    \gdef\divEtapesTexte{}%
+    \pgfmathsetmacro{\divQuotient}{int(#1 / #2)}%
+    \pgfmathsetmacro{\divReste}{#1 - \divQuotient * #2}%
+    \StrLen{#1}[\divNbChiffres]%
+    \def\divPartiel{0}%
+    \def\divNbPartiel{0}%
+    \def\divColFin{0}%
+    \gdef\divDejaAffiche{0}%
+    \foreach \chiffre [count=\i from 1] in {#1} {%
+        \ifnum\divPartiel=0
+            \xdef\divPartiel{\chiffre}%
+            \xdef\divNbPartiel{1}%
+        \else
+            \xdef\divPartiel{\divPartiel\chiffre}%
+            \xdef\divNbPartiel{\the\numexpr\divNbPartiel+1\relax}%
+        \fi
+        \ifnum\divPartiel<\numexpr#2\relax\else
+            \pgfmathsetmacro{\divChiffreQ}{int(\divPartiel / #2)}%
+            \pgfmathsetmacro{\divProduit}{\divChiffreQ * #2}%
+            \pgfmathsetmacro{\divNouveauPartiel}{\divPartiel - \divProduit}%
+            \xdef\divColFin{\i}%
+            \StrLen{\divProduit}[\divNbProduit]%
+            \ifnum\divDejaAffiche=0
+                \xdef\divEtapesTexte{\divEtapesTexte
+                    \noexpand\divAfficheEtape{}{0}{\divProduit}{\divNbProduit}{\divColFin}}%
+                \gdef\divDejaAffiche{1}%
+            \else
+                \xdef\divEtapesTexte{\divEtapesTexte
+                    \noexpand\divAfficheEtape{\divPartiel}{\divNbPartiel}{\divProduit}{\divNbProduit}{\divColFin}}%
+            \fi
+            \xdef\divPartiel{\divNouveauPartiel}%
+            \ifnum\divPartiel=0
+                \xdef\divNbPartiel{0}%
+            \else
+                \StrLen{\divPartiel}[\divNbPartiel]%
+            \fi
+        \fi
+    }%
+    \ifnum\divReste>0
+        \StrLen{\divReste}[\divNbReste]%
+        \xdef\divEtapesTexte{\divEtapesTexte
+            \noexpand\divAfficheEtape{}{0}{\divReste}{\divNbReste}{\divNbChiffres}}%
+    \fi
+}
+
+\newcommand{\divisionTikz}[2]{%
+    \divCalculerEtapes{#1}{#2}%
+    \pgfmathsetmacro{\divQuotient}{int(#1 / #2)}%
+    \StrLen{#1}[\divNbChiffres]%
+    \pgfmathsetmacro{\divHauteur}{2 + 3 * (\divNbChiffres + 1)}%
+    \divTikzDebut{#1}{#2}{\divQuotient}{\divNbChiffres}{\divHauteur}%
+    \divEtapesTexte
+    \divTikzFin
+}
+
+% ============================================================
+% SECTION 3-B : OPÉRATIONS POSÉES (tabular)
 % ============================================================
 
 \ExplSyntaxOn
@@ -901,7 +945,6 @@
             { \int_mod:nn { \l__div_dividende_int } { \l__div_diviseur_int } }
         \tl_set:Nx \l__div_reste_tl { \int_use:N \l_tmpa_int }
 
-        % --- Pré-calcul des étapes ---
         \seq_clear:N \l__div_etapes_seq
         \int_zero:N \l__div_partiel_int
         \int_set:Nn \l__div_puissance_int { 1 }
@@ -951,9 +994,6 @@
         }
     }
 
-    % =====================================================
-    % AFFICHAGE
-    % =====================================================
     \begin{center}
     \begin{tabular}{@{}r@{\hspace{4pt}}|@{\hspace{4pt}}l@{}}
         \l__div_dividende_tl & \l__div_diviseur_tl \\
@@ -984,112 +1024,6 @@
 }
 
 \ExplSyntaxOff
-
-% ============================================================
-% DIVISION POSÉE EN TIKZ
-% ============================================================
-\newcounter{divLigne}
-
-\newcommand{\divPlaceNombre}[4]{%
-    \foreach \chiffre [count=\i from 0] in {#1} {%
-        \pgfmathsetmacro{\pos}{#3 - (#2 - 1 - \i)}%
-        \node[anchor=center, inner sep=0pt] at (\pos, -#4) {\chiffre};%
-    }%
-}
-
-\newcommand{\divTraceTrait}[3]{%
-    \pgfmathsetmacro{\xdebut}{#2 - #1 + 0.8}%
-    \pgfmathsetmacro{\xfin}{#2 + 0.2}%
-    \draw[thick] (\xdebut, -#3 - 0.35) -- (\xfin, -#3 - 0.35);%
-}
-
-\newcommand{\divAfficheEtape}[5]{%
-    \ifx\relax#1\relax\else
-        \divPlaceNombre{#1}{#2}{#5}{\thedivLigne}%
-        \stepcounter{divLigne}%
-    \fi
-    \ifx\relax#3\relax\else
-        \divPlaceNombre{#3}{#4}{#5}{\thedivLigne}%
-        \divTraceTrait{#4}{#5}{\thedivLigne}%
-        \stepcounter{divLigne}%
-    \fi
-}
-
-\newcommand{\divTikzDebut}[5]{%
-    \begin{tikzpicture}[x=0.6cm, y=0.8cm, every node/.style={font=\normalsize}]
-        \useasboundingbox (-0.5, 0.8) rectangle (#4 + 4, -#5);
-
-        \foreach \chiffre [count=\i from 0] in {#1} {
-            \node[anchor=center, inner sep=0pt] at (\i, 0) {\chiffre};
-        }
-
-        \draw[thick] (#4 - 0.3, 0.6) -- (#4 - 0.3, -1.5);
-        \node[anchor=west] at (#4 + 0.2, 0) {#2};
-        \node[anchor=west] at (#4 + 0.2, -1) {#3};
-        \draw[thick] (#4 - 0.1, -0.5) -- (#4 + 1.8, -0.5);
-
-        \setcounter{divLigne}{1}%
-}
-
-\newcommand{\divTikzFin}{%
-    \end{tikzpicture}%
-}
-
-\newcommand{\divCalculerEtapes}[2]{%
-    \gdef\divEtapesTexte{}%
-    \pgfmathsetmacro{\divQuotient}{int(#1 / #2)}%
-    \pgfmathsetmacro{\divReste}{#1 - \divQuotient * #2}%
-    \StrLen{#1}[\divNbChiffres]%
-    \def\divPartiel{0}%
-    \def\divNbPartiel{0}%
-    \def\divColFin{0}%
-    \gdef\divDejaAffiche{0}%
-    \foreach \chiffre [count=\i from 1] in {#1} {%
-        \ifnum\divPartiel=0
-            \xdef\divPartiel{\chiffre}%
-            \xdef\divNbPartiel{1}%
-        \else
-            \xdef\divPartiel{\divPartiel\chiffre}%
-            \xdef\divNbPartiel{\the\numexpr\divNbPartiel+1\relax}%
-        \fi
-        \ifnum\divPartiel<\numexpr#2\relax\else
-            \pgfmathsetmacro{\divChiffreQ}{int(\divPartiel / #2)}%
-            \pgfmathsetmacro{\divProduit}{\divChiffreQ * #2}%
-            \pgfmathsetmacro{\divNouveauPartiel}{\divPartiel - \divProduit}%
-            \xdef\divColFin{\i}%
-            \StrLen{\divProduit}[\divNbProduit]%
-            \ifnum\divDejaAffiche=0
-                \xdef\divEtapesTexte{\divEtapesTexte
-                    \noexpand\divAfficheEtape{}{0}{\divProduit}{\divNbProduit}{\divColFin}}%
-                \gdef\divDejaAffiche{1}%
-            \else
-                \xdef\divEtapesTexte{\divEtapesTexte
-                    \noexpand\divAfficheEtape{\divPartiel}{\divNbPartiel}{\divProduit}{\divNbProduit}{\divColFin}}%
-            \fi
-            \xdef\divPartiel{\divNouveauPartiel}%
-            \ifnum\divPartiel=0
-                \xdef\divNbPartiel{0}%
-            \else
-                \StrLen{\divPartiel}[\divNbPartiel]%
-            \fi
-        \fi
-    }%
-    \ifnum\divReste>0
-        \StrLen{\divReste}[\divNbReste]%
-        \xdef\divEtapesTexte{\divEtapesTexte
-            \noexpand\divAfficheEtape{}{0}{\divReste}{\divNbReste}{\divNbChiffres}}%
-    \fi
-}
-
-\newcommand{\divisionTikz}[2]{%
-    \divCalculerEtapes{#1}{#2}%
-    \pgfmathsetmacro{\divQuotient}{int(#1 / #2)}%
-    \StrLen{#1}[\divNbChiffres]%
-    \pgfmathsetmacro{\divHauteur}{2 + 3 * (\divNbChiffres + 1)}%
-    \divTikzDebut{#1}{#2}{\divQuotient}{\divNbChiffres}{\divHauteur}%
-    \divEtapesTexte
-    \divTikzFin
-}
 
 % ============================================================
 % COMMANDES PUBLIQUES

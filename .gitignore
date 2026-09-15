@@ -23,6 +23,7 @@
 
 # Fichiers de compilation
 *.pdf
+test*
 !doc/*.pdf
 !exemples/*.pdfoutilsprof.pdf
 
