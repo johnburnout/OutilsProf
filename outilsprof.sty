@@ -2,12 +2,12 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.5
+% Version : 1.6
 % Date : 2026/09/16
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/09/16 v1.5 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/09/16 v1.6 Outils pour l'enseignement]
 
 % ============================================================
 % DÉPENDANCES
@@ -17,22 +17,18 @@
 \RequirePackage{xparse}
 \RequirePackage{xstring}
 \RequirePackage{tcolorbox}
+\RequirePackage{siunitx}
 \tcbuselibrary{skins}
+
+% Configuration siunitx pour le français
+\sisetup{
+    group-separator = {\,},
+    group-minimum-digits = 4,
+    output-decimal-marker = {,},
+}
 
 % ============================================================
 % SECTION 1-A : AXE GRADUÉ
-% ============================================================
-% Paramètres nommés :
-%   longueur : largeur relative (0.8 = 80% de \textwidth)  [défaut : 0.8]
-%   debut    : début de la graduation                      [défaut : 0]
-%   fin      : fin de la graduation                        [défaut : 100]
-%   pas      : pas entre nombres repères                   [défaut : 10]
-%   nombre   : nombre de sous-intervalles entre repères    [défaut : 2]
-%   points   : liste {A/120, B/340/blue}                   [défaut : vide]
-%
-% Syntaxe des points :
-%   nom/position           → intérieur rouge (défaut)
-%   nom/position/couleur   → intérieur de la couleur spécifiée
 % ============================================================
 
 \ExplSyntaxOn
@@ -512,133 +508,518 @@
 }
 
 % ============================================================
-% SECTION 3-A : DIVISION EN TIKZ
+% SECTION 3 : DIVISION ET OPÉRATIONS
 % ============================================================
-% IMPORTANT : ce bloc doit être placé AVANT \ExplSyntaxOn
-% pour que \foreach et \StrLen fonctionnent correctement.
+% NOTE IMPORTANTE :
+%   Les nombres doivent être saisis SANS espaces insécables (~).
+%   Utiliser uniquement l'espace normal ou rien du tout.
+%
+% COMPATIBILITÉ : expl3 2017/12/16 (TexpadTeX)
+%   - Pas de \int_step_inline:nn ni \int_step_inline:nnn
+%   - Pas de \int_incr:N
+%   - Boucles via \int_while_do:nNnn
+%   - Rendu entièrement TikZ (aucun \halign, aucun &)
 % ============================================================
-
-\newcounter{divLigne}
-
-\newcommand{\divPlaceNombre}[4]{%
-    \foreach \chiffre [count=\i from 0] in {#1} {%
-        \pgfmathsetmacro{\pos}{#3 - (#2 - 1 - \i)}%
-        \node[anchor=center, inner sep=0pt] at (\pos, -#4) {\chiffre};%
-    }%
-}
-
-\newcommand{\divTraceTrait}[3]{%
-    \pgfmathsetmacro{\xdebut}{#2 - #1 + 0.8}%
-    \pgfmathsetmacro{\xfin}{#2 + 0.2}%
-    \draw[thick] (\xdebut, -#3 - 0.35) -- (\xfin, -#3 - 0.35);%
-}
-
-\newcommand{\divAfficheEtape}[5]{%
-    \ifx\relax#1\relax\else
-        \divPlaceNombre{#1}{#2}{#5}{\thedivLigne}%
-        \stepcounter{divLigne}%
-    \fi
-    \ifx\relax#3\relax\else
-        \divPlaceNombre{#3}{#4}{#5}{\thedivLigne}%
-        \divTraceTrait{#4}{#5}{\thedivLigne}%
-        \stepcounter{divLigne}%
-    \fi
-}
-
-\newcommand{\divTikzDebut}[5]{%
-    \begin{tikzpicture}[x=0.6cm, y=0.8cm, every node/.style={font=\normalsize}]
-        \useasboundingbox (-0.5, 0.8) rectangle (#4 + 4, -#5);
-
-        \foreach \chiffre [count=\i from 0] in {#1} {
-            \node[anchor=center, inner sep=0pt] at (\i, 0) {\chiffre};
-        }
-
-        \draw[thick] (#4 - 0.3, 0.6) -- (#4 - 0.3, -1.5);
-        \node[anchor=west] at (#4 + 0.2, 0) {#2};
-        \node[anchor=west] at (#4 + 0.2, -1) {#3};
-        \draw[thick] (#4 - 0.1, -0.5) -- (#4 + 1.8, -0.5);
-
-        \setcounter{divLigne}{1}%
-}
-
-\newcommand{\divTikzFin}{%
-    \end{tikzpicture}%
-}
-
-\newcommand{\divCalculerEtapes}[2]{%
-    \gdef\divEtapesTexte{}%
-    \pgfmathsetmacro{\divQuotient}{int(#1 / #2)}%
-    \pgfmathsetmacro{\divReste}{#1 - \divQuotient * #2}%
-    \StrLen{#1}[\divNbChiffres]%
-    \def\divPartiel{0}%
-    \def\divNbPartiel{0}%
-    \def\divColFin{0}%
-    \gdef\divDejaAffiche{0}%
-    \foreach \chiffre [count=\i from 1] in {#1} {%
-        \ifnum\divPartiel=0
-            \xdef\divPartiel{\chiffre}%
-            \xdef\divNbPartiel{1}%
-        \else
-            \xdef\divPartiel{\divPartiel\chiffre}%
-            \xdef\divNbPartiel{\the\numexpr\divNbPartiel+1\relax}%
-        \fi
-        \ifnum\divPartiel<\numexpr#2\relax\else
-            \pgfmathsetmacro{\divChiffreQ}{int(\divPartiel / #2)}%
-            \pgfmathsetmacro{\divProduit}{\divChiffreQ * #2}%
-            \pgfmathsetmacro{\divNouveauPartiel}{\divPartiel - \divProduit}%
-            \xdef\divColFin{\i}%
-            \StrLen{\divProduit}[\divNbProduit]%
-            \ifnum\divDejaAffiche=0
-                \xdef\divEtapesTexte{\divEtapesTexte
-                    \noexpand\divAfficheEtape{}{0}{\divProduit}{\divNbProduit}{\divColFin}}%
-                \gdef\divDejaAffiche{1}%
-            \else
-                \xdef\divEtapesTexte{\divEtapesTexte
-                    \noexpand\divAfficheEtape{\divPartiel}{\divNbPartiel}{\divProduit}{\divNbProduit}{\divColFin}}%
-            \fi
-            \xdef\divPartiel{\divNouveauPartiel}%
-            \ifnum\divPartiel=0
-                \xdef\divNbPartiel{0}%
-            \else
-                \StrLen{\divPartiel}[\divNbPartiel]%
-            \fi
-        \fi
-    }%
-    \ifnum\divReste>0
-        \StrLen{\divReste}[\divNbReste]%
-        \xdef\divEtapesTexte{\divEtapesTexte
-            \noexpand\divAfficheEtape{}{0}{\divReste}{\divNbReste}{\divNbChiffres}}%
-    \fi
-}
-
-\newcommand{\divisionTikz}[2]{%
-    \divCalculerEtapes{#1}{#2}%
-    \pgfmathsetmacro{\divQuotient}{int(#1 / #2)}%
-    \StrLen{#1}[\divNbChiffres]%
-    \pgfmathsetmacro{\divHauteur}{2 + 3 * (\divNbChiffres + 1)}%
-    \divTikzDebut{#1}{#2}{\divQuotient}{\divNbChiffres}{\divHauteur}%
-    \divEtapesTexte
-    \divTikzFin
-}
 
 % ============================================================
-% SECTION 3-B : OPÉRATIONS POSÉES (tabular)
+% SECTION 3-A : DIVISION EUCLIDIENNE (version TikZ, finale)
+% ============================================================
+% Syntaxe :
+%   \division[dividende=1234, diviseur=56, solution,
+%             etapes={112, 112}]
+%
+% Options :
+%   dividende : entier
+%   diviseur  : entier
+%   solution  : bool — affiche quotient et reste
+%   etapes    : liste des produits à soustraire
+%
+% Rendu :
+%   - 1 colonne par chiffre du dividende
+%   - barre verticale
+%   - max(nb diviseur, nb quotient) colonnes à droite
+%   - Sans etapes : pas de produits intermédiaires
+%   - Avec etapes : nombres affichés, alignés sur le partiel
+%   - Trait sous le diviseur toujours affiché
 % ============================================================
 
 \ExplSyntaxOn
 
 % ------------------------------------------------------------
-% Variables internes (communes)
+% Variables internes
+% ------------------------------------------------------------
+\int_new:N \l__div_dividende_int
+\int_new:N \l__div_diviseur_int
+\int_new:N \l__div_quotient_int
+\int_new:N \l__div_reste_int
+\int_new:N \l__div_nbchiffres_int
+\int_new:N \l__div_nbdiv_int
+\int_new:N \l__div_nbquo_int
+\int_new:N \l__div_nbcol_droite_int
+\int_new:N \l__div_puissance_int
+\int_new:N \l__div_chiffre_int
+\int_new:N \l__div_partiel_int
+\int_new:N \l__div_produit_int
+\int_new:N \l__div_nb_etapes_int
+\int_new:N \l__div_position_int
+\int_new:N \l__div_debut_int
+\int_new:N \l__div_ligne_depart_int
+\int_new:N \l_tmpc_int
+\int_new:N \l_tmpd_int
+\seq_new:N \l__div_etapes_calc_seq
+\tl_new:N  \l__div_dividende_tl
+\tl_new:N  \l__div_diviseur_tl
+\tl_new:N  \l__div_quotient_tl
+\tl_new:N  \l__div_etapes_user_tl
+\tl_new:N  \l_tmpc_tl
+\bool_new:N \l__div_etapes_ok_bool
+\bool_new:N \l__div_etapes_fournies_bool
+\bool_new:N \l__op_solution_bool
+
+% ------------------------------------------------------------
+% Options
+% ------------------------------------------------------------
+\keys_define:nn { outilsprof / division }
+{
+    dividende .tl_set:N   = \l__div_dividende_tl,
+    dividende .initial:n  = 0,
+    diviseur  .tl_set:N   = \l__div_diviseur_tl,
+    diviseur  .initial:n  = 1,
+    solution  .bool_set:N = \l__op_solution_bool,
+    solution  .initial:n  = false,
+    etapes    .tl_set:N   = \l__div_etapes_user_tl,
+    etapes    .initial:n  = {},
+}
+
+% ------------------------------------------------------------
+% Calcul interne
+% Séquence : "position;partiel;produit" par étape
+% ------------------------------------------------------------
+\cs_new_protected:Npn \__div_calculer:
+{
+    \int_set:Nn \l__div_dividende_int { \l__div_dividende_tl }
+    \int_set:Nn \l__div_diviseur_int  { \l__div_diviseur_tl }
+
+    \int_set:Nn \l__div_quotient_int
+        { \int_div_truncate:nn
+            { \l__div_dividende_int }
+            { \l__div_diviseur_int } }
+    \int_set:Nn \l__div_reste_int
+        { \int_mod:nn
+            { \l__div_dividende_int }
+            { \l__div_diviseur_int } }
+    \tl_set:Nx \l__div_quotient_tl
+        { \int_use:N \l__div_quotient_int }
+
+    \int_set:Nn \l__div_nbchiffres_int
+        { \tl_count:N \l__div_dividende_tl }
+    \int_set:Nn \l__div_nbdiv_int
+        { \tl_count:N \l__div_diviseur_tl }
+    \int_set:Nn \l__div_nbquo_int
+        { \tl_count:N \l__div_quotient_tl }
+
+    \int_set:Nn \l__div_nbcol_droite_int
+        { \int_max:nn
+            { \l__div_nbdiv_int }
+            { \l__div_nbquo_int } }
+
+    \seq_clear:N \l__div_etapes_calc_seq
+    \int_zero:N \l__div_partiel_int
+    \int_zero:N \l__div_nb_etapes_int
+    \int_set:Nn \l__div_puissance_int { 1 }
+
+    \int_set:Nn \l_tmpc_int { 1 }
+    \int_while_do:nNnn { \l_tmpc_int } < { \l__div_nbchiffres_int }
+    {
+        \int_set:Nn \l__div_puissance_int
+            { \l__div_puissance_int * 10 }
+        \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
+    }
+
+    \int_set:Nn \l_tmpc_int { 1 }
+    \int_while_do:nNnn { \l_tmpc_int } < { \l__div_nbchiffres_int + 1 }
+    {
+        \int_set:Nn \l__div_chiffre_int
+            { \int_div_truncate:nn
+                { \l__div_dividende_int }
+                { \l__div_puissance_int } }
+        \int_set:Nn \l__div_chiffre_int
+            { \int_mod:nn { \l__div_chiffre_int } { 10 } }
+        \int_set:Nn \l__div_partiel_int
+            { \l__div_partiel_int * 10 + \l__div_chiffre_int }
+
+        \int_compare:nT
+            { \l__div_partiel_int >= \l__div_diviseur_int }
+        {
+            \int_set:Nn \l__div_produit_int
+                { \int_div_truncate:nn
+                    { \l__div_partiel_int }
+                    { \l__div_diviseur_int } }
+            \int_set:Nn \l__div_produit_int
+                { \l__div_produit_int * \l__div_diviseur_int }
+
+            \int_compare:nTF { \l__div_nb_etapes_int == 0 }
+                {
+                    \seq_put_right:Nx \l__div_etapes_calc_seq
+                        { \int_use:N \l_tmpc_int
+                          ; 0
+                          ; \int_use:N \l__div_produit_int }
+                }
+                {
+                    \seq_put_right:Nx \l__div_etapes_calc_seq
+                        { \int_use:N \l_tmpc_int
+                          ; \int_use:N \l__div_partiel_int
+                          ; \int_use:N \l__div_produit_int }
+                }
+            \int_set:Nn \l__div_nb_etapes_int
+                { \l__div_nb_etapes_int + 1 }
+
+            \int_set:Nn \l__div_partiel_int
+                { \l__div_partiel_int - \l__div_produit_int }
+        }
+
+        \int_set:Nn \l__div_puissance_int
+            { \l__div_puissance_int / 10 }
+        \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
+    }
+}
+
+% ------------------------------------------------------------
+% Macro sans argument : découpe \l_tmpa_tl (format "a;b;c") en :
+%   \l_tmpa_tl = a, \l_tmpb_tl = b, \l_tmpc_tl = c
+% ------------------------------------------------------------
+\cs_new_protected:Npn \__div_decouper_trois:
+{
+    \expandafter\StrCut\expandafter{\l_tmpa_tl}{;}
+        {\l_tmpa_tl}{\l_tmpb_tl}
+    \expandafter\StrCut\expandafter{\l_tmpb_tl}{;}
+        {\l_tmpb_tl}{\l_tmpc_tl}
+}
+
+% ------------------------------------------------------------
+% Vérification des étapes fournies
+% ------------------------------------------------------------
+\cs_new_protected:Npn \__div_verifier_etapes:
+{
+    \bool_set_true:N \l__div_etapes_ok_bool
+    \bool_set_false:N \l__div_etapes_fournies_bool
+    \tl_if_empty:NF \l__div_etapes_user_tl
+    {
+        \bool_set_true:N \l__div_etapes_fournies_bool
+        \tl_set:Nx \l__div_etapes_user_tl
+            { \tl_to_str:V \l__div_etapes_user_tl }
+        \tl_replace_all:Nnn \l__div_etapes_user_tl { ~ } { }
+        \tl_replace_all:Nnn \l__div_etapes_user_tl
+            { \c_space_token } { }
+
+        \seq_clear:N \l_tmpa_seq
+        \int_set:Nn \l_tmpc_int { 1 }
+        \int_while_do:nNnn { \l_tmpc_int }
+            < { \l__div_nb_etapes_int + 1 }
+        {
+            \tl_set:Nx \l_tmpa_tl
+                { \seq_item:Nn \l__div_etapes_calc_seq
+                    { \l_tmpc_int } }
+            \__div_decouper_trois:
+            \seq_put_right:NV \l_tmpa_seq \l_tmpc_tl
+            \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
+        }
+        \tl_set:Nx \l_tmpa_tl
+            { \seq_use:Nn \l_tmpa_seq { , } }
+
+        \tl_if_eq:NNTF \l_tmpa_tl \l__div_etapes_user_tl
+            { \bool_set_true:N \l__div_etapes_ok_bool }
+            { \bool_set_false:N \l__div_etapes_ok_bool }
+    }
+}
+
+% ------------------------------------------------------------
+% Paramètres géométriques TikZ
+% ------------------------------------------------------------
+\dim_new:N \l__div_h_dim
+\dim_new:N \l__div_w_dim
+\dim_new:N \l__div_sep_dim
+\dim_set:Nn \l__div_h_dim { 5mm }
+\dim_set:Nn \l__div_w_dim { 5mm }
+\dim_set:Nn \l__div_sep_dim { 0.4pt }
+
+\cs_new_protected:Npn \__div_char:nn #1 #2
+{
+    \StrChar{#1}{#2}[\l_tmpa_tl]
+}
+
+% ------------------------------------------------------------
+% Rendu principal
+% ------------------------------------------------------------
+\cs_new_protected:Npn \__op_rendre_division:nn #1 #2
+{
+    \group_begin:
+    \keys_set:nn { outilsprof / division } { #1 }
+    \__op_appliquer_taille:
+    \__div_calculer:
+    \__div_verifier_etapes:
+
+    \bool_if:NTF \l__div_etapes_ok_bool
+    {
+        % ----- Ligne de départ des étapes -----
+        \bool_if:NTF \l__op_solution_bool
+            { \int_set:Nn \l_tmpd_int { 3 } }
+            { \int_set:Nn \l_tmpd_int { 2 } }
+        \int_set:Nn \l_tmpb_int
+            { \l_tmpd_int + 2 * \l__div_nb_etapes_int }
+
+        \noindent\makebox[\textwidth][c]{%
+        \begin{tikzpicture}[
+            x=1mm, y=1mm,
+            every~node/.style={font=\small, inner~sep=0pt}
+        ]
+            % ===== Ligne 1 : chiffres du dividende =====
+            \int_set:Nn \l_tmpc_int { 1 }
+            \int_while_do:nNnn { \l_tmpc_int }
+                < { \l__div_nbchiffres_int + 1 }
+            {
+                \__div_char:nn {\l__div_dividende_tl} {\l_tmpc_int}
+                \node[anchor=center]
+                    at ( { (\l_tmpc_int - 0.5) * \l__div_w_dim } ,
+                         { -0.5 * \l__div_h_dim } )
+                    { \l_tmpa_tl };
+                \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
+            }
+
+            % ===== Ligne 1 : chiffres du diviseur =====
+            \int_set:Nn \l_tmpc_int { 1 }
+            \int_while_do:nNnn { \l_tmpc_int }
+                < { \l__div_nbdiv_int + 1 }
+            {
+                \__div_char:nn {\l__div_diviseur_tl} {\l_tmpc_int}
+                \node[anchor=center]
+                    at ( { (\l__div_nbchiffres_int + \l_tmpc_int
+                            - 0.5) * \l__div_w_dim } ,
+                         { -0.5 * \l__div_h_dim } )
+                    { \l_tmpa_tl };
+                \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
+            }
+
+            % ===== Barre verticale =====
+            \draw[line~width=\l__div_sep_dim]
+                ( { \l__div_nbchiffres_int * \l__div_w_dim } ,
+                  { 0 * \l__div_h_dim } )
+                -- ( { \l__div_nbchiffres_int * \l__div_w_dim } ,
+                     { -\l_tmpb_int * \l__div_h_dim } );
+
+            % ===== Quotient (si solution) =====
+            \bool_if:NT \l__op_solution_bool
+            {
+                \int_set:Nn \l_tmpd_int { 1 }
+                \int_while_do:nNnn { \l_tmpd_int }
+                    < { \l__div_nbquo_int + 1 }
+                {
+                    \__div_char:nn {\l__div_quotient_tl} {\l_tmpd_int}
+                    \node[anchor=center]
+                        at ( { (\l__div_nbchiffres_int + \l_tmpd_int
+                                - 0.5) * \l__div_w_dim } ,
+                             { -1.5 * \l__div_h_dim } )
+                        { \l_tmpa_tl };
+                    \int_set:Nn \l_tmpd_int { \l_tmpd_int + 1 }
+                }
+            }
+
+            % ===== Trait sous le diviseur (toujours affiché) =====
+            \draw[line~width=\l__div_sep_dim]
+                ( { \l__div_nbchiffres_int * \l__div_w_dim } ,
+                  { -1 * \l__div_h_dim } )
+                -- ( { (\l__div_nbchiffres_int
+                       + \l__div_nbcol_droite_int)
+                       * \l__div_w_dim } ,
+                     { -1 * \l__div_h_dim } );
+
+            % ===== Étapes (uniquement si fournies) =====
+            \bool_if:NT \l__div_etapes_fournies_bool
+            {
+                \int_set:Nn \l_tmpc_int { 1 }
+                \int_while_do:nNnn { \l_tmpc_int }
+                    < { \l__div_nb_etapes_int + 1 }
+                {
+                    \tl_set:Nx \l_tmpa_tl
+                        { \seq_item:Nn \l__div_etapes_calc_seq
+                            { \l_tmpc_int } }
+                    \__div_decouper_trois:
+
+                    \int_set:Nn \l__div_position_int { \l_tmpa_tl }
+
+                    % Ligne du produit : 2 + 2*(k-1)
+                    \int_set:Nn \l_tmpa_int
+                        { 2 + 2 * (\l_tmpc_int - 1) }
+
+                    % ----- Produit chiffre par chiffre -----
+                    \int_set:Nn \l__div_debut_int
+                        { \l__div_position_int
+                          - \tl_count:V \l_tmpc_tl + 1 }
+                    \int_set:Nn \l_tmpd_int { 1 }
+                    \int_while_do:nNnn { \l_tmpd_int }
+                        < { \tl_count:V \l_tmpc_tl + 1 }
+                    {
+                        \__div_char:nn {\l_tmpc_tl} {\l_tmpd_int}
+                        \node[anchor=center]
+                            at ( { (\l__div_debut_int + \l_tmpd_int
+                                    - 1.5) * \l__div_w_dim } ,
+                                 { -(\l_tmpa_int - 0.5)
+                                    * \l__div_h_dim } )
+                            { \l_tmpa_tl };
+                        \int_set:Nn \l_tmpd_int
+                            { \l_tmpd_int + 1 }
+                    }
+
+                    % ----- Trait horizontal sous le produit -----
+                    \draw[line~width=\l__div_sep_dim]
+                        ( { 0 * \l__div_w_dim } ,
+                          { -\l_tmpa_int * \l__div_h_dim } )
+                        -- ( { \l__div_nbchiffres_int
+                               * \l__div_w_dim } ,
+                             { -\l_tmpa_int * \l__div_h_dim } );
+
+                    % ----- Partiel suivant -----
+                    \int_compare:nT
+                        { \l_tmpc_int < \l__div_nb_etapes_int }
+                    {
+                        \tl_set:Nx \l_tmpa_tl
+                            { \seq_item:Nn \l__div_etapes_calc_seq
+                                { \l_tmpc_int + 1 } }
+                        \__div_decouper_trois:
+                        \int_set:Nn \l__div_position_int { \l_tmpa_tl }
+
+                        \int_set:Nn \l__div_debut_int
+                            { \l__div_position_int
+                              - \tl_count:V \l_tmpb_tl + 1 }
+                        \int_set:Nn \l_tmpd_int { 1 }
+                        \int_while_do:nNnn { \l_tmpd_int }
+                            < { \tl_count:V \l_tmpb_tl + 1 }
+                        {
+                            \__div_char:nn {\l_tmpb_tl}
+                                {\l_tmpd_int}
+                            \node[anchor=center]
+                                at ( { (\l__div_debut_int
+                                        + \l_tmpd_int - 1.5)
+                                       * \l__div_w_dim } ,
+                                     { -(\l_tmpa_int + 0.5)
+                                        * \l__div_h_dim } )
+                                { \l_tmpa_tl };
+                            \int_set:Nn \l_tmpd_int
+                                { \l_tmpd_int + 1 }
+                        }
+                    }
+
+                    \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
+                }
+            }
+
+            % ===== Reste final (si solution) =====
+            \bool_if:NT \l__op_solution_bool
+            {
+                \int_compare:nT { \l__div_reste_int > 0 }
+                {
+                    \tl_set:Nx \l_tmpa_tl
+                        { \int_use:N \l__div_reste_int }
+                    \int_set:Nn \l__div_debut_int
+                        { \l__div_nbchiffres_int
+                          - \tl_count:V \l_tmpa_tl + 1 }
+                    \int_set:Nn \l_tmpd_int { 1 }
+                    \int_while_do:nNnn { \l_tmpd_int }
+                        < { \tl_count:V \l_tmpa_tl + 1 }
+                    {
+                        \__div_char:nn {\l_tmpa_tl}
+                            {\l_tmpd_int}
+                        \node[anchor=center]
+                            at ( { (\l__div_debut_int
+                                    + \l_tmpd_int - 1.5)
+                                   * \l__div_w_dim } ,
+                                 { -(\l_tmpb_int - 2)
+                                    * \l__div_h_dim } )
+                            { \l_tmpa_tl };
+                        \int_set:Nn \l_tmpd_int
+                            { \l_tmpd_int + 1 }
+                    }
+                }
+            }
+        \end{tikzpicture}%
+        }% fin \makebox
+    }
+    {
+        \begin{tcolorbox}[
+            colback=couleurVigilance!10,
+            colframe=couleurVigilance,
+            coltitle=white,
+            fonttitle=\bfseries,
+            arc=4pt, boxrule=1pt,
+            title={\textbf{Erreur dans les étapes fournies}},
+            top=3mm, bottom=3mm, left=3mm, right=3mm
+        ]
+            Les étapes fournies pour la division
+            ne correspondent pas au calcul attendu.
+        \end{tcolorbox}
+    }
+    \group_end:
+}
+
+% ------------------------------------------------------------
+% Commande publique
+% ------------------------------------------------------------
+\NewDocumentCommand{\division}{O{}}{%
+    \csname __op_rendre_division:nn\endcsname {#1}{}%
+}
+
+\ExplSyntaxOff
+
+% ============================================================
+% SECTION 3-B : OPÉRATIONS POSÉES (TikZ)
+% ============================================================
+% Syntaxe :
+%   \addition[options]{terme1, terme2, ...}
+%   \soustraction[options]{terme1, terme2}
+%   \multiplication[options]{facteur1, facteur2}
+%
+% Options communes :
+%   solution : bool — affiche le résultat
+%   taille   : taille de police (normalsize par défaut)
+%
+% Rendu entièrement TikZ : aucun \halign, aucun &.
+% ============================================================
+
+\ExplSyntaxOn
+
+% ------------------------------------------------------------
+% Variables internes
 % ------------------------------------------------------------
 \seq_new:N    \l__op_liste_seq
 \int_new:N    \l__op_somme_int
-\int_new:N    \l__op_i_int
 \int_new:N    \l__op_n_int
 \int_new:N    \l__op_a_int
 \int_new:N    \l__op_b_int
+\int_new:N    \l__op_nb_int
+\int_new:N    \l__op_chiffre_int
+\int_new:N    \l__op_puissance_int
+\int_new:N    \l__op_produit_int
 \tl_new:N     \l__op_taille_tl
 \tl_new:N     \l__op_resultat_tl
+\seq_new:N    \l__op_produits_seq
 
+% ------------------------------------------------------------
+% Paramètres géométriques TikZ (opérations)
+% ------------------------------------------------------------
+\dim_new:N \l__op_h_dim
+\dim_new:N \l__op_w_dim
+\dim_new:N \l__op_sep_dim
+\dim_new:N \l__op_left_margin_dim
+\dim_new:N \l__op_right_margin_dim
+\dim_set:Nn \l__op_h_dim { 7mm }
+\dim_set:Nn \l__op_w_dim { 5mm }
+\dim_set:Nn \l__op_sep_dim { 0.4pt }
+\dim_set:Nn \l__op_left_margin_dim { 8mm }
+\dim_set:Nn \l__op_right_margin_dim { 2mm }
+
+% ------------------------------------------------------------
+% Options
+% ------------------------------------------------------------
 \keys_define:nn { outilsprof / operation }
 {
     solution .bool_set:N = \l__op_solution_bool,
@@ -652,19 +1033,26 @@
     \csname \l__op_taille_tl \endcsname
 }
 
+% ------------------------------------------------------------
+% Parse la liste des termes (séparés par des virgules)
+% ------------------------------------------------------------
 \cs_new_protected:Npn \__op_parse:n #1
 {
     \seq_clear:N \l__op_liste_seq
     \clist_map_inline:nn { #1 }
     {
         \tl_set:Nn \l_tmpa_tl {##1}
-        \tl_trim_spaces:N \l_tmpa_tl
+        \tl_replace_all:Nnn \l_tmpa_tl { ~ } { }
+        \tl_replace_all:Nnn \l_tmpa_tl { \c_space_token } { }
         \tl_if_empty:NF \l_tmpa_tl
             { \seq_put_right:NV \l__op_liste_seq \l_tmpa_tl }
     }
     \int_set:Nn \l__op_n_int { \seq_count:N \l__op_liste_seq }
 }
 
+% ------------------------------------------------------------
+% Calcule la somme des termes de la liste
+% ------------------------------------------------------------
 \cs_new_protected:Npn \__op_calculer_somme:
 {
     \int_zero:N \l__op_somme_int
@@ -675,29 +1063,21 @@
     }
 }
 
-\cs_new_protected:Npn \__op_calculer_difference:
+% ------------------------------------------------------------
+% Affiche un entier formaté (via siunitx)
+% ------------------------------------------------------------
+\cs_new_protected:Npn \__op_afficher_nombre:n #1
 {
-    \int_zero:N \l__op_somme_int
-    \int_zero:N \l__op_i_int
-    \seq_map_inline:Nn \l__op_liste_seq
-    {
-        \int_incr:N \l__op_i_int
-        \int_set:Nn \l_tmpa_int {##1}
-        \int_compare:nTF { \l__op_i_int == 1 }
-            { \int_set:Nn \l__op_somme_int { \l_tmpa_int } }
-            { \int_sub:Nn \l__op_somme_int { \l_tmpa_int } }
-    }
+    \tl_set:Nx \l_tmpa_tl {#1}
+    \exp_args:NV \num \l_tmpa_tl
 }
 
-\cs_new_protected:Npn \__op_calculer_produit:
+% ------------------------------------------------------------
+% Calcule le nombre de chiffres d'un entier
+% ------------------------------------------------------------
+\cs_new_protected:Npn \__op_nbchiffres:n #1
 {
-    \int_set:Nn \l__op_somme_int { 1 }
-    \seq_map_inline:Nn \l__op_liste_seq
-    {
-        \int_set:Nn \l_tmpa_int {##1}
-        \int_set:Nn \l__op_somme_int
-            { \l__op_somme_int * \l_tmpa_int }
-    }
+    \int_set:Nn \l_tmpa_int { \tl_count:n {#1} }
 }
 
 % ============================================================
@@ -712,20 +1092,68 @@
     \tl_set:Nx \l__op_resultat_tl { \int_use:N \l__op_somme_int }
     \__op_appliquer_taille:
 
+    \int_set:Nn \l_tmpa_int { \l__op_n_int }
+    \bool_if:NT \l__op_solution_bool
+        { \int_set:Nn \l_tmpa_int { \l_tmpa_int + 2 } }
+
+    \int_set:Nn \l_tmpb_int { 0 }
+    \seq_map_inline:Nn \l__op_liste_seq
+    {
+        \int_set:Nn \l_tmpc_int { \tl_count:n {##1} }
+        \int_compare:nT { \l_tmpc_int > \l_tmpb_int }
+            { \int_set:Nn \l_tmpb_int { \l_tmpc_int } }
+    }
+    \bool_if:NT \l__op_solution_bool
+    {
+        \int_set:Nn \l_tmpc_int { \tl_count:V \l__op_resultat_tl }
+        \int_compare:nT { \l_tmpc_int > \l_tmpb_int }
+            { \int_set:Nn \l_tmpb_int { \l_tmpc_int } }
+    }
+
+    \dim_set:Nn \l_tmpa_dim
+        { \l__op_left_margin_dim + \l_tmpb_int * \l__op_w_dim
+          + \l__op_right_margin_dim }
+
     \begin{center}
-    \begin{tabular}{@{}r@{}}
-        \seq_item:Nn \l__op_liste_seq { 1 } \\
-        \int_step_inline:nn { \l__op_n_int - 1 }
+    \begin{tikzpicture}[
+        x=1mm, y=1mm,
+        every~node/.style={font=\small, inner~sep=0pt}
+    ]
+        % ----- Termes -----
+        \int_set:Nn \l_tmpc_int { 1 }
+        \seq_map_inline:Nn \l__op_liste_seq
         {
-            + \, \seq_item:Nn \l__op_liste_seq { ##1 + 1 } \\
+            \int_compare:nTF { \l_tmpc_int == 1 }
+                { }
+                { \node[anchor=east] at ( { \l__op_left_margin_dim - 1mm } ,
+                        { -(\l_tmpc_int - 0.5) * \l__op_h_dim } ) {$+$}; }
+            \node[anchor=east]
+                at ( { \l__op_left_margin_dim
+                       + \l_tmpb_int * \l__op_w_dim } ,
+                     { -(\l_tmpc_int - 0.5) * \l__op_h_dim } )
+                { ##1 };
+            \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
         }
-        \\[-1ex]
-        \cline{1-1}
-        \\[-1ex]
-        \bool_if:NTF \l__op_solution_bool
-            { \l__op_resultat_tl }
-            { \phantom{0} }
-    \end{tabular}
+
+        % ----- Trait -----
+        \int_set:Nn \l_tmpa_int { \l__op_n_int + 1 }
+        \draw[line~width=\l__op_sep_dim]
+            ( { \l__op_left_margin_dim - 2mm } ,
+              { -\l_tmpa_int * \l__op_h_dim + 2mm } )
+            -- ( { \l__op_left_margin_dim
+                   + \l_tmpb_int * \l__op_w_dim } ,
+                 { -\l_tmpa_int * \l__op_h_dim + 2mm } );
+
+        % ----- Résultat -----
+        \bool_if:NT \l__op_solution_bool
+        {
+            \node[anchor=east]
+                at ( { \l__op_left_margin_dim
+                       + \l_tmpb_int * \l__op_w_dim } ,
+                     { -(\l_tmpa_int + 0.5) * \l__op_h_dim } )
+                { \__op_afficher_nombre:n { \l__op_resultat_tl } };
+        }
+    \end{tikzpicture}
     \end{center}
     \group_end:
 }
@@ -758,17 +1186,56 @@
         \tl_set:Nx \l__op_resultat_tl { \int_use:N \l__op_somme_int }
         \__op_appliquer_taille:
 
+        \int_set:Nn \l_tmpb_int { \tl_count:V \l_tmpc_tl }
+        \int_set:Nn \l_tmpc_int { \tl_count:V \l_tmpd_tl }
+        \int_compare:nT { \l_tmpc_int > \l_tmpb_int }
+            { \int_set:Nn \l_tmpb_int { \l_tmpc_int } }
+        \bool_if:NT \l__op_solution_bool
+        {
+            \int_set:Nn \l_tmpc_int { \tl_count:V \l__op_resultat_tl }
+            \int_compare:nT { \l_tmpc_int > \l_tmpb_int }
+                { \int_set:Nn \l_tmpb_int { \l_tmpc_int } }
+        }
+
         \begin{center}
-        \begin{tabular}{@{}r@{}}
-            \l_tmpc_tl \\
-            - \, \l_tmpd_tl \\
-            \\[-1ex]
-            \cline{1-1}
-            \\[-1ex]
-            \bool_if:NTF \l__op_solution_bool
-                { \l__op_resultat_tl }
-                { \phantom{0} }
-        \end{tabular}
+        \begin{tikzpicture}[
+            x=1mm, y=1mm,
+            every~node/.style={font=\small, inner~sep=0pt}
+        ]
+            % Premier terme
+            \node[anchor=east]
+                at ( { \l__op_left_margin_dim
+                       + \l_tmpb_int * \l__op_w_dim } ,
+                     { -0.5 * \l__op_h_dim } )
+                { \__op_afficher_nombre:n { \l_tmpc_tl } };
+            % Signe -
+            \node[anchor=east]
+                at ( { \l__op_left_margin_dim - 1mm } ,
+                     { -1.5 * \l__op_h_dim } )
+                {$-$};
+            % Second terme
+            \node[anchor=east]
+                at ( { \l__op_left_margin_dim
+                       + \l_tmpb_int * \l__op_w_dim } ,
+                     { -1.5 * \l__op_h_dim } )
+                { \__op_afficher_nombre:n { \l_tmpd_tl } };
+            % Trait
+            \draw[line~width=\l__op_sep_dim]
+                ( { \l__op_left_margin_dim - 2mm } ,
+                  { -2 * \l__op_h_dim + 2mm } )
+                -- ( { \l__op_left_margin_dim
+                       + \l_tmpb_int * \l__op_w_dim } ,
+                     { -2 * \l__op_h_dim + 2mm } );
+            % Résultat
+            \bool_if:NT \l__op_solution_bool
+            {
+                \node[anchor=east]
+                    at ( { \l__op_left_margin_dim
+                           + \l_tmpb_int * \l__op_w_dim } ,
+                         { -2.5 * \l__op_h_dim } )
+                    { \__op_afficher_nombre:n { \l__op_resultat_tl } };
+            }
+        \end{tikzpicture}
         \end{center}
     }
     {
@@ -783,18 +1250,6 @@
 % ============================================================
 % MULTIPLICATION
 % ============================================================
-\int_new:N \l__mul_a_int
-\int_new:N \l__mul_b_int
-\int_new:N \l__mul_nb_int
-\int_new:N \l__mul_i_int
-\int_new:N \l__mul_chiffre_int
-\int_new:N \l__mul_puissance_int
-\int_new:N \l__mul_produit_int
-\tl_new:N  \l__mul_multiplicande_tl
-\tl_new:N  \l__mul_multiplicateur_tl
-\tl_new:N  \l__mul_produit_final_tl
-\seq_new:N \l__mul_produits_seq
-
 \cs_new_protected:Npn \__op_rendre_multiplication:nn #1 #2
 {
     \group_begin:
@@ -803,223 +1258,152 @@
 
     \int_compare:nTF { \l__op_n_int == 2 }
     {
-        \tl_set:Nx \l__mul_multiplicande_tl
-            { \seq_item:Nn \l__op_liste_seq { 1 } }
-        \tl_set:Nx \l__mul_multiplicateur_tl
-            { \seq_item:Nn \l__op_liste_seq { 2 } }
-        \int_set:Nn \l__mul_a_int { \l__mul_multiplicande_tl }
-        \int_set:Nn \l__mul_b_int { \l__mul_multiplicateur_tl }
+        \tl_set:Nx \l_tmpa_tl { \seq_item:Nn \l__op_liste_seq { 1 } }
+        \tl_set:Nx \l_tmpb_tl { \seq_item:Nn \l__op_liste_seq { 2 } }
+        \int_set:Nn \l__op_a_int { \l_tmpa_tl }
+        \int_set:Nn \l__op_b_int { \l_tmpb_tl }
 
-        \int_set:Nn \l__mul_nb_int
-            { \tl_count:N \l__mul_multiplicateur_tl }
+        \int_set:Nn \l__op_nb_int
+            { \tl_count:V \l_tmpb_tl }
 
-        \tl_set:Nx \l__mul_produit_final_tl
-            { \int_eval:n { \l__mul_a_int * \l__mul_b_int } }
+        \tl_set:Nx \l__op_resultat_tl
+            { \int_eval:n { \l__op_a_int * \l__op_b_int } }
 
-        \seq_clear:N \l__mul_produits_seq
-        \int_compare:nT { \l__mul_nb_int > 1 }
+        \seq_clear:N \l__op_produits_seq
+        \int_compare:nT { \l__op_nb_int > 1 }
         {
-            \int_set:Nn \l__mul_puissance_int { 1 }
-            \int_step_inline:nn { \l__mul_nb_int }
+            \int_set:Nn \l__op_puissance_int { 1 }
+            \int_set:Nn \l_tmpc_int { 1 }
+            \int_while_do:nNnn { \l_tmpc_int }
+                < { \l__op_nb_int + 1 }
             {
-                \int_set:Nn \l__mul_chiffre_int
+                \int_set:Nn \l__op_chiffre_int
                     { \int_mod:nn
                         { \int_div_truncate:nn
-                            { \l__mul_b_int }
-                            { \l__mul_puissance_int } }
+                            { \l__op_b_int }
+                            { \l__op_puissance_int } }
                         { 10 } }
-                \int_set:Nn \l__mul_produit_int
-                    { \l__mul_a_int * \l__mul_chiffre_int * \l__mul_puissance_int }
-                \seq_put_right:Nx \l__mul_produits_seq
-                    { \int_use:N \l__mul_produit_int }
-                \int_set:Nn \l__mul_puissance_int
-                    { \l__mul_puissance_int * 10 }
+                \int_set:Nn \l__op_produit_int
+                    { \l__op_a_int * \l__op_chiffre_int
+                      * \l__op_puissance_int }
+                \seq_put_right:Nx \l__op_produits_seq
+                    { \int_use:N \l__op_produit_int }
+                \int_set:Nn \l__op_puissance_int
+                    { \l__op_puissance_int * 10 }
+                \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
             }
         }
 
         \__op_appliquer_taille:
+
+        \int_set:Nn \l_tmpb_int { 0 }
+        \int_set:Nn \l_tmpc_int { \tl_count:V \l_tmpa_tl }
+        \int_compare:nT { \l_tmpc_int > \l_tmpb_int }
+            { \int_set:Nn \l_tmpb_int { \l_tmpc_int } }
+        \int_set:Nn \l_tmpc_int { \tl_count:V \l_tmpb_tl }
+        \int_compare:nT { \l_tmpc_int > \l_tmpb_int }
+            { \int_set:Nn \l_tmpb_int { \l_tmpc_int } }
+        \seq_map_inline:Nn \l__op_produits_seq
+        {
+            \int_set:Nn \l_tmpc_int { \tl_count:n {##1} }
+            \int_compare:nT { \l_tmpc_int > \l_tmpb_int }
+                { \int_set:Nn \l_tmpb_int { \l_tmpc_int } }
+        }
+        \bool_if:NT \l__op_solution_bool
+        {
+            \int_set:Nn \l_tmpc_int { \tl_count:V \l__op_resultat_tl }
+            \int_compare:nT { \l_tmpc_int > \l_tmpb_int }
+                { \int_set:Nn \l_tmpb_int { \l_tmpc_int } }
+        }
+
+        \int_set:Nn \l_tmpa_int { 3 }
+        \int_compare:nT { \l__op_nb_int > 1 }
+            { \int_set:Nn \l_tmpa_int { 2 } }
+        \int_add:Nn \l_tmpa_int { \l__op_nb_int }
+        \int_compare:nT { \l__op_nb_int > 1 }
+            { \int_set:Nn \l_tmpa_int { \l_tmpa_int + 1 } }
+        \bool_if:NT \l__op_solution_bool
+            { \int_set:Nn \l_tmpa_int { \l_tmpa_int + 1 } }
+
         \begin{center}
-        \begin{tabular}{@{}r@{}}
-            \l__mul_multiplicande_tl \\
-            $\times$ \, \l__mul_multiplicateur_tl \\
-            \\[-1ex]
-            \cline{1-1}
-            \\[-1ex]
-            \seq_map_inline:Nn \l__mul_produits_seq
-                { ##1 \\ }
-            \int_compare:nT { \l__mul_nb_int > 1 }
+        \begin{tikzpicture}[
+            x=1mm, y=1mm,
+            every~node/.style={font=\small, inner~sep=0pt}
+        ]
+            % ----- Ligne 1 : multiplicande -----
+            \node[anchor=east]
+                at ( { \l__op_left_margin_dim
+                       + \l_tmpb_int * \l__op_w_dim } ,
+                     { -0.5 * \l__op_h_dim } )
+                { \__op_afficher_nombre:n { \l_tmpa_tl } };
+
+            % ----- Ligne 2 : signe × et multiplicateur -----
+            \node[anchor=east]
+                at ( { \l__op_left_margin_dim - 1mm } ,
+                     { -1.5 * \l__op_h_dim } )
+                {$\times$};
+            \node[anchor=east]
+                at ( { \l__op_left_margin_dim
+                       + \l_tmpb_int * \l__op_w_dim } ,
+                     { -1.5 * \l__op_h_dim } )
+                { \__op_afficher_nombre:n { \l_tmpb_tl } };
+
+            % ----- Trait sous les facteurs -----
+            \draw[line~width=\l__op_sep_dim]
+                ( { \l__op_left_margin_dim - 2mm } ,
+                  { -2 * \l__op_h_dim + 2mm } )
+                -- ( { \l__op_left_margin_dim
+                       + \l_tmpb_int * \l__op_w_dim } ,
+                     { -2 * \l__op_h_dim + 2mm } );
+
+            % ----- Produits partiels -----
+            \int_set:Nn \l_tmpc_int { 0 }
+            \seq_map_inline:Nn \l__op_produits_seq
             {
-                \\[-1ex]
-                \cline{1-1}
-                \\[-1ex]
+                \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
+                \int_set:Nn \l_tmpa_int
+                    { 2 + \l_tmpc_int }
+                \node[anchor=east]
+                    at ( { \l__op_left_margin_dim
+                           + \l_tmpb_int * \l__op_w_dim } ,
+                         { -(\l_tmpa_int - 0.5) * \l__op_h_dim } )
+                    { \__op_afficher_nombre:n {##1} };
             }
-            \bool_if:NTF \l__op_solution_bool
-                { \l__mul_produit_final_tl }
-                { \phantom{0} }
-        \end{tabular}
+
+            % ----- Trait sous les produits partiels -----
+            \int_compare:nT { \l__op_nb_int > 1 }
+            {
+                \int_set:Nn \l_tmpa_int { 2 + \l__op_nb_int }
+                \draw[line~width=\l__op_sep_dim]
+                    ( { \l__op_left_margin_dim - 2mm } ,
+                      { -\l_tmpa_int * \l__op_h_dim + 2mm } )
+                    -- ( { \l__op_left_margin_dim
+                           + \l_tmpb_int * \l__op_w_dim } ,
+                         { -\l_tmpa_int * \l__op_h_dim + 2mm } );
+            }
+
+            % ----- Résultat final -----
+            \bool_if:NT \l__op_solution_bool
+            {
+                \int_set:Nn \l_tmpa_int
+                    { 2 + \l__op_nb_int + 1 }
+                \int_compare:nT { \l__op_nb_int == 1 }
+                    { \int_set:Nn \l_tmpa_int { 3 } }
+                \node[anchor=east]
+                    at ( { \l__op_left_margin_dim
+                           + \l_tmpb_int * \l__op_w_dim } ,
+                         { -(\l_tmpa_int - 0.5) * \l__op_h_dim } )
+                    { \__op_afficher_nombre:n { \l__op_resultat_tl } };
+            }
+        \end{tikzpicture}
         \end{center}
     }
     {
         \GenericError{}
             {outilsprof : \multiplication~attend~exactement~2~facteurs}
             {Voir~la~documentation~de~outilsprof}
-            {Exemple~:~\multiplication\{234,~56\}}
+            {Exemple~:\multiplication\{234,~56\}}
     }
-    \group_end:
-}
-
-% ============================================================
-% DIVISION EUCLIDIENNE — rendu en tabular
-% ============================================================
-\int_new:N \l__div_dividende_int
-\int_new:N \l__div_diviseur_int
-\int_new:N \l__div_quotient_int
-\int_new:N \l__div_reste_int
-\int_new:N \l__div_nbchiffres_int
-\int_new:N \l__div_puissance_int
-\int_new:N \l__div_chiffre_int
-\int_new:N \l__div_partiel_int
-\int_new:N \l__div_produit_int
-\bool_new:N \l__div_premiere_bool
-\seq_new:N \l__div_etapes_seq
-\tl_new:N  \l__div_dividende_tl
-\tl_new:N  \l__div_diviseur_tl
-\tl_new:N  \l__div_quotient_tl
-\tl_new:N  \l__div_reste_tl
-
-\newcounter{divEtape}
-\newlength{\chiffreLargeur}
-\AtBeginDocument{\settowidth{\chiffreLargeur}{0}}
-
-\cs_new_protected:Npn \__div_afficher_etape_aux:n #1
-{
-    \exp_after:wN \__div_afficher_etape_auxii:nn #1
-}
-\cs_new_protected:Npn \__div_afficher_etape_auxii:nn #1 #2
-{
-    \tl_if_blank:nTF {#1}
-        {
-            \hspace*{\dimexpr\numexpr\thedivEtape+1\relax\chiffreLargeur\relax}%
-            \begin{tabular}[t]{@{}r@{}}
-                #2 \\
-                \cline{1-1}
-                \phantom{0} \\
-            \end{tabular}
-        }
-        {
-            \hspace*{\dimexpr\thedivEtape\chiffreLargeur\relax}%
-            \begin{tabular}[t]{@{}r@{}}
-                #1 \\
-                #2 \\
-                \cline{1-1}
-                \the\numexpr #1 - #2 \relax \\
-            \end{tabular}
-        }
-}
-
-\cs_new_protected:Npn \__op_rendre_division:nnn #1 #2 #3
-{
-    \group_begin:
-    \keys_set:nn { outilsprof / operation } { #1 }
-    \__op_appliquer_taille:
-
-    \tl_set:Nn \l__div_dividende_tl {#2}
-    \tl_set:Nn \l__div_diviseur_tl  {#3}
-    \int_set:Nn \l__div_dividende_int {#2}
-    \int_set:Nn \l__div_diviseur_int  {#3}
-    \int_set:Nn \l__div_nbchiffres_int
-        { \tl_count:N \l__div_dividende_tl }
-
-    \int_compare:nTF { \l__div_diviseur_int == 0 }
-    {
-        \tl_set:Nn \l__div_quotient_tl { 0 }
-        \tl_set:Nn \l__div_reste_tl    { 0 }
-        \seq_clear:N \l__div_etapes_seq
-    }
-    {
-        \tl_set:Nx \l__div_quotient_tl
-            { \int_eval:n
-                { \l__div_dividende_int / \l__div_diviseur_int } }
-        \int_set:Nn \l__div_quotient_int { \l__div_quotient_tl }
-        \int_set:Nn \l_tmpa_int
-            { \int_mod:nn { \l__div_dividende_int } { \l__div_diviseur_int } }
-        \tl_set:Nx \l__div_reste_tl { \int_use:N \l_tmpa_int }
-
-        \seq_clear:N \l__div_etapes_seq
-        \int_zero:N \l__div_partiel_int
-        \int_set:Nn \l__div_puissance_int { 1 }
-        \int_step_inline:nn { \l__div_nbchiffres_int - 1 }
-            { \int_set:Nn \l__div_puissance_int
-                { \l__div_puissance_int * 10 } }
-
-        \bool_set_true:N \l__div_premiere_bool
-        \int_step_inline:nn { \l__div_nbchiffres_int }
-        {
-            \int_set:Nn \l__div_chiffre_int
-                { \int_div_truncate:nn
-                    { \l__div_dividende_int }
-                    { \l__div_puissance_int } }
-            \int_set:Nn \l__div_chiffre_int
-                { \int_mod:nn { \l__div_chiffre_int } { 10 } }
-            \int_set:Nn \l__div_partiel_int
-                { \l__div_partiel_int * 10 + \l__div_chiffre_int }
-
-            \int_compare:nT { \l__div_partiel_int >= \l__div_diviseur_int }
-            {
-                \int_set:Nn \l__div_produit_int
-                    { \int_div_truncate:nn
-                        { \l__div_partiel_int }
-                        { \l__div_diviseur_int } }
-                \int_set:Nn \l__div_produit_int
-                    { \l__div_produit_int * \l__div_diviseur_int }
-
-                \bool_if:NTF \l__div_premiere_bool
-                    {
-                        \seq_put_right:Nx \l__div_etapes_seq
-                            { { } { \int_use:N \l__div_produit_int } }
-                        \bool_set_false:N \l__div_premiere_bool
-                    }
-                    {
-                        \seq_put_right:Nx \l__div_etapes_seq
-                            { { \int_use:N \l__div_partiel_int }
-                              { \int_use:N \l__div_produit_int } }
-                    }
-
-                \int_set:Nn \l__div_partiel_int
-                    { \l__div_partiel_int - \l__div_produit_int }
-            }
-
-            \int_set:Nn \l__div_puissance_int
-                { \l__div_puissance_int / 10 }
-        }
-    }
-
-    \begin{center}
-    \begin{tabular}{@{}r@{\hspace{4pt}}|@{\hspace{4pt}}l@{}}
-        \l__div_dividende_tl & \l__div_diviseur_tl \\
-        \cline{2-2}
-         & \bool_if:NTF \l__op_solution_bool
-             { \l__div_quotient_tl }
-             { \phantom{0} } \\
-    \end{tabular}
-
-    \bool_if:NTF \l__op_solution_bool
-    {
-        \int_compare:nT { \l__div_diviseur_int > 0 }
-        {
-            \par\vspace{6pt}
-            \setcounter{divEtape}{-3}%
-            \begin{tabular}{@{}l@{}}
-                \seq_map_inline:Nn \l__div_etapes_seq
-                {
-                    \__div_afficher_etape_aux:n {##1} \\[2pt]
-                    \global\advance\c@divEtape by 1\relax
-                }
-            \end{tabular}
-        }
-    }
-    { }
-    \end{center}
     \group_end:
 }
 
@@ -1035,10 +1419,7 @@
     \csname __op_rendre_soustraction:nn\endcsname {#1}{#2}%
 }
 \NewDocumentCommand{\multiplication}{O{} m}{%
-    \csname __op_rendre_multiplication:nn\endcsname {#1}{#2}%
-}
-\NewDocumentCommand{\division}{O{} m m}{%
-    \csname __op_rendre_division:nnn\endcsname {#1}{#2}{#3}%
+    \csname __op_rendre_multiplication:nn \endcsname {#1}{#2}%
 }
 
 \endinput
