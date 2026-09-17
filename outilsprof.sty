@@ -2,12 +2,12 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.6
+% Version : 1.7
 % Date : 2026/09/16
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/09/16 v1.6 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/09/16 v1.7 Outils pour l'enseignement]
 
 % ============================================================
 % DÉPENDANCES
@@ -1002,6 +1002,7 @@
 \tl_new:N     \l__op_taille_tl
 \tl_new:N     \l__op_resultat_tl
 \seq_new:N    \l__op_produits_seq
+\int_new:N 	  \l__op_nbchiffres_int
 
 % ------------------------------------------------------------
 % Paramètres géométriques TikZ (opérations)
@@ -1096,23 +1097,25 @@
     \bool_if:NT \l__op_solution_bool
         { \int_set:Nn \l_tmpa_int { \l_tmpa_int + 2 } }
 
-    \int_set:Nn \l_tmpb_int { 0 }
+    % Nombre max de chiffres (variable dédiée)
+    \int_set:Nn \l__op_nbchiffres_int { 0 }
     \seq_map_inline:Nn \l__op_liste_seq
     {
         \int_set:Nn \l_tmpc_int { \tl_count:n {##1} }
-        \int_compare:nT { \l_tmpc_int > \l_tmpb_int }
-            { \int_set:Nn \l_tmpb_int { \l_tmpc_int } }
+        \int_compare:nT { \l_tmpc_int > \l__op_nbchiffres_int }
+            { \int_set:Nn \l__op_nbchiffres_int { \l_tmpc_int } }
     }
     \bool_if:NT \l__op_solution_bool
     {
         \int_set:Nn \l_tmpc_int { \tl_count:V \l__op_resultat_tl }
-        \int_compare:nT { \l_tmpc_int > \l_tmpb_int }
-            { \int_set:Nn \l_tmpb_int { \l_tmpc_int } }
+        \int_compare:nT { \l_tmpc_int > \l__op_nbchiffres_int }
+            { \int_set:Nn \l__op_nbchiffres_int { \l_tmpc_int } }
     }
 
     \dim_set:Nn \l_tmpa_dim
-        { \l__op_left_margin_dim + \l_tmpb_int * \l__op_w_dim
-          + \l__op_right_margin_dim }
+    { \l__op_left_margin_dim
+      + \l__op_nbchiffres_int \l__op_w_dim
+      + \l__op_right_margin_dim }
 
     \begin{center}
     \begin{tikzpicture}[
@@ -1129,7 +1132,7 @@
                         { -(\l_tmpc_int - 0.5) * \l__op_h_dim } ) {$+$}; }
             \node[anchor=east]
                 at ( { \l__op_left_margin_dim
-                       + \l_tmpb_int * \l__op_w_dim } ,
+                       + \l__op_nbchiffres_int * \l__op_w_dim } ,
                      { -(\l_tmpc_int - 0.5) * \l__op_h_dim } )
                 { ##1 };
             \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
@@ -1141,7 +1144,7 @@
             ( { \l__op_left_margin_dim - 2mm } ,
               { -\l_tmpa_int * \l__op_h_dim + 2mm } )
             -- ( { \l__op_left_margin_dim
-                   + \l_tmpb_int * \l__op_w_dim } ,
+                   + \l__op_nbchiffres_int * \l__op_w_dim } ,
                  { -\l_tmpa_int * \l__op_h_dim + 2mm } );
 
         % ----- Résultat -----
@@ -1149,7 +1152,7 @@
         {
             \node[anchor=east]
                 at ( { \l__op_left_margin_dim
-                       + \l_tmpb_int * \l__op_w_dim } ,
+                       + \l__op_nbchiffres_int * \l__op_w_dim } ,
                      { -(\l_tmpa_int + 0.5) * \l__op_h_dim } )
                 { \__op_afficher_nombre:n { \l__op_resultat_tl } };
         }
