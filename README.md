@@ -307,7 +307,172 @@ pdflatex exemples.tex
 \boitecalcul[8cm][4cm]{...}
 ```
 
+## Opérations posées
+
+Le package fournit trois commandes pour poser les opérations
+élémentaires : `\addition`, `\soustraction` et `\multiplication`.
+Le rendu est entièrement en TikZ (aucun `\halign`, aucun `&`),
+ce qui garantit un comportement identique quel que soit le moteur
+(pdfLaTeX, LuaLaTeX, XeLaTeX, TexpadTeX).
+
+### Options communes
+
+Les trois commandes partagent les mêmes options nommées :
+
+| Clé | Description | Défaut |
+|---|---|---|
+| `solution` | Affiche le résultat | `false` |
+| `taille` | Taille de police (`normalsize`, `large`, `Large`, `small`…) | `normalsize` |
+
+### `\addition[options]{terme1, terme2, ...}`
+
+Pose une addition de deux termes ou plus. Les termes sont séparés
+par des virgules et affichés les uns sous les autres, précédés du
+signe `+`.
+
+```latex
+\addition{1234, 5678}
+\addition[solution]{1234, 5678}
+\addition[solution, taille=large]{1234, 5678, 91011}
+```
+
+### `\soustraction[options]{terme1, terme2}`
+
+Pose une soustraction de deux termes. La commande **gère
+automatiquement l'ordre** : si le premier terme est plus petit que
+le second, ils sont échangés pour éviter un résultat négatif.
+
+```latex
+\soustraction{853, 476}
+\soustraction[solution]{853, 476}
+\soustraction[solution]{476, 853}
+```
+
+> **Attention** : `\soustraction` attend **exactement deux termes**.
+> Toute autre quantité déclenche une erreur explicite.
+
+### `\multiplication[options]{facteur1, facteur2}`
+
+Pose une multiplication de deux facteurs. Si le multiplicateur
+(second facteur) comporte plusieurs chiffres, les produits partiels
+sont calculés et affichés, puis un trait sépare ces produits du
+résultat final.
+
+```latex
+\multiplication{234, 56}
+\multiplication[solution]{234, 56}
+\multiplication[solution, taille=large]{1234, 567}
+```
+
+> **Attention** : `\multiplication` attend **exactement deux facteurs**.
+
+### `\division[options]`
+
+Pose une division euclidienne. Voir la section dédiée
+« Division euclidienne et utilitaire `division_etapes.py` »
+ci-dessous pour la syntaxe complète.
+
+```latex
+\division[dividende=1234, diviseur=56, solution]
+\division[dividende=87765, diviseur=123, solution, etapes={861, 123, 369}]
+```
+
 ---
+
+## Division euclidienne et utilitaire `division_etapes.py`
+
+La commande `\division` pose une division euclidienne complète
+avec le dividende, le diviseur, la barre verticale, le quotient
+et — si fournies — les étapes intermédiaires (produits partiels
+à soustraire).
+
+### Options de `\division`
+
+| Clé | Description | Défaut |
+|---|---|---|
+| `dividende` | Entier à diviser | `0` |
+| `diviseur` | Entier diviseur (non nul) | `1` |
+| `solution` | Affiche quotient et reste | `false` |
+| `etapes` | Liste des produits partiels, séparés par des virgules | vide |
+
+> **Les nombres doivent être saisis sans espaces insécables (`~`).**
+> Utilisez uniquement l'espace normal ou rien du tout.
+
+### Calcul des étapes : `division_etapes.py`
+
+Le script `outils/division_etapes.py` calcule automatiquement les
+étapes d'une division euclidienne et génère la commande `\division`
+correspondante, prête à copier dans un document LaTeX.
+
+#### Utilisation
+
+```bash
+python3 division_etapes.py
+python3 division_etapes.py 1234
+python3 division_etapes.py 1234 56
+python3 division_etapes.py 1234 56 -o division.tex
+```
+
+#### Sortie console
+
+```text
+$ python3 division_etapes.py 1234 56
+
+==================================================
+Dividende : 1234
+Diviseur  : 56
+Quotient  : 22
+Reste     : 2
+Étapes    : [112, 112]
+==================================================
+
+Commande LaTeX :
+
+\division[dividende=1234, diviseur=56, solution, etapes={112, 112}]
+```
+
+#### Génération d'un fichier `.tex`
+
+Avec l'option `-o` (ou `--tex`), le script écrit en plus un
+fichier `.tex` complet, prêt à compiler :
+
+```bash
+python3 division_etapes.py 87765 123 -o division.tex
+pdflatex division.tex
+```
+
+Le fichier généré contient :
+
+```latex
+\documentclass[11pt,a4paper]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{outilsprof}
+
+\begin{document}
+
+\section*{Division euclidienne : 87765 par 123}
+
+\division[dividende=87765, diviseur=123, solution, etapes={861, 123, 369}]
+
+\end{document}
+```
+
+#### Comportement en cas d'erreur
+
+Si les étapes fournies à `\division` ne correspondent pas au calcul
+attendu, le package affiche une boîte d'erreur rouge à la place de
+la division. C'est une sécurité pédagogique : impossible d'afficher
+une division fausse sans le voir immédiatement.
+
+### Limites connues
+
+- Les nombres négatifs ne sont pas gérés (division euclidienne
+  scolaire, collège).
+- Le rendu est centré horizontalement dans la largeur du texte.
+- Compatible expl3 2017/12/16 (TexpadTeX) : les boucles internes
+  utilisent `\int_while_do:nNnn`, pas `\int_step_inline:nn`.
 
 ## Licence
 
