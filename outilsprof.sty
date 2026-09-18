@@ -2,12 +2,12 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.7
+% Version : 1.7.1
 % Date : 2026/09/16
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/09/16 v1.7 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/09/16 v1.7.1 Outils pour l'enseignement]
 
 % ============================================================
 % DÉPENDANCES
@@ -570,6 +570,7 @@
 \tl_new:N  \l__div_dividende_tl
 \tl_new:N  \l__div_diviseur_tl
 \tl_new:N  \l__div_quotient_tl
+\tl_new:N  \l__div_reste_tl
 \tl_new:N  \l__div_etapes_user_tl
 \tl_new:N  \l_tmpc_tl
 \bool_new:N \l__div_etapes_ok_bool
@@ -610,6 +611,8 @@
             { \l__div_diviseur_int } }
     \tl_set:Nx \l__div_quotient_tl
         { \int_use:N \l__div_quotient_int }
+    \tl_set:Nx \l__div_reste_tl
+        { \int_use:N \l__div_reste_int }
 
     \int_set:Nn \l__div_nbchiffres_int
         { \tl_count:N \l__div_dividende_tl }
@@ -918,16 +921,14 @@
             {
                 \int_compare:nT { \l__div_reste_int > 0 }
                 {
-                    \tl_set:Nx \l_tmpa_tl
-                        { \int_use:N \l__div_reste_int }
                     \int_set:Nn \l__div_debut_int
                         { \l__div_nbchiffres_int
-                          - \tl_count:V \l_tmpa_tl + 1 }
+                          - \tl_count:V \l__div_reste_tl + 1 }
                     \int_set:Nn \l_tmpd_int { 1 }
                     \int_while_do:nNnn { \l_tmpd_int }
-                        < { \tl_count:V \l_tmpa_tl + 1 }
+                        < { \tl_count:V \l__div_reste_tl + 1 }
                     {
-                        \__div_char:nn {\l_tmpa_tl}
+                        \__div_char:nn {\l__div_reste_tl}
                             {\l_tmpd_int}
                         \node[anchor=center]
                             at ( { (\l__div_debut_int
@@ -1002,7 +1003,7 @@
 \tl_new:N     \l__op_taille_tl
 \tl_new:N     \l__op_resultat_tl
 \seq_new:N    \l__op_produits_seq
-\int_new:N 	  \l__op_nbchiffres_int
+\int_new:N    \l__op_nbchiffres_int
 
 % ------------------------------------------------------------
 % Paramètres géométriques TikZ (opérations)
