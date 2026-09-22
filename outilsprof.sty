@@ -2,12 +2,12 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.7.1
-% Date : 2026/09/18
+% Version : 1.7.2
+% Date : 2026/09/22
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/09/16 v1.7.1 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/09/22 v1.7.2 Outils pour l'enseignement]
 
 % ============================================================
 % DÉPENDANCES
@@ -403,6 +403,7 @@
 \definecolor{couleurMethode}{RGB}{0,153,76}
 
 \NewDocumentCommand{\boiteRetenir}{O{couleurRetenir} m}{%
+    \begin{center}
     \begin{tcolorbox}[
         colback=#1!10,
         colframe=#1,
@@ -415,9 +416,11 @@
     ]
         #2
     \end{tcolorbox}%
+    \end{center}
 }
 
 \NewDocumentCommand{\boiteVigilance}{O{couleurVigilance} m}{%
+    \begin{center}
     \begin{tcolorbox}[
         colback=#1!10,
         colframe=#1,
@@ -430,9 +433,11 @@
     ]
         #2
     \end{tcolorbox}%
+    \end{center}
 }
 
 \NewDocumentCommand{\boiteMethode}{O{couleurMethode} m}{%
+    \begin{center}
     \begin{tcolorbox}[
         colback=#1!5,
         colframe=#1,
@@ -445,6 +450,7 @@
     ]
         #2
     \end{tcolorbox}%
+    \end{center}
 }
 
 \NewDocumentCommand{\boitecalcul}{O{10cm} O{3cm} O{}}{%
@@ -463,6 +469,7 @@
 }
 
 \NewDocumentEnvironment{retenir}{O{couleurRetenir}}{%
+    \begin{center}
     \begin{tcolorbox}[
         colback=#1!10,
         colframe=#1,
@@ -475,9 +482,11 @@
     ]
 }{%
     \end{tcolorbox}%
+    \end{center}
 }
 
 \NewDocumentEnvironment{vigilance}{O{couleurVigilance}}{%
+    \begin{center}
     \begin{tcolorbox}[
         colback=#1!10,
         colframe=#1,
@@ -490,9 +499,11 @@
     ]
 }{%
     \end{tcolorbox}%
+    \end{center}
 }
 
 \NewDocumentEnvironment{methode}{O{couleurMethode}}{%
+    \begin{center}
     \begin{tcolorbox}[
         colback=#1!5,
         colframe=#1,
@@ -505,6 +516,7 @@
     ]
 }{%
     \end{tcolorbox}%
+    \end{center}
 }
 
 % ============================================================

@@ -5,6 +5,18 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.7.2] - 2026-09-22
+
+### Modifié
+- Section 2 : les boîtes colorées (`\boiteRetenir`, `\boiteVigilance`,
+  `\boiteMethode` et les environnements `retenir`, `vigilance`,
+  `methode`) sont désormais centrées horizontalement.
+- `\boitecalcul` reste inchangée : elle possède déjà sa propre
+  largeur fixe.
+
+### Version
+- 1.7.1 → 1.7.2
+
 ## [1.7.1] - 2026-09-18
 
 ### Ajouté
