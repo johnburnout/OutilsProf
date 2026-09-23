@@ -984,6 +984,13 @@
 %   taille   : taille de police (normalsize par défaut)
 %
 % Rendu entièrement TikZ : aucun \halign, aucun &.
+%
+% MASQUAGE : un « ? » placé devant un chiffre dans un terme
+%   indique que ce chiffre participe au calcul mais est masqué
+%   à l'affichage (remplacé par un underscore bas).
+%   Exemple : \addition[solution]{1?4, 56}
+%              → calcul 14 + 56 = 70
+%              → affichage « 1 _ 4 » + « 5 6 » = « 7 0 »
 % ============================================================
 
 \ExplSyntaxOn
@@ -992,6 +999,7 @@
 % Variables internes
 % ------------------------------------------------------------
 \seq_new:N    \l__op_liste_seq
+\seq_new:N    \l__op_liste_masquee_seq
 \int_new:N    \l__op_somme_int
 \int_new:N    \l__op_n_int
 \int_new:N    \l__op_a_int
@@ -1036,18 +1044,77 @@
 }
 
 % ------------------------------------------------------------
+% Masquage des chiffres avec « | »
+% ------------------------------------------------------------
+
+% Trait horizontal à la place d'un chiffre masqué
+\cs_new_protected:Npn \__op_underscore:
+{
+    \rule[-0.2em]{0.5em}{0.4pt}
+}
+
+% Nettoyage : retire les « | » pour le calcul
+\cs_new_protected:Npn \__op_nettoie:nN #1 #2
+{
+    \tl_set:Nx \l_tmpa_tl { \tl_to_str:n {#1} }
+    \tl_clear:N #2
+    \tl_map_inline:Nn \l_tmpa_tl
+    {
+        \tl_if_eq:nnF {##1} { | }
+            { \tl_put_right:Nn #2 {##1} }
+    }
+}
+
+% Masquage : « |X » devient « _ » (X masqué)
+\cs_new_protected:Npn \__op_masque:nN #1 #2
+{
+    \tl_set:Nx \l_tmpa_tl { \tl_to_str:n {#1} }
+    \tl_clear:N #2
+    \bool_set_false:N \l_tmpa_bool
+    \tl_map_inline:Nn \l_tmpa_tl
+    {
+        \bool_if:NTF \l_tmpa_bool
+            {
+                % On sort d'un « | » : écrire l'underscore
+                \tl_put_right:Nn #2 { \__op_underscore: }
+                \tl_if_eq:nnTF {##1} { | }
+                    { }   % « || » : rester en mode masquage
+                    { \bool_set_false:N \l_tmpa_bool }
+            }
+            {
+                \tl_if_eq:nnTF {##1} { | }
+                    { \bool_set_true:N \l_tmpa_bool }
+                    { \tl_put_right:Nn #2 {##1} }
+            }
+    }
+    % Si on finit sur un « | », insérer un underscore pour le 0 implicite
+    \bool_if:NT \l_tmpa_bool
+        { \tl_put_right:Nn #2 { \__op_underscore: } }
+}
+
+% ------------------------------------------------------------
 % Parse la liste des termes (séparés par des virgules)
+% Remplit \l__op_liste_seq (nettoyée) et
+%         \l__op_liste_masquee_seq (masquée)
 % ------------------------------------------------------------
 \cs_new_protected:Npn \__op_parse:n #1
 {
     \seq_clear:N \l__op_liste_seq
+    \seq_clear:N \l__op_liste_masquee_seq
     \clist_map_inline:nn { #1 }
     {
         \tl_set:Nn \l_tmpa_tl {##1}
         \tl_replace_all:Nnn \l_tmpa_tl { ~ } { }
         \tl_replace_all:Nnn \l_tmpa_tl { \c_space_token } { }
         \tl_if_empty:NF \l_tmpa_tl
-            { \seq_put_right:NV \l__op_liste_seq \l_tmpa_tl }
+            {
+                % Version nettoyée (pour calcul)
+                \__op_nettoie:nN {##1} \l_tmpb_tl
+                \seq_put_right:NV \l__op_liste_seq \l_tmpb_tl
+                % Version masquée (pour affichage)
+                \__op_masque:nN {##1} \l_tmpc_tl
+                \seq_put_right:NV \l__op_liste_masquee_seq \l_tmpc_tl
+            }
     }
     \int_set:Nn \l__op_n_int { \seq_count:N \l__op_liste_seq }
 }
@@ -1123,9 +1190,9 @@
         x=1mm, y=1mm,
         every~node/.style={font=\small, inner~sep=0pt}
     ]
-        % ----- Termes -----
+        % ----- Termes (version masquée pour l'affichage) -----
         \int_set:Nn \l_tmpc_int { 1 }
-        \seq_map_inline:Nn \l__op_liste_seq
+        \seq_map_inline:Nn \l__op_liste_masquee_seq
         {
             \int_compare:nTF { \l_tmpc_int == 1 }
                 { }
@@ -1172,20 +1239,37 @@
     \__op_parse:n { #2 }
     \int_compare:nTF { \l__op_n_int == 2 }
     {
-        \tl_set:Nx \l_tmpa_tl { \seq_item:Nn \l__op_liste_seq { 1 } }
-        \tl_set:Nx \l_tmpb_tl { \seq_item:Nn \l__op_liste_seq { 2 } }
-        \int_set:Nn \l_tmpa_int { \l_tmpa_tl }
-        \int_set:Nn \l_tmpb_int { \l_tmpb_tl }
+        % Versions nettoyées (pour calcul)
+        \tl_set:Nx \l_tmpc_tl { \seq_item:Nn \l__op_liste_seq { 1 } }
+        \tl_set:Nx \l_tmpd_tl { \seq_item:Nn \l__op_liste_seq { 2 } }
+        % Versions masquées (pour affichage)
+        \tl_set:Nx \l_tmpa_tl
+            { \seq_item:Nn \l__op_liste_masquee_seq { 1 } }
+        \tl_set:Nx \l_tmpb_tl
+            { \seq_item:Nn \l__op_liste_masquee_seq { 2 } }
+
+        \int_set:Nn \l_tmpa_int { \l_tmpc_tl }
+        \int_set:Nn \l_tmpb_int { \l_tmpd_tl }
         \int_compare:nTF { \l_tmpa_int >= \l_tmpb_int }
         {
-            \tl_set_eq:NN \l_tmpc_tl \l_tmpa_tl
-            \tl_set_eq:NN \l_tmpd_tl \l_tmpb_tl
             \int_set:Nn \l__op_somme_int { \l_tmpa_int - \l_tmpb_int }
         }
         {
-            \tl_set_eq:NN \l_tmpc_tl \l_tmpb_tl
-            \tl_set_eq:NN \l_tmpd_tl \l_tmpa_tl
-            \int_set:Nn \l__op_somme_int { \l_tmpb_int - \l_tmpa_int }
+            % Échange : on permute les 4 variables
+            \tl_set_eq:NN \l_tmpc_tl \l_tmpa_tl
+            \tl_set_eq:NN \l_tmpd_tl \l_tmpb_tl
+            \tl_set:Nx \l_tmpa_tl
+                { \seq_item:Nn \l__op_liste_masquee_seq { 2 } }
+            \tl_set:Nx \l_tmpb_tl
+                { \seq_item:Nn \l__op_liste_masquee_seq { 1 } }
+            % Recalcul avec les valeurs dans le bon ordre
+            \tl_set:Nx \l_tmpc_tl
+                { \seq_item:Nn \l__op_liste_seq { 2 } }
+            \tl_set:Nx \l_tmpd_tl
+                { \seq_item:Nn \l__op_liste_seq { 1 } }
+            \int_set:Nn \l_tmpa_int { \l_tmpc_tl }
+            \int_set:Nn \l_tmpb_int { \l_tmpd_tl }
+            \int_set:Nn \l__op_somme_int { \l_tmpa_int - \l_tmpb_int }
         }
         \tl_set:Nx \l__op_resultat_tl { \int_use:N \l__op_somme_int }
         \__op_appliquer_taille:
@@ -1206,23 +1290,23 @@
             x=1mm, y=1mm,
             every~node/.style={font=\small, inner~sep=0pt}
         ]
-            % Premier terme
+            % Premier terme (version masquée)
             \node[anchor=east]
                 at ( { \l__op_left_margin_dim
                        + \l_tmpb_int * \l__op_w_dim } ,
                      { -0.5 * \l__op_h_dim } )
-                { \__op_afficher_nombre:n { \l_tmpc_tl } };
+                { \l_tmpa_tl };
             % Signe -
             \node[anchor=east]
                 at ( { \l__op_left_margin_dim - 1mm } ,
                      { -1.5 * \l__op_h_dim } )
                 {$-$};
-            % Second terme
+            % Second terme (version masquée)
             \node[anchor=east]
                 at ( { \l__op_left_margin_dim
                        + \l_tmpb_int * \l__op_w_dim } ,
                      { -1.5 * \l__op_h_dim } )
-                { \__op_afficher_nombre:n { \l_tmpd_tl } };
+                { \l_tmpb_tl };
             % Trait
             \draw[line~width=\l__op_sep_dim]
                 ( { \l__op_left_margin_dim - 2mm } ,
@@ -1262,13 +1346,19 @@
 
     \int_compare:nTF { \l__op_n_int == 2 }
     {
-        \tl_set:Nx \l_tmpa_tl { \seq_item:Nn \l__op_liste_seq { 1 } }
-        \tl_set:Nx \l_tmpb_tl { \seq_item:Nn \l__op_liste_seq { 2 } }
-        \int_set:Nn \l__op_a_int { \l_tmpa_tl }
-        \int_set:Nn \l__op_b_int { \l_tmpb_tl }
+        % Versions nettoyées (pour calcul)
+        \tl_set:Nx \l_tmpc_tl { \seq_item:Nn \l__op_liste_seq { 1 } }
+        \tl_set:Nx \l_tmpd_tl { \seq_item:Nn \l__op_liste_seq { 2 } }
+        % Versions masquées (pour affichage)
+        \tl_set:Nx \l_tmpa_tl
+            { \seq_item:Nn \l__op_liste_masquee_seq { 1 } }
+        \tl_set:Nx \l_tmpb_tl
+            { \seq_item:Nn \l__op_liste_masquee_seq { 2 } }
 
-        \int_set:Nn \l__op_nb_int
-            { \tl_count:V \l_tmpb_tl }
+        \int_set:Nn \l__op_a_int { \l_tmpc_tl }
+        \int_set:Nn \l__op_b_int { \l_tmpd_tl }
+
+        \int_set:Nn \l__op_nb_int { \tl_count:V \l_tmpd_tl }
 
         \tl_set:Nx \l__op_resultat_tl
             { \int_eval:n { \l__op_a_int * \l__op_b_int } }
@@ -1301,10 +1391,10 @@
         \__op_appliquer_taille:
 
         \int_set:Nn \l_tmpb_int { 0 }
-        \int_set:Nn \l_tmpc_int { \tl_count:V \l_tmpa_tl }
+        \int_set:Nn \l_tmpc_int { \tl_count:V \l_tmpc_tl }
         \int_compare:nT { \l_tmpc_int > \l_tmpb_int }
             { \int_set:Nn \l_tmpb_int { \l_tmpc_int } }
-        \int_set:Nn \l_tmpc_int { \tl_count:V \l_tmpb_tl }
+        \int_set:Nn \l_tmpc_int { \tl_count:V \l_tmpd_tl }
         \int_compare:nT { \l_tmpc_int > \l_tmpb_int }
             { \int_set:Nn \l_tmpb_int { \l_tmpc_int } }
         \seq_map_inline:Nn \l__op_produits_seq
@@ -1334,12 +1424,12 @@
             x=1mm, y=1mm,
             every~node/.style={font=\small, inner~sep=0pt}
         ]
-            % ----- Ligne 1 : multiplicande -----
+            % ----- Ligne 1 : multiplicande (version masquée) -----
             \node[anchor=east]
                 at ( { \l__op_left_margin_dim
                        + \l_tmpb_int * \l__op_w_dim } ,
                      { -0.5 * \l__op_h_dim } )
-                { \__op_afficher_nombre:n { \l_tmpa_tl } };
+                { \l_tmpa_tl };
 
             % ----- Ligne 2 : signe × et multiplicateur -----
             \node[anchor=east]
@@ -1350,7 +1440,7 @@
                 at ( { \l__op_left_margin_dim
                        + \l_tmpb_int * \l__op_w_dim } ,
                      { -1.5 * \l__op_h_dim } )
-                { \__op_afficher_nombre:n { \l_tmpb_tl } };
+                { \l_tmpb_tl };
 
             % ----- Trait sous les facteurs -----
             \draw[line~width=\l__op_sep_dim]
@@ -1423,7 +1513,7 @@
     \csname __op_rendre_soustraction:nn\endcsname {#1}{#2}%
 }
 \NewDocumentCommand{\multiplication}{O{} m}{%
-    \csname __op_rendre_multiplication:nn \endcsname {#1}{#2}%
+    \csname __op_rendre_multiplication:nn\endcsname {#1}{#2}%
 }
 
 % ============================================================
@@ -1498,6 +1588,7 @@
     }
 }
 
+\providecommand{\degre}{}
 \RenewDocumentCommand{\degre}{m}{%
     \__angle_afficher:n {#1}%
 }
@@ -1562,6 +1653,13 @@
 % Options communes :
 %   solution : bool — affiche le résultat (défaut : false)
 %
+% MASQUAGE : un « | » placé dans une composante masque le chiffre
+%   qui suit (remplacé par un underscore bas). Le chiffre reste
+%   utilisé dans le calcul.
+%   Exemple : \additiondurees[solution]{3+1|2, 5+30}
+%              → calcul 3 j 12 h + 5 h 30 min
+%              → affichage « 3 j 1 _ h » + « 5 h 30 min »
+%
 % Affichage : les composantes nulles à droite sont masquées,
 %             les colonnes sont alignées verticalement,
 %             le trait s'arrête à la dernière colonne utilisée
@@ -1582,6 +1680,10 @@
 \int_new:N   \l__dop_hauteur_int
 \int_new:N   \l__dop_derniere_col_int
 \dim_new:N   \l__dop_fin_dim
+\tl_new:N    \l__dop_clean_tl
+\tl_new:N    \l__dop_masked_tl
+\str_new:N   \l__dop_str
+\bool_new:N  \l__dop_mask_bool
 \bool_new:N  \l__dop_solution_bool
 \bool_new:N  \l__dop_angles_bool
 \bool_new:N  \l__dop_addition_bool
@@ -1595,12 +1697,62 @@
 \int_new:N \g__dop_signe_int
 
 % ------------------------------------------------------------
+% Export vers un nom LaTeX2e pour TikZ
+% ------------------------------------------------------------
+\cs_new:Npn \dopMaskedContent {}
+
+% ------------------------------------------------------------
 % Options
 % ------------------------------------------------------------
 \keys_define:nn { outilsprof / dureeop }
 {
     solution .bool_set:N = \l__dop_solution_bool,
     solution .initial:n  = false,
+}
+
+% ------------------------------------------------------------
+% Nettoyage d'une composante : retire les « | » pour le calcul
+% \str_set:Nx expanse d'abord (donc \seq_item:Nn donne "12"),
+% puis convertit en chaîne à catcode uniforme (12).
+% ------------------------------------------------------------
+\cs_new_protected:Npn \__dop_clean:n #1
+{
+    \str_set:Nx \l__dop_str { #1 }
+    \tl_clear:N \l__dop_clean_tl
+    \str_map_inline:Nn \l__dop_str
+    {
+        \str_if_eq:nnF {##1} { | }
+            { \tl_put_right:Nn \l__dop_clean_tl {##1} }
+    }
+}
+
+% ------------------------------------------------------------
+% Masquage d'une composante : chaque « |X » devient un « _ »
+% Résultat dans \dopMaskedContent (compatible TikZ).
+% ------------------------------------------------------------
+\cs_new_protected:Npn \__dop_mask:n #1
+{
+    \str_set:Nx \l__dop_str { #1 }
+    \tl_clear:N \l__dop_masked_tl
+    \bool_set_false:N \l__dop_mask_bool
+    \str_map_inline:Nn \l__dop_str
+    {
+        \bool_if:NTF \l__dop_mask_bool
+            {
+                \tl_put_right:Nn \l__dop_masked_tl { \__op_underscore: }
+                \str_if_eq:nnTF {##1} { | }
+                    { }
+                    { \bool_set_false:N \l__dop_mask_bool }
+            }
+            {
+                \str_if_eq:nnTF {##1} { | }
+                    { \bool_set_true:N \l__dop_mask_bool }
+                    { \tl_put_right:Nn \l__dop_masked_tl {##1} }
+            }
+    }
+    \bool_if:NT \l__dop_mask_bool
+        { \tl_put_right:Nn \l__dop_masked_tl { \__op_underscore: } }
+    \cs_set:Npx \dopMaskedContent { \l__dop_masked_tl }
 }
 
 % ------------------------------------------------------------
@@ -1615,19 +1767,29 @@
     \int_zero:N \l_tmpd_int
     \int_set:Nn \l__dop_i_int { \seq_count:N \l__dop_parts_seq }
     \int_compare:nT { \l__dop_i_int >= 1 }
-        { \int_set:Nn \l_tmpa_int { \seq_item:Nn \l__dop_parts_seq {1} } }
+        {
+            \__dop_clean:n { \seq_item:Nn \l__dop_parts_seq {1} }
+            \int_set:Nn \l_tmpa_int { \l__dop_clean_tl }
+        }
     \int_compare:nT { \l__dop_i_int >= 2 }
-        { \int_set:Nn \l_tmpb_int { \seq_item:Nn \l__dop_parts_seq {2} } }
+        {
+            \__dop_clean:n { \seq_item:Nn \l__dop_parts_seq {2} }
+            \int_set:Nn \l_tmpb_int { \l__dop_clean_tl }
+        }
     \int_compare:nT { \l__dop_i_int >= 3 }
-        { \int_set:Nn \l_tmpc_int { \seq_item:Nn \l__dop_parts_seq {3} } }
+        {
+            \__dop_clean:n { \seq_item:Nn \l__dop_parts_seq {3} }
+            \int_set:Nn \l_tmpc_int { \l__dop_clean_tl }
+        }
     \int_compare:nT { \l__dop_i_int >= 4 }
-        { \int_set:Nn \l_tmpd_int { \seq_item:Nn \l__dop_parts_seq {4} } }
+        {
+            \__dop_clean:n { \seq_item:Nn \l__dop_parts_seq {4} }
+            \int_set:Nn \l_tmpd_int { \l__dop_clean_tl }
+        }
 }
 
 % ------------------------------------------------------------
 % Calcul de la dernière colonne utilisée par les TERMES
-% (le résultat n'intervient pas dans la longueur du trait)
-% Niveaux : 1=j/°, 2=h/′, 3=min/″, 4=s
 % ------------------------------------------------------------
 \cs_new_protected:Npn \__dop_calculer_derniere_col:
 {
@@ -1683,74 +1845,80 @@
 
 % ------------------------------------------------------------
 % Affichage d'un terme en colonnes alignées
-% #1 = chaîne, #2 = numéro de ligne
 % ------------------------------------------------------------
 \cs_new_protected:Npn \__dop_terme_colonnes:nn #1 #2
 {
-    \__dop_parse:n {#1}
+    \seq_set_split:Nnn \l__dop_parts_seq { + } { #1 }
     \bool_if:NTF \l__dop_angles_bool
         {
-            \int_compare:nT { \l_tmpa_int > 0 }
+            \int_compare:nT { \seq_count:N \l__dop_parts_seq >= 1 }
                 {
+                    \__dop_mask:n { \seq_item:Nn \l__dop_parts_seq {1} }
                     \node[anchor=east]
                         at ( 22mm , { -(#2 - 0.5) * 6mm } )
-                        { \int_use:N \l_tmpa_int };
+                        { \dopMaskedContent };
                     \node[anchor=west]
                         at ( 23mm , { -(#2 - 0.5) * 6mm } )
                         { \ensuremath{{}^\circ} };
                 }
-            \int_compare:nT { \l_tmpb_int > 0 }
+            \int_compare:nT { \seq_count:N \l__dop_parts_seq >= 2 }
                 {
+                    \__dop_mask:n { \seq_item:Nn \l__dop_parts_seq {2} }
                     \node[anchor=east]
                         at ( 40mm , { -(#2 - 0.5) * 6mm } )
-                        { \int_use:N \l_tmpb_int };
+                        { \dopMaskedContent };
                     \node[anchor=west]
                         at ( 41mm , { -(#2 - 0.5) * 6mm } )
                         { \ensuremath{{}^\prime} };
                 }
-            \int_compare:nT { \l_tmpc_int > 0 }
+            \int_compare:nT { \seq_count:N \l__dop_parts_seq >= 3 }
                 {
+                    \__dop_mask:n { \seq_item:Nn \l__dop_parts_seq {3} }
                     \node[anchor=east]
                         at ( 58mm , { -(#2 - 0.5) * 6mm } )
-                        { \int_use:N \l_tmpc_int };
+                        { \dopMaskedContent };
                     \node[anchor=west]
                         at ( 59mm , { -(#2 - 0.5) * 6mm } )
                         { \ensuremath{{}^{\prime\prime}} };
                 }
         }
         {
-            \int_compare:nT { \l_tmpa_int > 0 }
+            \int_compare:nT { \seq_count:N \l__dop_parts_seq >= 1 }
                 {
+                    \__dop_mask:n { \seq_item:Nn \l__dop_parts_seq {1} }
                     \node[anchor=east]
                         at ( 14mm , { -(#2 - 0.5) * 6mm } )
-                        { \int_use:N \l_tmpa_int };
+                        { \dopMaskedContent };
                     \node[anchor=west]
                         at ( 15mm , { -(#2 - 0.5) * 6mm } )
                         { j };
                 }
-            \int_compare:nT { \l_tmpb_int > 0 }
+            \int_compare:nT { \seq_count:N \l__dop_parts_seq >= 2 }
                 {
+                    \__dop_mask:n { \seq_item:Nn \l__dop_parts_seq {2} }
                     \node[anchor=east]
                         at ( 30mm , { -(#2 - 0.5) * 6mm } )
-                        { \int_use:N \l_tmpb_int };
+                        { \dopMaskedContent };
                     \node[anchor=west]
                         at ( 31mm , { -(#2 - 0.5) * 6mm } )
                         { h };
                 }
-            \int_compare:nT { \l_tmpc_int > 0 }
+            \int_compare:nT { \seq_count:N \l__dop_parts_seq >= 3 }
                 {
+                    \__dop_mask:n { \seq_item:Nn \l__dop_parts_seq {3} }
                     \node[anchor=east]
                         at ( 48mm , { -(#2 - 0.5) * 6mm } )
-                        { \int_use:N \l_tmpc_int };
+                        { \dopMaskedContent };
                     \node[anchor=west]
                         at ( 49mm , { -(#2 - 0.5) * 6mm } )
                         { min };
                 }
-            \int_compare:nT { \l_tmpd_int > 0 }
+            \int_compare:nT { \seq_count:N \l__dop_parts_seq >= 4 }
                 {
+                    \__dop_mask:n { \seq_item:Nn \l__dop_parts_seq {4} }
                     \node[anchor=east]
                         at ( 64mm , { -(#2 - 0.5) * 6mm } )
-                        { \int_use:N \l_tmpd_int };
+                        { \dopMaskedContent };
                     \node[anchor=west]
                         at ( 65mm , { -(#2 - 0.5) * 6mm } )
                         { s };
@@ -1760,11 +1928,9 @@
 
 % ------------------------------------------------------------
 % Affichage du résultat en colonnes alignées
-% #1 = numéro de ligne
 % ------------------------------------------------------------
 \cs_new_protected:Npn \__dop_resultat_colonnes:n #1
 {
-    % Signe « − » si le résultat est négatif
     \int_compare:nT { \g__dop_signe_int < 0 }
         {
             \node[anchor=east]
@@ -1859,13 +2025,11 @@
     \__dop_parse:n {#1}
     \bool_if:NTF \l__dop_angles_bool
         {
-            % Angles : °→j, ′→m, ″→s
             \int_gadd:Nn \g__dop_j_int { \l_tmpa_int }
             \int_gadd:Nn \g__dop_m_int { \l_tmpb_int }
             \int_gadd:Nn \g__dop_s_int { \l_tmpc_int }
         }
         {
-            % Durées : j→j, h→h, min→m, s→s
             \int_gadd:Nn \g__dop_j_int { \l_tmpa_int }
             \int_gadd:Nn \g__dop_h_int { \l_tmpb_int }
             \int_gadd:Nn \g__dop_m_int { \l_tmpc_int }
@@ -1892,8 +2056,6 @@
 
 % ------------------------------------------------------------
 % Normalisation + extraction du signe
-% Conversion en secondes → décomposition en j/h/min/s
-% (ou °/′/″), avec gestion des résultats négatifs.
 % ------------------------------------------------------------
 \cs_new_protected:Npn \__dop_normaliser_et_signer:
 {
@@ -1956,13 +2118,11 @@
     \seq_set_from_clist:Nn \l__dop_termes_seq { #2 }
     \int_set:Nn \l__dop_nb_int { \seq_count:N \l__dop_termes_seq }
 
-    % Init cumul
     \int_gzero:N \g__dop_j_int
     \int_gzero:N \g__dop_h_int
     \int_gzero:N \g__dop_m_int
     \int_gzero:N \g__dop_s_int
 
-    % Cumul : premier terme en addition, suivants selon opération
     \int_set:Nn \l__dop_i_int { 1 }
     \seq_map_inline:Nn \l__dop_termes_seq
     {
@@ -1976,19 +2136,15 @@
         \int_incr:N \l__dop_i_int
     }
 
-    % Normalisation + extraction du signe
     \__dop_normaliser_et_signer:
 
-    % Calcul de la dernière colonne utilisée + fin du trait
     \__dop_calculer_derniere_col:
     \__dop_calculer_fin_trait:
 
-    % Hauteur totale (termes + trait + résultat éventuel)
     \int_set:Nn \l__dop_hauteur_int { \l__dop_nb_int + 1 }
     \bool_if:NT \l__dop_solution_bool
         { \int_incr:N \l__dop_hauteur_int }
 
-    % Affichage
     \begin{center}
     \begin{tikzpicture}[x=1mm, y=1mm]
         \useasboundingbox
@@ -1996,7 +2152,6 @@
             rectangle ( { \l__dop_fin_dim + 3mm } ,
                         { -\l__dop_hauteur_int * 6mm } );
 
-        % Termes avec signes opératoires
         \int_set:Nn \l__dop_ligne_int { 1 }
         \seq_map_inline:Nn \l__dop_termes_seq
         {
@@ -2018,12 +2173,9 @@
             \int_incr:N \l__dop_ligne_int
         }
 
-        % Trait horizontal, sous le dernier terme,
-        % s'arrêtant à la dernière colonne utilisée par les termes
         \draw ( 5mm , { -\l__dop_ligne_int * 6mm + 2mm } )
             -- ( \l__dop_fin_dim , { -\l__dop_ligne_int * 6mm + 2mm } );
 
-        % Résultat (si demandé)
         \bool_if:NT \l__dop_solution_bool
         {
             \__dop_resultat_colonnes:n { \l__dop_ligne_int + 1 }

@@ -5,6 +5,20 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.9] - 2026-09-23
+
+### Ajouté
+- Masquage de chiffres avec `|` dans les opérations de nombres
+  (`\addition`, `\soustraction`, `\multiplication`) : le chiffre
+  qui suit le `|` est utilisé dans le calcul mais remplacé par
+  un underscore bas à l'affichage.
+- Même fonctionnalité pour les opérations sur durées et angles
+  (`\additiondurees`, `\soustractiondurees`, `\additionangles`,
+  `\soustractionangles`).
+
+### Exemple
+\addition[solution]{1|4, 56}   →  « 1 _ » + « 5 6 » = « 7 0 »
+
 ## [1.8] - 2026-09-23
 
 ### Ajouté

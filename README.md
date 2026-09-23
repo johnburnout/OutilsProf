@@ -25,6 +25,7 @@ Placez `outilsprof.sty` dans un dossier reconnu par TeX Live, puis lancez `texha
 - Boîtes colorées — mise en valeur pédagogique
 - `\division` — division euclidienne posée
 - `\addition`, `\soustraction`, `\multiplication` — opérations posées
+- Masquage de chiffres avec `|` dans les opérations
 - `\unite` — grandeur avec unité
 - `\degre` — angle en degrés, minutes, secondes
 - `\dureeminute`, `\dureeheure`, `\dureejour`, `\dureesemaine` — durées
@@ -298,6 +299,68 @@ résultat final.
 
 > **Attention** : `\multiplication` attend **exactement deux facteurs**.
 
+### Masquage de chiffres
+
+Pour créer des exercices à trous, un `|` placé devant un chiffre
+dans un terme indique que ce chiffre doit être utilisé dans le
+calcul mais remplacé par un underscore bas à l'affichage.
+
+```latex
+\addition[solution]{1|4, 56}
+```
+
+Affiche :
+
+```text
+    1 _
++   5 6
+─────────
+    7 0
+```
+
+Le chiffre `4` est bien utilisé dans le calcul (`14 + 56 = 70`),
+mais masqué par un `_` dans l'énoncé.
+
+#### Règles
+
+- `|` masque **le chiffre qui suit** : `1|4` → `1 _`
+- `|` en fin de nombre masque un `0` implicite : `47|` → `4 7 _`
+- Deux `|` consécutifs masquent deux chiffres : `||4` → `_ _`
+- Le résultat n'est **jamais masqué**, seulement les termes
+
+#### Exemples
+
+```latex
+% Addition avec un chiffre masqué
+\addition[solution]{1|4, 56}
+
+% Soustraction avec deux chiffres masqués
+\soustraction[solution]{8|3, 47|}
+
+% Multiplication avec un chiffre masqué dans le multiplicateur
+\multiplication[solution]{24, 5|6}
+```
+
+#### Sur les durées et les angles
+
+Le même marqueur `|` s'applique aux opérations sur durées et angles,
+composante par composante :
+
+```latex
+\additiondurees[solution]{3+1|2, 5+30}
+% → « 3 j 1 _ h » + « 5 j 30 h » = « 3 j 17 h 30 min »
+
+\additionangles[solution]{5|6+30, 12+45}
+% → « 5 _° 30′ » + « 12° 45′ » = « 68° 15′ »
+```
+
+#### Combinaison avec `solution`
+
+Le masquage est indépendant de l'option `solution` :
+
+- `\addition[solution]{1|4, 56}` → termes masqués **et** résultat affiché
+- `\addition{1|4, 56}` → termes masqués, résultat masqué
+
 ### `\division[options]`
 
 Pose une division euclidienne. Voir la section dédiée
@@ -526,6 +589,10 @@ Un fichier de démonstration complet est disponible dans `examples/exemples.tex`
     \soustraction[solution]{853, 476}
     \multiplication[solution]{234, 56}
     \division[dividende=1234, diviseur=56, solution, etapes={112, 112}]
+
+    % Masquage de chiffres
+    \addition[solution]{1|4, 56}
+    \additiondurees[solution]{3+1|2, 5+30}
 
     % Grandeurs, angles, durées
     \unite{9,81}{m/s^2}
