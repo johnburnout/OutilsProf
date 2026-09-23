@@ -2,12 +2,12 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.7.2
-% Date : 2026/09/22
+% Version : 1.8
+% Date : 2026/09/23
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/09/22 v1.7.2 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/09/23 v1.8 Outils pour l'enseignement]
 
 % ============================================================
 % DÉPENDANCES
@@ -264,10 +264,10 @@
     \pgfmathsetmacro{\largeurTotale}{\largeurPt/1pt}%
     \pgfmathsetmacro{\etendueX}{\hdX-\bgX}%
     \pgfmathsetmacro{\etendueY}{\hdY-\bgY}%
-    \pgfmathsetmacro{\unite}{\largeurTotale/\etendueX}%
-    \pgfmathsetmacro{\hauteurTotale}{\etendueY*\unite}%
-    \pgfmathsetmacro{\oriXfig}{(\oriX-\bgX)*\unite}%
-    \pgfmathsetmacro{\oriYfig}{(\oriY-\bgY)*\unite}%
+    \pgfmathsetmacro{\repereunite}{\largeurTotale/\etendueX}%
+    \pgfmathsetmacro{\hauteurTotale}{\etendueY*\repereunite}%
+    \pgfmathsetmacro{\oriXfig}{(\oriX-\bgX)*\repereunite}%
+    \pgfmathsetmacro{\oriYfig}{(\oriY-\bgY)*\repereunite}%
 
     \begin{tikzpicture}[every node/.style={font=\small}]
         \useasboundingbox (0,0) rectangle (\largeurTotale pt,\hauteurTotale pt);
@@ -278,13 +278,13 @@
             \pgfmathsetmacro{\nbGrilleY}{int(\etendueY/\repereGrille)}%
             \foreach \i in {0,1,...,\nbGrilleX} {%
                 \pgfmathsetmacro{\x}{\bgX+\i*\repereGrille}%
-                \pgfmathsetmacro{\xFig}{(\x-\bgX)*\unite}%
+                \pgfmathsetmacro{\xFig}{(\x-\bgX)*\repereunite}%
                 \draw[gray!25, very thin]
                     (\xFig pt,0) -- (\xFig pt,\hauteurTotale pt);
             }%
             \foreach \i in {0,1,...,\nbGrilleY} {%
                 \pgfmathsetmacro{\y}{\bgY+\i*\repereGrille}%
-                \pgfmathsetmacro{\yFig}{(\y-\bgY)*\unite}%
+                \pgfmathsetmacro{\yFig}{(\y-\bgY)*\repereunite}%
                 \draw[gray!25, very thin]
                     (0,\yFig pt) -- (\largeurTotale pt,\yFig pt);
             }%
@@ -300,7 +300,7 @@
             \pgfmathsetmacro{\x}{\bgX+\i*\reperePasX}%
             \pgfmathparse{\x <= \hdX+0.001 ? 1 : 0}%
             \ifnum\pgfmathresult=1
-                \pgfmathsetmacro{\xFig}{(\x-\bgX)*\unite}%
+                \pgfmathsetmacro{\xFig}{(\x-\bgX)*\repereunite}%
                 \draw[thick]
                     (\xFig pt,\oriYfig pt) -- (\xFig pt,\oriYfig pt-0.2);
                 \pgfmathparse{abs(\x) < 0.001 ? 0 : 1}%
@@ -317,7 +317,7 @@
             \pgfmathsetmacro{\y}{\bgY+\i*\reperePasY}%
             \pgfmathparse{\y <= \hdY+0.001 ? 1 : 0}%
             \ifnum\pgfmathresult=1
-                \pgfmathsetmacro{\yFig}{(\y-\bgY)*\unite}%
+                \pgfmathsetmacro{\yFig}{(\y-\bgY)*\repereunite}%
                 \draw[thick]
                     (\oriXfig pt,\yFig pt) -- (\oriXfig pt+0.2,\yFig pt);
                 \pgfmathparse{abs(\y) < 0.001 ? 0 : 1}%
@@ -347,7 +347,7 @@
                 \pgfmathsetmacro{\x}{\bgX+\i*\reperePasX/\repereNombreX}%
                 \pgfmathparse{\x <= \hdX+0.001 ? 1 : 0}%
                 \ifnum\pgfmathresult=1
-                    \pgfmathsetmacro{\xFig}{(\x-\bgX)*\unite}%
+                    \pgfmathsetmacro{\xFig}{(\x-\bgX)*\repereunite}%
                     \draw
                         (\xFig pt,\oriYfig pt) -- (\xFig pt,\oriYfig pt-0.1);
                 \fi
@@ -360,7 +360,7 @@
                 \pgfmathsetmacro{\y}{\bgY+\i*\reperePasY/\repereNombreY}%
                 \pgfmathparse{\y <= \hdY+0.001 ? 1 : 0}%
                 \ifnum\pgfmathresult=1
-                    \pgfmathsetmacro{\yFig}{(\y-\bgY)*\unite}%
+                    \pgfmathsetmacro{\yFig}{(\y-\bgY)*\repereunite}%
                     \draw
                         (\oriXfig pt,\yFig pt) -- (\oriXfig pt+0.1,\yFig pt);
                 \fi
@@ -370,8 +370,8 @@
         \foreach \point in \repereListeElements {%
             \repereDecouperPoint{\point}{\nomPoint}{\coordsPoint}{\couleurPoint}%
             \repereExtraireCoords{\coordsPoint}{\px}{\py}%
-            \pgfmathsetmacro{\pxFig}{(\px-\bgX)*\unite}%
-            \pgfmathsetmacro{\pyFig}{(\py-\bgY)*\unite}%
+            \pgfmathsetmacro{\pxFig}{(\px-\bgX)*\repereunite}%
+            \pgfmathsetmacro{\pyFig}{(\py-\bgY)*\repereunite}%
             \fill[\couleurPoint] (\pxFig pt,\pyFig pt) circle (2.5pt);
             \draw[black, thick] (\pxFig pt,\pyFig pt) circle (2.5pt);
             \ifnum\repereAfficherNom=1
@@ -403,7 +403,6 @@
 \definecolor{couleurMethode}{RGB}{0,153,76}
 
 \NewDocumentCommand{\boiteRetenir}{O{couleurRetenir} m}{%
-    \begin{center}
     \begin{tcolorbox}[
         colback=#1!10,
         colframe=#1,
@@ -416,11 +415,9 @@
     ]
         #2
     \end{tcolorbox}%
-    \end{center}
 }
 
 \NewDocumentCommand{\boiteVigilance}{O{couleurVigilance} m}{%
-    \begin{center}
     \begin{tcolorbox}[
         colback=#1!10,
         colframe=#1,
@@ -433,11 +430,9 @@
     ]
         #2
     \end{tcolorbox}%
-    \end{center}
 }
 
 \NewDocumentCommand{\boiteMethode}{O{couleurMethode} m}{%
-    \begin{center}
     \begin{tcolorbox}[
         colback=#1!5,
         colframe=#1,
@@ -450,7 +445,6 @@
     ]
         #2
     \end{tcolorbox}%
-    \end{center}
 }
 
 \NewDocumentCommand{\boitecalcul}{O{10cm} O{3cm} O{}}{%
@@ -469,7 +463,6 @@
 }
 
 \NewDocumentEnvironment{retenir}{O{couleurRetenir}}{%
-    \begin{center}
     \begin{tcolorbox}[
         colback=#1!10,
         colframe=#1,
@@ -482,11 +475,9 @@
     ]
 }{%
     \end{tcolorbox}%
-    \end{center}
 }
 
 \NewDocumentEnvironment{vigilance}{O{couleurVigilance}}{%
-    \begin{center}
     \begin{tcolorbox}[
         colback=#1!10,
         colframe=#1,
@@ -499,11 +490,9 @@
     ]
 }{%
     \end{tcolorbox}%
-    \end{center}
 }
 
 \NewDocumentEnvironment{methode}{O{couleurMethode}}{%
-    \begin{center}
     \begin{tcolorbox}[
         colback=#1!5,
         colframe=#1,
@@ -516,7 +505,6 @@
     ]
 }{%
     \end{tcolorbox}%
-    \end{center}
 }
 
 % ============================================================
@@ -1437,5 +1425,638 @@
 \NewDocumentCommand{\multiplication}{O{} m}{%
     \csname __op_rendre_multiplication:nn \endcsname {#1}{#2}%
 }
+
+% ============================================================
+% SECTION 4 : GRANDEURS, ANGLES, DURÉES ET OPÉRATIONS
+% ============================================================
+% SÉPARATEUR UNIQUE : le signe « + » pour les listes de valeurs
+%
+% Syntaxe :
+%   \unite{6}{m}                 → 6 m
+%   \unite{5}{m^2}               → 5 m²
+%   \unite{9,81}{m/s^2}          → 9,81 m/s²
+%
+%   \degre{56}                   → 56°
+%   \degre{56+30}                → 56°30′
+%   \degre{56+30+15}             → 56°30′15″
+%
+%   \dureeminute{12}             → 12 min
+%   \dureeminute{12+30}          → 12 min 30 s
+%   \dureeheure{5}               → 5 h
+%   \dureeheure{5+45}            → 5 h 45 min
+%   \dureeheure{5+45+30}         → 5 h 45 min 30 s
+%   \dureejour{3}                → 3 j
+%   \dureejour{3+12}             → 3 j 12 h
+%   \dureejour{3+12+30+15}       → 3 j 12 h 30 min 15 s
+%   \dureesemaine{2}             → 2 sem
+%   \dureesemaine{2+3+12+30+15}  → 2 sem 3 j 12 h 30 min 15 s
+%
+%   \additiondurees[solution]{3+12, 5+30}
+%   \soustractiondurees[solution]{5+30, 2+45}
+%   \additionangles[solution]{56+30, 12+45}
+%   \soustractionangles[solution]{56+30+15, 12+45+30}
+%
+% NOTE : les nombres se saisissent avec la virgule décimale
+%        (ex. \unite{9,81}{m/s^2}).
+% ============================================================
+
+% ------------------------------------------------------------
+% 4-0 : Déclaration des unités personnalisées
+% ------------------------------------------------------------
+\DeclareSIUnit{\jour}{j}
+\DeclareSIUnit{\semaine}{sem}
+
+% ------------------------------------------------------------
+% 4-A : Grandeurs et unités
+% ------------------------------------------------------------
+\NewDocumentCommand{\unite}{m m}{%
+    \SI{#1}{#2}%
+}
+
+% ------------------------------------------------------------
+% 4-B : Angles (degrés, minutes, secondes)
+% ------------------------------------------------------------
+\ExplSyntaxOn
+
+\seq_new:N \l__angle_parts_seq
+\int_new:N \l__angle_i_int
+
+\cs_new_protected:Npn \__angle_afficher:n #1
+{
+    \seq_set_split:Nnn \l__angle_parts_seq { + } { #1 }
+    \int_set:Nn \l__angle_i_int { 1 }
+    \seq_map_inline:Nn \l__angle_parts_seq
+    {
+        \int_compare:nTF { \l__angle_i_int == 1 }
+            { ##1 \ensuremath{{}^\circ} }
+            {
+                \int_compare:nTF { \l__angle_i_int == 2 }
+                    { \, ##1 \ensuremath{{}^\prime} }
+                    { \, ##1 \ensuremath{{}^{\prime\prime}} }
+            }
+        \int_set:Nn \l__angle_i_int { \l__angle_i_int + 1 }
+    }
+}
+
+\RenewDocumentCommand{\degre}{m}{%
+    \__angle_afficher:n {#1}%
+}
+
+\ExplSyntaxOff
+
+% ------------------------------------------------------------
+% 4-C : Durées simples
+% ------------------------------------------------------------
+\ExplSyntaxOn
+
+\seq_new:N \l__duree_valeurs_seq
+\seq_new:N \l__duree_unites_seq
+\int_new:N \l__duree_i_int
+
+\cs_new_protected:Npn \__duree_afficher:nn #1 #2
+{
+    \seq_set_split:Nnn \l__duree_valeurs_seq { + } { #1 }
+    \seq_set_split:Nnn \l__duree_unites_seq  { + } { #2 }
+
+    \int_set:Nn \l__duree_i_int { 1 }
+    \int_while_do:nNnn { \l__duree_i_int }
+        < { \seq_count:N \l__duree_valeurs_seq + 1 }
+    {
+        \int_compare:nT { \l__duree_i_int > 1 } { ~ }
+        \SI
+            { \seq_item:Nn \l__duree_valeurs_seq { \l__duree_i_int } }
+            { \seq_item:Nn \l__duree_unites_seq  { \l__duree_i_int } }
+        \int_set:Nn \l__duree_i_int { \l__duree_i_int + 1 }
+    }
+}
+
+\NewDocumentCommand{\dureeminute}{m}{%
+    \__duree_afficher:nn {#1}{\minute+\second}%
+}
+\NewDocumentCommand{\dureeheure}{m}{%
+    \__duree_afficher:nn {#1}{\hour+\minute+\second}%
+}
+\NewDocumentCommand{\dureejour}{m}{%
+    \__duree_afficher:nn {#1}{\jour+\hour+\minute+\second}%
+}
+\NewDocumentCommand{\dureesemaine}{m}{%
+    \__duree_afficher:nn {#1}{\semaine+\jour+\hour+\minute+\second}%
+}
+
+\ExplSyntaxOff
+
+% ============================================================
+% 4-D : OPÉRATIONS SUR DURÉES ET ANGLES
+% ============================================================
+% Syntaxe :
+%   \additiondurees[solution]{3+12, 5+30}
+%   \soustractiondurees[solution]{5+30, 2+45}
+%   \additionangles[solution]{56+30, 12+45}
+%   \soustractionangles[solution]{56+30+15, 12+45+30}
+%
+% Chaque terme est une liste séparée par « + » :
+%   DURÉES  : [jours]+[heures]+[minutes]+[secondes]
+%   ANGLES  : [degrés]+[minutes]+[secondes]
+% Les composantes manquantes sont implicitement 0.
+%
+% Options communes :
+%   solution : bool — affiche le résultat (défaut : false)
+%
+% Affichage : les composantes nulles à droite sont masquées,
+%             les colonnes sont alignées verticalement,
+%             le trait s'arrête à la dernière colonne utilisée
+%             par les termes (le résultat n'intervient pas),
+%             un signe « − » apparaît si le résultat est négatif.
+% ============================================================
+
+\ExplSyntaxOn
+
+% ------------------------------------------------------------
+% Variables internes
+% ------------------------------------------------------------
+\seq_new:N   \l__dop_termes_seq
+\seq_new:N   \l__dop_parts_seq
+\int_new:N   \l__dop_nb_int
+\int_new:N   \l__dop_i_int
+\int_new:N   \l__dop_ligne_int
+\int_new:N   \l__dop_hauteur_int
+\int_new:N   \l__dop_derniere_col_int
+\dim_new:N   \l__dop_fin_dim
+\bool_new:N  \l__dop_solution_bool
+\bool_new:N  \l__dop_angles_bool
+\bool_new:N  \l__dop_addition_bool
+
+% Cumul global (réinitialisé à chaque appel)
+\int_new:N \g__dop_j_int
+\int_new:N \g__dop_h_int
+\int_new:N \g__dop_m_int
+\int_new:N \g__dop_s_int
+\int_new:N \g__dop_total_int
+\int_new:N \g__dop_signe_int
+
+% ------------------------------------------------------------
+% Options
+% ------------------------------------------------------------
+\keys_define:nn { outilsprof / dureeop }
+{
+    solution .bool_set:N = \l__dop_solution_bool,
+    solution .initial:n  = false,
+}
+
+% ------------------------------------------------------------
+% Extraction des composantes d'un terme « a+b+c+d »
+% ------------------------------------------------------------
+\cs_new_protected:Npn \__dop_parse:n #1
+{
+    \seq_set_split:Nnn \l__dop_parts_seq { + } { #1 }
+    \int_zero:N \l_tmpa_int
+    \int_zero:N \l_tmpb_int
+    \int_zero:N \l_tmpc_int
+    \int_zero:N \l_tmpd_int
+    \int_set:Nn \l__dop_i_int { \seq_count:N \l__dop_parts_seq }
+    \int_compare:nT { \l__dop_i_int >= 1 }
+        { \int_set:Nn \l_tmpa_int { \seq_item:Nn \l__dop_parts_seq {1} } }
+    \int_compare:nT { \l__dop_i_int >= 2 }
+        { \int_set:Nn \l_tmpb_int { \seq_item:Nn \l__dop_parts_seq {2} } }
+    \int_compare:nT { \l__dop_i_int >= 3 }
+        { \int_set:Nn \l_tmpc_int { \seq_item:Nn \l__dop_parts_seq {3} } }
+    \int_compare:nT { \l__dop_i_int >= 4 }
+        { \int_set:Nn \l_tmpd_int { \seq_item:Nn \l__dop_parts_seq {4} } }
+}
+
+% ------------------------------------------------------------
+% Calcul de la dernière colonne utilisée par les TERMES
+% (le résultat n'intervient pas dans la longueur du trait)
+% Niveaux : 1=j/°, 2=h/′, 3=min/″, 4=s
+% ------------------------------------------------------------
+\cs_new_protected:Npn \__dop_calculer_derniere_col:
+{
+    \int_zero:N \l__dop_derniere_col_int
+
+    \seq_map_inline:Nn \l__dop_termes_seq
+    {
+        \__dop_parse:n {##1}
+        \int_compare:nT { \l_tmpa_int > 0 }
+            { \int_set:Nn \l__dop_derniere_col_int
+                { \int_max:nn { \l__dop_derniere_col_int } { 1 } } }
+        \int_compare:nT { \l_tmpb_int > 0 }
+            { \int_set:Nn \l__dop_derniere_col_int
+                { \int_max:nn { \l__dop_derniere_col_int } { 2 } } }
+        \int_compare:nT { \l_tmpc_int > 0 }
+            { \int_set:Nn \l__dop_derniere_col_int
+                { \int_max:nn { \l__dop_derniere_col_int } { 3 } } }
+        \int_compare:nT { \l_tmpd_int > 0 }
+            { \int_set:Nn \l__dop_derniere_col_int
+                { \int_max:nn { \l__dop_derniere_col_int } { 4 } } }
+    }
+}
+
+% ------------------------------------------------------------
+% Position X de fin du trait selon la dernière colonne utilisée
+% ------------------------------------------------------------
+\cs_new_protected:Npn \__dop_calculer_fin_trait:
+{
+    \bool_if:NTF \l__dop_angles_bool
+        {
+            \int_compare:nTF { \l__dop_derniere_col_int == 1 }
+                { \dim_set:Nn \l__dop_fin_dim { 30mm } }
+                {
+                    \int_compare:nTF { \l__dop_derniere_col_int == 2 }
+                        { \dim_set:Nn \l__dop_fin_dim { 50mm } }
+                        { \dim_set:Nn \l__dop_fin_dim { 68mm } }
+                }
+        }
+        {
+            \int_compare:nTF { \l__dop_derniere_col_int == 1 }
+                { \dim_set:Nn \l__dop_fin_dim { 20mm } }
+                {
+                    \int_compare:nTF { \l__dop_derniere_col_int == 2 }
+                        { \dim_set:Nn \l__dop_fin_dim { 38mm } }
+                        {
+                            \int_compare:nTF { \l__dop_derniere_col_int == 3 }
+                                { \dim_set:Nn \l__dop_fin_dim { 63mm } }
+                                { \dim_set:Nn \l__dop_fin_dim { 78mm } }
+                        }
+                }
+        }
+}
+
+% ------------------------------------------------------------
+% Affichage d'un terme en colonnes alignées
+% #1 = chaîne, #2 = numéro de ligne
+% ------------------------------------------------------------
+\cs_new_protected:Npn \__dop_terme_colonnes:nn #1 #2
+{
+    \__dop_parse:n {#1}
+    \bool_if:NTF \l__dop_angles_bool
+        {
+            \int_compare:nT { \l_tmpa_int > 0 }
+                {
+                    \node[anchor=east]
+                        at ( 22mm , { -(#2 - 0.5) * 6mm } )
+                        { \int_use:N \l_tmpa_int };
+                    \node[anchor=west]
+                        at ( 23mm , { -(#2 - 0.5) * 6mm } )
+                        { \ensuremath{{}^\circ} };
+                }
+            \int_compare:nT { \l_tmpb_int > 0 }
+                {
+                    \node[anchor=east]
+                        at ( 40mm , { -(#2 - 0.5) * 6mm } )
+                        { \int_use:N \l_tmpb_int };
+                    \node[anchor=west]
+                        at ( 41mm , { -(#2 - 0.5) * 6mm } )
+                        { \ensuremath{{}^\prime} };
+                }
+            \int_compare:nT { \l_tmpc_int > 0 }
+                {
+                    \node[anchor=east]
+                        at ( 58mm , { -(#2 - 0.5) * 6mm } )
+                        { \int_use:N \l_tmpc_int };
+                    \node[anchor=west]
+                        at ( 59mm , { -(#2 - 0.5) * 6mm } )
+                        { \ensuremath{{}^{\prime\prime}} };
+                }
+        }
+        {
+            \int_compare:nT { \l_tmpa_int > 0 }
+                {
+                    \node[anchor=east]
+                        at ( 14mm , { -(#2 - 0.5) * 6mm } )
+                        { \int_use:N \l_tmpa_int };
+                    \node[anchor=west]
+                        at ( 15mm , { -(#2 - 0.5) * 6mm } )
+                        { j };
+                }
+            \int_compare:nT { \l_tmpb_int > 0 }
+                {
+                    \node[anchor=east]
+                        at ( 30mm , { -(#2 - 0.5) * 6mm } )
+                        { \int_use:N \l_tmpb_int };
+                    \node[anchor=west]
+                        at ( 31mm , { -(#2 - 0.5) * 6mm } )
+                        { h };
+                }
+            \int_compare:nT { \l_tmpc_int > 0 }
+                {
+                    \node[anchor=east]
+                        at ( 48mm , { -(#2 - 0.5) * 6mm } )
+                        { \int_use:N \l_tmpc_int };
+                    \node[anchor=west]
+                        at ( 49mm , { -(#2 - 0.5) * 6mm } )
+                        { min };
+                }
+            \int_compare:nT { \l_tmpd_int > 0 }
+                {
+                    \node[anchor=east]
+                        at ( 64mm , { -(#2 - 0.5) * 6mm } )
+                        { \int_use:N \l_tmpd_int };
+                    \node[anchor=west]
+                        at ( 65mm , { -(#2 - 0.5) * 6mm } )
+                        { s };
+                }
+        }
+}
+
+% ------------------------------------------------------------
+% Affichage du résultat en colonnes alignées
+% #1 = numéro de ligne
+% ------------------------------------------------------------
+\cs_new_protected:Npn \__dop_resultat_colonnes:n #1
+{
+    % Signe « − » si le résultat est négatif
+    \int_compare:nT { \g__dop_signe_int < 0 }
+        {
+            \node[anchor=east]
+                at ( 10mm , { -(#1 - 0.5) * 6mm } )
+                {$-$};
+        }
+
+    \bool_if:NTF \l__dop_angles_bool
+        {
+            \int_set:Nn \l_tmpa_int { \g__dop_j_int }
+            \int_set:Nn \l_tmpb_int { \g__dop_m_int }
+            \int_set:Nn \l_tmpc_int { \g__dop_s_int }
+
+            \int_compare:nT { \l_tmpa_int > 0 }
+                {
+                    \node[anchor=east]
+                        at ( 22mm , { -(#1 - 0.5) * 6mm } )
+                        { \int_use:N \l_tmpa_int };
+                    \node[anchor=west]
+                        at ( 23mm , { -(#1 - 0.5) * 6mm } )
+                        { \ensuremath{{}^\circ} };
+                }
+            \int_compare:nT { \l_tmpb_int > 0 }
+                {
+                    \node[anchor=east]
+                        at ( 40mm , { -(#1 - 0.5) * 6mm } )
+                        { \int_use:N \l_tmpb_int };
+                    \node[anchor=west]
+                        at ( 41mm , { -(#1 - 0.5) * 6mm } )
+                        { \ensuremath{{}^\prime} };
+                }
+            \int_compare:nT { \l_tmpc_int > 0 }
+                {
+                    \node[anchor=east]
+                        at ( 58mm , { -(#1 - 0.5) * 6mm } )
+                        { \int_use:N \l_tmpc_int };
+                    \node[anchor=west]
+                        at ( 59mm , { -(#1 - 0.5) * 6mm } )
+                        { \ensuremath{{}^{\prime\prime}} };
+                }
+        }
+        {
+            \int_set:Nn \l_tmpa_int { \g__dop_j_int }
+            \int_set:Nn \l_tmpb_int { \g__dop_h_int }
+            \int_set:Nn \l_tmpc_int { \g__dop_m_int }
+            \int_set:Nn \l_tmpd_int { \g__dop_s_int }
+
+            \int_compare:nT { \l_tmpa_int > 0 }
+                {
+                    \node[anchor=east]
+                        at ( 14mm , { -(#1 - 0.5) * 6mm } )
+                        { \int_use:N \l_tmpa_int };
+                    \node[anchor=west]
+                        at ( 15mm , { -(#1 - 0.5) * 6mm } )
+                        { j };
+                }
+            \int_compare:nT { \l_tmpb_int > 0 }
+                {
+                    \node[anchor=east]
+                        at ( 30mm , { -(#1 - 0.5) * 6mm } )
+                        { \int_use:N \l_tmpb_int };
+                    \node[anchor=west]
+                        at ( 31mm , { -(#1 - 0.5) * 6mm } )
+                        { h };
+                }
+            \int_compare:nT { \l_tmpc_int > 0 }
+                {
+                    \node[anchor=east]
+                        at ( 48mm , { -(#1 - 0.5) * 6mm } )
+                        { \int_use:N \l_tmpc_int };
+                    \node[anchor=west]
+                        at ( 49mm , { -(#1 - 0.5) * 6mm } )
+                        { min };
+                }
+            \int_compare:nT { \l_tmpd_int > 0 }
+                {
+                    \node[anchor=east]
+                        at ( 64mm , { -(#1 - 0.5) * 6mm } )
+                        { \int_use:N \l_tmpd_int };
+                    \node[anchor=west]
+                        at ( 65mm , { -(#1 - 0.5) * 6mm } )
+                        { s };
+                }
+        }
+}
+
+% ------------------------------------------------------------
+% Cumul (différencie angles et durées)
+% ------------------------------------------------------------
+\cs_new_protected:Npn \__dop_cumul_add:n #1
+{
+    \__dop_parse:n {#1}
+    \bool_if:NTF \l__dop_angles_bool
+        {
+            % Angles : °→j, ′→m, ″→s
+            \int_gadd:Nn \g__dop_j_int { \l_tmpa_int }
+            \int_gadd:Nn \g__dop_m_int { \l_tmpb_int }
+            \int_gadd:Nn \g__dop_s_int { \l_tmpc_int }
+        }
+        {
+            % Durées : j→j, h→h, min→m, s→s
+            \int_gadd:Nn \g__dop_j_int { \l_tmpa_int }
+            \int_gadd:Nn \g__dop_h_int { \l_tmpb_int }
+            \int_gadd:Nn \g__dop_m_int { \l_tmpc_int }
+            \int_gadd:Nn \g__dop_s_int { \l_tmpd_int }
+        }
+}
+
+\cs_new_protected:Npn \__dop_cumul_sub:n #1
+{
+    \__dop_parse:n {#1}
+    \bool_if:NTF \l__dop_angles_bool
+        {
+            \int_gsub:Nn \g__dop_j_int { \l_tmpa_int }
+            \int_gsub:Nn \g__dop_m_int { \l_tmpb_int }
+            \int_gsub:Nn \g__dop_s_int { \l_tmpc_int }
+        }
+        {
+            \int_gsub:Nn \g__dop_j_int { \l_tmpa_int }
+            \int_gsub:Nn \g__dop_h_int { \l_tmpb_int }
+            \int_gsub:Nn \g__dop_m_int { \l_tmpc_int }
+            \int_gsub:Nn \g__dop_s_int { \l_tmpd_int }
+        }
+}
+
+% ------------------------------------------------------------
+% Normalisation + extraction du signe
+% Conversion en secondes → décomposition en j/h/min/s
+% (ou °/′/″), avec gestion des résultats négatifs.
+% ------------------------------------------------------------
+\cs_new_protected:Npn \__dop_normaliser_et_signer:
+{
+    \bool_if:NTF \l__dop_angles_bool
+        {
+            \int_gset:Nn \g__dop_total_int
+                { \g__dop_j_int * 3600
+                  + \g__dop_m_int * 60
+                  + \g__dop_s_int }
+            \int_compare:nTF { \g__dop_total_int < 0 }
+                { \int_gset:Nn \g__dop_signe_int { -1 } }
+                { \int_gset:Nn \g__dop_signe_int { 1 } }
+            \int_compare:nT { \g__dop_total_int < 0 }
+                { \int_gset:Nn \g__dop_total_int
+                    { -\g__dop_total_int } }
+            \int_gset:Nn \g__dop_j_int
+                { \int_div_truncate:nn { \g__dop_total_int } { 3600 } }
+            \int_gset:Nn \g__dop_total_int
+                { \int_mod:nn { \g__dop_total_int } { 3600 } }
+            \int_gset:Nn \g__dop_m_int
+                { \int_div_truncate:nn { \g__dop_total_int } { 60 } }
+            \int_gset:Nn \g__dop_s_int
+                { \int_mod:nn { \g__dop_total_int } { 60 } }
+            \int_gzero:N \g__dop_h_int
+        }
+        {
+            \int_gset:Nn \g__dop_total_int
+                { \g__dop_j_int * 86400
+                  + \g__dop_h_int * 3600
+                  + \g__dop_m_int * 60
+                  + \g__dop_s_int }
+            \int_compare:nTF { \g__dop_total_int < 0 }
+                { \int_gset:Nn \g__dop_signe_int { -1 } }
+                { \int_gset:Nn \g__dop_signe_int { 1 } }
+            \int_compare:nT { \g__dop_total_int < 0 }
+                { \int_gset:Nn \g__dop_total_int
+                    { -\g__dop_total_int } }
+            \int_gset:Nn \g__dop_j_int
+                { \int_div_truncate:nn { \g__dop_total_int } { 86400 } }
+            \int_gset:Nn \g__dop_total_int
+                { \int_mod:nn { \g__dop_total_int } { 86400 } }
+            \int_gset:Nn \g__dop_h_int
+                { \int_div_truncate:nn { \g__dop_total_int } { 3600 } }
+            \int_gset:Nn \g__dop_total_int
+                { \int_mod:nn { \g__dop_total_int } { 3600 } }
+            \int_gset:Nn \g__dop_m_int
+                { \int_div_truncate:nn { \g__dop_total_int } { 60 } }
+            \int_gset:Nn \g__dop_s_int
+                { \int_mod:nn { \g__dop_total_int } { 60 } }
+        }
+}
+
+% ------------------------------------------------------------
+% Rendu commun
+% ------------------------------------------------------------
+\cs_new_protected:Npn \__dop_rendre:nn #1 #2
+{
+    \group_begin:
+    \keys_set:nn { outilsprof / dureeop } { #1 }
+    \seq_set_from_clist:Nn \l__dop_termes_seq { #2 }
+    \int_set:Nn \l__dop_nb_int { \seq_count:N \l__dop_termes_seq }
+
+    % Init cumul
+    \int_gzero:N \g__dop_j_int
+    \int_gzero:N \g__dop_h_int
+    \int_gzero:N \g__dop_m_int
+    \int_gzero:N \g__dop_s_int
+
+    % Cumul : premier terme en addition, suivants selon opération
+    \int_set:Nn \l__dop_i_int { 1 }
+    \seq_map_inline:Nn \l__dop_termes_seq
+    {
+        \int_compare:nTF { \l__dop_i_int == 1 }
+            { \__dop_cumul_add:n {##1} }
+            {
+                \bool_if:NTF \l__dop_addition_bool
+                    { \__dop_cumul_add:n {##1} }
+                    { \__dop_cumul_sub:n {##1} }
+            }
+        \int_incr:N \l__dop_i_int
+    }
+
+    % Normalisation + extraction du signe
+    \__dop_normaliser_et_signer:
+
+    % Calcul de la dernière colonne utilisée + fin du trait
+    \__dop_calculer_derniere_col:
+    \__dop_calculer_fin_trait:
+
+    % Hauteur totale (termes + trait + résultat éventuel)
+    \int_set:Nn \l__dop_hauteur_int { \l__dop_nb_int + 1 }
+    \bool_if:NT \l__dop_solution_bool
+        { \int_incr:N \l__dop_hauteur_int }
+
+    % Affichage
+    \begin{center}
+    \begin{tikzpicture}[x=1mm, y=1mm]
+        \useasboundingbox
+            (0, 3mm)
+            rectangle ( { \l__dop_fin_dim + 3mm } ,
+                        { -\l__dop_hauteur_int * 6mm } );
+
+        % Termes avec signes opératoires
+        \int_set:Nn \l__dop_ligne_int { 1 }
+        \seq_map_inline:Nn \l__dop_termes_seq
+        {
+            \int_compare:nT { \l__dop_ligne_int > 1 }
+            {
+                \bool_if:NTF \l__dop_addition_bool
+                    {
+                        \node[anchor=east]
+                            at ( 10mm , { -(\l__dop_ligne_int - 0.5) * 6mm } )
+                            {$+$};
+                    }
+                    {
+                        \node[anchor=east]
+                            at ( 10mm , { -(\l__dop_ligne_int - 0.5) * 6mm } )
+                            {$-$};
+                    }
+            }
+            \__dop_terme_colonnes:nn {##1} { \l__dop_ligne_int }
+            \int_incr:N \l__dop_ligne_int
+        }
+
+        % Trait horizontal, sous le dernier terme,
+        % s'arrêtant à la dernière colonne utilisée par les termes
+        \draw ( 5mm , { -\l__dop_ligne_int * 6mm + 2mm } )
+            -- ( \l__dop_fin_dim , { -\l__dop_ligne_int * 6mm + 2mm } );
+
+        % Résultat (si demandé)
+        \bool_if:NT \l__dop_solution_bool
+        {
+            \__dop_resultat_colonnes:n { \l__dop_ligne_int + 1 }
+        }
+    \end{tikzpicture}
+    \end{center}
+    \group_end:
+}
+
+% ------------------------------------------------------------
+% Commandes publiques
+% ------------------------------------------------------------
+\NewDocumentCommand{\additiondurees}{O{} m}{%
+    \bool_set_true:N  \l__dop_addition_bool
+    \bool_set_false:N \l__dop_angles_bool
+    \csname __dop_rendre:nn\endcsname {#1}{#2}%
+}
+\NewDocumentCommand{\soustractiondurees}{O{} m}{%
+    \bool_set_false:N \l__dop_addition_bool
+    \bool_set_false:N \l__dop_angles_bool
+    \csname __dop_rendre:nn\endcsname {#1}{#2}%
+}
+\NewDocumentCommand{\additionangles}{O{} m}{%
+    \bool_set_true:N  \l__dop_addition_bool
+    \bool_set_true:N  \l__dop_angles_bool
+    \csname __dop_rendre:nn\endcsname {#1}{#2}%
+}
+\NewDocumentCommand{\soustractionangles}{O{} m}{%
+    \bool_set_false:N \l__dop_addition_bool
+    \bool_set_true:N  \l__dop_angles_bool
+    \csname __dop_rendre:nn\endcsname {#1}{#2}%
+}
+
+\ExplSyntaxOff
 
 \endinput

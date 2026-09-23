@@ -5,6 +5,42 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.8] - 2026-09-23
+
+### Ajouté
+- Section 4-A : commande `\unite{nombre}{unité}` pour afficher une
+  grandeur avec son unité, via `\SI` de `siunitx` (typographie
+  française automatique : virgule décimale, espace insécable).
+- Section 4-B : commande `\degre{degrés+minutes+secondes}` pour les
+  angles en degrés, minutes et secondes.
+- Section 4-C : commandes `\dureeminute`, `\dureeheure`,
+  `\dureejour` et `\dureesemaine` pour les durées, du plus petit
+  point de départ au plus grand.
+- Section 4-D : commandes `\additiondurees`, `\soustractiondurees`,
+  `\additionangles` et `\soustractionangles` pour poser les
+  opérations sur durées et angles.
+  - Retenues et emprunts gérés automatiquement.
+  - Colonnes alignées verticalement (j/h/min/s ou °/′/″).
+  - Composantes nulles à droite masquées.
+  - Trait ajusté à la dernière colonne utilisée par les termes.
+  - Signe « − » affiché si le résultat est négatif.
+  - Option `solution` pour afficher ou masquer le résultat.
+- Déclaration des unités personnalisées `\jour` (j) et
+  `\semaine` (sem) via `\DeclareSIUnit`.
+
+### Corrigé
+- Section 1-B : `\reperegradue` écrasait la commande publique
+  `\unite` par une variable interne (facteur d'échelle du repère).
+  La variable est renommée `\repereUnite`, ce qui évite le conflit.
+- Section 4-B : `\degre` était déjà défini par `babel french`.
+  Utilisation de `\RenewDocumentCommand` pour éviter l'erreur
+  « Command \degre already defined ».
+- Section 4-A et 4-C : utilisation de `\SI` (siunitx v2) au lieu
+  de `\qty` (siunitx v3), pour compatibilité avec TexpadTeX.
+
+### Version
+- 1.7.2 → 1.8
+
 ## [1.7.2] - 2026-09-22
 
 ### Modifié
@@ -150,12 +186,9 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 ### Corrigé
 - Bug d'unités TikZ : les coordonnées des tracés sont maintenant
   explicitement en points (`pt`), ce qui évite un débordement
-  vertical et horizontal du `tikzpicture` (les nombres purs
-  étaient interprétés en centimètres par TikZ, ce qui produisait
-  des repères géants invisibles)
+  vertical et horizontal du `tikzpicture`
 - Bug de découpage des points multiples : `\foreach` traite
-  correctement chaque point individuellement (ajout d'une
-  virgule séparatrice entre les éléments de la liste)
+  correctement chaque point individuellement
 - Bug d'affichage des couleurs : la couleur d'un point ne
   s'affiche plus à côté de son étiquette
 - Bug `(NaN,NaN)` : les coordonnées vides ne sont plus transmises

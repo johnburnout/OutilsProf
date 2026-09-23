@@ -29,3 +29,5 @@ test*
 
 # Exception : garder le PDF d'exemple
 !examples/exemples.pdf
+*.pdf
+*.pdf

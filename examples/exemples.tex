@@ -2,7 +2,7 @@
 % exemples.tex
 % Fichier de démonstration du package outilsprof
 % Auteur : Jean Roussie
-% Date : 2026/09/11
+% Date : 2026/09/23
 % ============================================================
 
 \documentclass[11pt,a4paper]{article}
@@ -287,7 +287,7 @@
 \section{Boîtes colorées}
 % ============================================================
 
-\subsection{Boîte « À retenir » (bleu par défaut)}
+\subsection{Boîte " À retenir " (bleu par défaut)}
 
 \begin{retenir}
     Le théorème de Pythagore : dans un triangle rectangle, le carré de
@@ -297,14 +297,14 @@
     \]
 \end{retenir}
 
-\subsection{Boîte « Attention ! » (rouge par défaut)}
+\subsection{Boîte " Attention ! " (rouge par défaut)}
 
 \begin{vigilance}
     Ne pas oublier de vérifier les unités avant tout calcul !
     Un résultat sans unité est un résultat faux.
 \end{vigilance}
 
-\subsection{Boîte « Méthode » (vert par défaut)}
+\subsection{Boîte " Méthode " (vert par défaut)}
 
 \begin{methode}
     Pour résoudre une équation du premier degré :
@@ -385,5 +385,253 @@
     Attention au sens de lecture : l'axe est orienté de la gauche vers
     la droite.
 \end{vigilance}
+
+% ============================================================
+\section{Division euclidienne}
+% ============================================================
+
+\subsection{Division simple (sans étapes)}
+
+\begin{center}
+\division[dividende=1234, diviseur=56, solution]
+\end{center}
+
+\subsection{Division complète avec étapes}
+
+\begin{center}
+\division[dividende=1234, diviseur=56, solution, etapes={112, 112}]
+\end{center}
+
+\subsection{Division avec reste à plusieurs chiffres}
+
+\begin{center}
+\division[dividende=87765, diviseur=123, solution, etapes={861, 123, 369}]
+\end{center}
+
+\subsection{Division sans solution (données seules)}
+
+\begin{center}
+\division[dividende=1234, diviseur=56, etapes={112, 112}]
+\end{center}
+
+% ============================================================
+\section{Opérations posées}
+% ============================================================
+
+\subsection{Addition de deux nombres}
+
+\begin{center}
+\addition[solution]{1234, 5678}
+\end{center}
+
+\subsection{Addition de trois nombres}
+
+\begin{center}
+\addition[solution]{1234, 5678, 91011}
+\end{center}
+
+\subsection{Addition sans solution}
+
+\begin{center}
+\addition{1234, 5678}
+\end{center}
+
+\subsection{Soustraction (ordre normal)}
+
+\begin{center}
+\soustraction[solution]{853, 476}
+\end{center}
+
+\subsection{Soustraction (ordre inversé automatiquement)}
+
+\begin{center}
+\soustraction[solution]{476, 853}
+\end{center}
+
+\subsection{Multiplication par un nombre à deux chiffres}
+
+\begin{center}
+\multiplication[solution]{234, 56}
+\end{center}
+
+\subsection{Multiplication par un nombre à trois chiffres}
+
+\begin{center}
+\multiplication[solution]{1234, 567}
+\end{center}
+
+\subsection{Multiplication par un nombre à un chiffre}
+
+\begin{center}
+\multiplication[solution]{234, 5}
+\end{center}
+
+% ============================================================
+\section{Grandeurs et unités}
+% ============================================================
+
+\subsection{Longueurs}
+
+\unite{6}{m}
+
+\unite{12,5}{cm}
+
+\unite{2,54}{mm}
+
+\subsection{Aires et volumes}
+
+\unite{5}{m^2}
+
+\unite{3,5}{cm^2}
+
+\unite{2}{m^3}
+
+\subsection{Vitesses}
+
+\unite{9,81}{m/s^2}
+
+\unite{50}{km/h}
+
+\unite{3e8}{m/s}
+
+\subsection{Masses}
+
+\unite{2,5}{kg}
+
+\unite{500}{g}
+
+% ============================================================
+\section{Angles}
+% ============================================================
+
+\subsection{Angle en degrés}
+
+\degre{56}
+
+\subsection{Angle en degrés et minutes}
+
+\degre{56+30}
+
+\subsection{Angle en degrés, minutes et secondes}
+
+\degre{56+30+15}
+
+\subsection{Utilisation dans un contexte}
+
+\begin{retenir}
+    La somme des angles d'un triangle vaut $180^\circ$.
+    Par exemple : $\degre{56+30+15}$ et son supplément vaut
+    $\degre{123+29+45}$.
+\end{retenir}
+
+% ============================================================
+\section{Durées}
+% ============================================================
+
+\subsection{Minutes et secondes}
+
+\dureeminute{12}
+
+\dureeminute{12+30}
+
+\subsection{Heures, minutes, secondes}
+
+\dureeheure{5}
+
+\dureeheure{5+45}
+
+\dureeheure{5+45+30}
+
+\subsection{Jours, heures, minutes, secondes}
+
+\dureejour{3}
+
+\dureejour{3+12}
+
+\dureejour{3+12+30}
+
+\dureejour{3+12+30+15}
+
+\subsection{Semaines, jours, heures, minutes, secondes}
+
+\dureesemaine{2}
+
+\dureesemaine{2+3}
+
+\dureesemaine{2+3+12}
+
+\dureesemaine{2+3+12+30}
+
+\dureesemaine{2+3+12+30+15}
+
+% ============================================================
+\section{Opérations sur les durées}
+% ============================================================
+
+\subsection{Addition de durées}
+
+\additiondurees[solution]{3+12, 5+30}
+
+\additiondurees[solution]{3+12+30, 5+30}
+
+\additiondurees[solution]{3+12+30+54, 5+30}
+
+\subsection{Soustraction de durées (résultat positif)}
+
+\soustractiondurees[solution]{8+30, 5+30}
+
+\soustractiondurees[solution]{5+30, 2+45}
+
+\subsection{Soustraction de durées (résultat négatif)}
+
+\soustractiondurees[solution]{3+12, 5+30}
+
+\subsection{Sans solution}
+
+\additiondurees{3+12, 5+30}
+
+% ============================================================
+\section{Opérations sur les angles}
+% ============================================================
+
+\subsection{Addition d'angles}
+
+\additionangles[solution]{56+30, 12+45}
+
+\additionangles[solution]{56+30+15, 12+45+50}
+
+\subsection{Soustraction d'angles (résultat positif)}
+
+\soustractionangles[solution]{56+30, 12+45}
+
+\soustractionangles[solution]{56+30+15, 12+45+30}
+
+\subsection{Soustraction d'angles (résultat négatif)}
+
+\soustractionangles[solution]{12+45, 56+30}
+
+\subsection{Application : angles d'un triangle}
+
+\begin{methode}
+    Pour vérifier que trois angles forment un triangle, on
+    additionne leurs mesures et on vérifie que la somme vaut
+    $180^\circ$.
+\end{methode}
+
+\additionangles[solution]{56+30, 72+15, 51+15}
+
+% ============================================================
+\section*{Conclusion}
+% ============================================================
+
+Ce document de démonstration couvre l'ensemble des commandes
+fournies par le package \texttt{outilsprof} (version 1.8).
+
+\vspace{1cm}
+
+\begin{retenir}
+    Pour toute question ou suggestion, consultez le dépôt
+    \texttt{github.com/johnburnout/OutilsProf}.
+\end{retenir}
 
 \end{document}
