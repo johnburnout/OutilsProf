@@ -2,12 +2,12 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.9
-% Date : 2026/09/23
+% Version : 1.10
+% Date : 2026/09/24
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/09/23 v1.9 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/09/24 v1.10 Outils pour l'enseignement]
 
 % ============================================================
 % DÉPENDANCES
@@ -505,6 +505,22 @@
     ]
 }{%
     \end{tcolorbox}%
+}
+
+% ------------------------------------------------------------
+% Réponses à compléter
+% ------------------------------------------------------------
+% \reponse           → ligne de 6 cm (défaut)
+% \reponse[3cm]      → ligne de 3 cm
+% \grandeReponse     → ligne sur toute la largeur du texte
+% \grandeReponse[0.5]→ ligne sur 50 % de la largeur
+
+\newcommand{\reponse}[1][6cm]{%
+    \rule[-0.5ex]{#1}{0.4pt}%
+}
+
+\newcommand{\grandeReponse}[1][1]{%
+    \rule[-0.5ex]{\dimexpr #1\textwidth\relax}{0.4pt}%
 }
 
 % ============================================================

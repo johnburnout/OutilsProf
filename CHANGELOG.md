@@ -5,6 +5,26 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.10] - 2026-09-24
+
+### Ajouté
+- Section 2 : commande `\reponse` pour tracer une ligne à compléter
+  de longueur fixe (6 cm par défaut, modifiable via un argument
+  optionnel).
+- Section 2 : commande `\grandeReponse` pour tracer une ligne à
+  compléter sur une fraction de `\textwidth` (1 par défaut).
+- Rendu basé sur `\rule[-0.5ex]{longueur}{0.4pt}` : trait net,
+  positionné sous la ligne de base, épaisseur contrôlée.
+
+### Exemples
+\reponse              → ligne de 6 cm
+\reponse[3cm]         → ligne de 3 cm
+\grandeReponse        → ligne sur toute la largeur
+\grandeReponse[0.5]   → ligne sur 50 % de la largeur
+
+### Version
+- 1.9 → 1.10
+
 ## [1.9] - 2026-09-23
 
 ### Ajouté

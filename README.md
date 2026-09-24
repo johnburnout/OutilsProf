@@ -238,6 +238,24 @@ Les couleurs par défaut sont définies et peuvent être redéfinies dans le pr�
     \definecolor{couleurVigilance}{RGB}{204,0,0}    % Rouge
     \definecolor{couleurMethode}{RGB}{0,153,76}     % Vert
 
+  ### Lignes de réponse
+
+Deux commandes pour créer des lignes à compléter dans les exercices.
+
+```latex
+\reponse           % ligne de 6 cm
+\reponse[3cm]      % ligne de 3 cm
+\grandeReponse     % ligne sur toute la largeur
+\grandeReponse[0.5] % ligne sur 50 % de la largeur
+```
+
+Paramètres :
+
+| Commande | Argument | Défaut | Description |
+|---|---|---|---|
+| `\reponse` | longueur (avec unité) | `6cm` | longueur de la ligne |
+| `\grandeReponse` | facteur (sans unité) | `1` | fraction de `\textwidth` |
+
 * * *
 
 ## Opérations posées
