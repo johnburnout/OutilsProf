@@ -2,12 +2,12 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.10
+% Version : 1.10.1
 % Date : 2026/09/24
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/09/24 v1.10 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/09/24 v1.10.1 Outils pour l'enseignement]
 
 % ============================================================
 % DÉPENDANCES
@@ -1001,12 +1001,12 @@
 %
 % Rendu entièrement TikZ : aucun \halign, aucun &.
 %
-% MASQUAGE : un « ? » placé devant un chiffre dans un terme
+% MASQUAGE : un « | » placé devant un chiffre dans un terme
 %   indique que ce chiffre participe au calcul mais est masqué
-%   à l'affichage (remplacé par un underscore bas).
-%   Exemple : \addition[solution]{1?4, 56}
+%   à l'affichage (remplacé par un rectangle gris clair).
+%   Exemple : \addition[solution]{1|4, 56}
 %              → calcul 14 + 56 = 70
-%              → affichage « 1 _ 4 » + « 5 6 » = « 7 0 »
+%              → affichage « 1 □ » + « 5 6 » = « 7 0 »
 % ============================================================
 
 \ExplSyntaxOn
@@ -1063,10 +1063,12 @@
 % Masquage des chiffres avec « | »
 % ------------------------------------------------------------
 
-% Trait horizontal à la place d'un chiffre masqué
+% Rectangle plein, sans contour, gris très clair
+% Version TikZ pure : fiable dans tous les contextes (nœuds compris).
 \cs_new_protected:Npn \__op_underscore:
 {
-    \rule[-0.2em]{0.5em}{0.4pt}
+    \tikz[baseline=-0.5ex]
+        \fill[gray!20] (0,0) rectangle (0.45em,0.7em);
 }
 
 % Nettoyage : retire les « | » pour le calcul
@@ -1081,7 +1083,7 @@
     }
 }
 
-% Masquage : « |X » devient « _ » (X masqué)
+% Masquage : « |X » devient un rectangle (X masqué)
 \cs_new_protected:Npn \__op_masque:nN #1 #2
 {
     \tl_set:Nx \l_tmpa_tl { \tl_to_str:n {#1} }
@@ -1091,7 +1093,7 @@
     {
         \bool_if:NTF \l_tmpa_bool
             {
-                % On sort d'un « | » : écrire l'underscore
+                % On sort d'un « | » : écrire le rectangle
                 \tl_put_right:Nn #2 { \__op_underscore: }
                 \tl_if_eq:nnTF {##1} { | }
                     { }   % « || » : rester en mode masquage
@@ -1103,7 +1105,7 @@
                     { \tl_put_right:Nn #2 {##1} }
             }
     }
-    % Si on finit sur un « | », insérer un underscore pour le 0 implicite
+    % Si on finit sur un « | », insérer un rectangle pour le 0 implicite
     \bool_if:NT \l_tmpa_bool
         { \tl_put_right:Nn #2 { \__op_underscore: } }
 }
@@ -1202,6 +1204,7 @@
       + \l__op_right_margin_dim }
 
     \begin{center}
+    \raisebox{-0.5\height}{%
     \begin{tikzpicture}[
         x=1mm, y=1mm,
         every~node/.style={font=\small, inner~sep=0pt}
@@ -1222,14 +1225,14 @@
             \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
         }
 
-        % ----- Trait -----
-        \int_set:Nn \l_tmpa_int { \l__op_n_int + 1 }
+               % ----- Trait -----
+        \int_set:Nn \l_tmpa_int { \l__op_n_int }
         \draw[line~width=\l__op_sep_dim]
             ( { \l__op_left_margin_dim - 2mm } ,
-              { -\l_tmpa_int * \l__op_h_dim + 2mm } )
+              { -\l_tmpa_int * \l__op_h_dim - 0.0mm } )
             -- ( { \l__op_left_margin_dim
                    + \l__op_nbchiffres_int * \l__op_w_dim } ,
-                 { -\l_tmpa_int * \l__op_h_dim + 2mm } );
+                 { -\l_tmpa_int * \l__op_h_dim - 0.0mm } );
 
         % ----- Résultat -----
         \bool_if:NT \l__op_solution_bool
@@ -1237,10 +1240,11 @@
             \node[anchor=east]
                 at ( { \l__op_left_margin_dim
                        + \l__op_nbchiffres_int * \l__op_w_dim } ,
-                     { -(\l_tmpa_int + 0.5) * \l__op_h_dim } )
+                     { -\l_tmpa_int * \l__op_h_dim - 3mm } )
                 { \__op_afficher_nombre:n { \l__op_resultat_tl } };
         }
-    \end{tikzpicture}
+    \end{tikzpicture}%
+    }% fin \raisebox
     \end{center}
     \group_end:
 }
@@ -1302,6 +1306,7 @@
         }
 
         \begin{center}
+        \raisebox{-0.5\height}{%
         \begin{tikzpicture}[
             x=1mm, y=1mm,
             every~node/.style={font=\small, inner~sep=0pt}
@@ -1326,20 +1331,21 @@
             % Trait
             \draw[line~width=\l__op_sep_dim]
                 ( { \l__op_left_margin_dim - 2mm } ,
-                  { -2 * \l__op_h_dim + 2mm } )
+                  { -2 * \l__op_h_dim + 1.5mm } )
                 -- ( { \l__op_left_margin_dim
                        + \l_tmpb_int * \l__op_w_dim } ,
-                     { -2 * \l__op_h_dim + 2mm } );
+                     { -2 * \l__op_h_dim + 1.5mm } );
             % Résultat
             \bool_if:NT \l__op_solution_bool
             {
                 \node[anchor=east]
                     at ( { \l__op_left_margin_dim
                            + \l_tmpb_int * \l__op_w_dim } ,
-                         { -2.5 * \l__op_h_dim } )
+                         { -2.2 * \l__op_h_dim } )
                     { \__op_afficher_nombre:n { \l__op_resultat_tl } };
             }
-        \end{tikzpicture}
+        \end{tikzpicture}%
+        }% fin \raisebox
         \end{center}
     }
     {
@@ -1436,6 +1442,7 @@
             { \int_set:Nn \l_tmpa_int { \l_tmpa_int + 1 } }
 
         \begin{center}
+        \raisebox{-0.5\height}{%
         \begin{tikzpicture}[
             x=1mm, y=1mm,
             every~node/.style={font=\small, inner~sep=0pt}
@@ -1458,54 +1465,58 @@
                      { -1.5 * \l__op_h_dim } )
                 { \l_tmpb_tl };
 
-            % ----- Trait sous les facteurs -----
+           % ----- Trait sous les facteurs (toujours affiché) -----
             \draw[line~width=\l__op_sep_dim]
                 ( { \l__op_left_margin_dim - 2mm } ,
-                  { -2 * \l__op_h_dim + 2mm } )
+                  { -2 * \l__op_h_dim + 0.5mm } )
                 -- ( { \l__op_left_margin_dim
                        + \l_tmpb_int * \l__op_w_dim } ,
-                     { -2 * \l__op_h_dim + 2mm } );
+                     { -2 * \l__op_h_dim + 0.5mm } );
 
-            % ----- Produits partiels -----
-            \int_set:Nn \l_tmpc_int { 0 }
-            \seq_map_inline:Nn \l__op_produits_seq
-            {
-                \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
-                \int_set:Nn \l_tmpa_int
-                    { 2 + \l_tmpc_int }
-                \node[anchor=east]
-                    at ( { \l__op_left_margin_dim
-                           + \l_tmpb_int * \l__op_w_dim } ,
-                         { -(\l_tmpa_int - 0.5) * \l__op_h_dim } )
-                    { \__op_afficher_nombre:n {##1} };
-            }
-
-            % ----- Trait sous les produits partiels -----
+            % ----- Produits partiels : place réservée + trait -----
             \int_compare:nT { \l__op_nb_int > 1 }
             {
-                \int_set:Nn \l_tmpa_int { 2 + \l__op_nb_int }
+                % Trait sous les produits partiels (toujours affiché)
+                \int_set:Nn \l_tmpd_int { 2 + \l__op_nb_int }
                 \draw[line~width=\l__op_sep_dim]
                     ( { \l__op_left_margin_dim - 2mm } ,
-                      { -\l_tmpa_int * \l__op_h_dim + 2mm } )
+                      { -\l_tmpd_int * \l__op_h_dim + 0.5mm } )
                     -- ( { \l__op_left_margin_dim
                            + \l_tmpb_int * \l__op_w_dim } ,
-                         { -\l_tmpa_int * \l__op_h_dim + 2mm } );
+                         { -\l_tmpd_int * \l__op_h_dim + 0.5mm } );
+
+                % Valeurs des produits partiels : uniquement si solution
+                \bool_if:NT \l__op_solution_bool
+                {
+                    \int_set:Nn \l_tmpc_int { 0 }
+                    \seq_map_inline:Nn \l__op_produits_seq
+                    {
+                        \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
+                        \int_set:Nn \l_tmpd_int { 2 + \l_tmpc_int }
+                        \node[anchor=east]
+                            at ( { \l__op_left_margin_dim
+                                   + \l_tmpb_int * \l__op_w_dim } ,
+                                 { -(\l_tmpd_int - 0.5) * \l__op_h_dim } )
+                            { \__op_afficher_nombre:n {##1} };
+                    }
+                }
             }
 
-            % ----- Résultat final -----
+            % ----- Résultat final (uniquement si solution) -----
             \bool_if:NT \l__op_solution_bool
             {
-                \int_set:Nn \l_tmpa_int
+                \int_set:Nn \l_tmpd_int
                     { 2 + \l__op_nb_int + 1 }
                 \int_compare:nT { \l__op_nb_int == 1 }
-                    { \int_set:Nn \l_tmpa_int { 3 } }
+                    { \int_set:Nn \l_tmpd_int { 3 } }
                 \node[anchor=east]
                     at ( { \l__op_left_margin_dim
                            + \l_tmpb_int * \l__op_w_dim } ,
-                         { -(\l_tmpa_int - 0.5) * \l__op_h_dim } )
+                         { -(\l_tmpd_int - 0.7) * \l__op_h_dim } )
                     { \__op_afficher_nombre:n { \l__op_resultat_tl } };
             }
-        \end{tikzpicture}
+        \end{tikzpicture}%
+        }% fin \raisebox
         \end{center}
     }
     {

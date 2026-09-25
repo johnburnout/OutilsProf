@@ -305,9 +305,11 @@ le second, ils sont échangés pour éviter un résultat négatif.
 ### `\multiplication[options]{facteur1, facteur2}`
 
 Pose une multiplication de deux facteurs. Si le multiplicateur
-(second facteur) comporte plusieurs chiffres, les produits partiels
-sont calculés et affichés, puis un trait sépare ces produits du
-résultat final.
+(second facteur) comporte plusieurs chiffres :
+- l'espace des produits partiels est toujours réservé, avec un
+  trait de séparation sous ces lignes ;
+- les **valeurs** des produits partiels et le **résultat final**
+  ne s'affichent que si l'option `solution` est activée.
 
 ```latex
 \multiplication{234, 56}
