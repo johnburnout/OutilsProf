@@ -623,6 +623,31 @@ Un fichier de démonstration complet est disponible dans `examples/exemples.tex`
 
 * * *
 
+# Extras
+
+Fichiers `.tex` prêts à l'emploi, à copier comme point de départ
+pour un nouveau document.
+
+## Contenu
+
+- **Basic-Article-College.tex** — article simple (cours, exercices),
+  sans numérotation des sections.
+- **Basic-Article-College-numerotation.tex** — même base, avec
+  numérotation automatique des sections et sous-sections.
+- **Basic-Evaluation-College.tex** — gabarit d'évaluation
+  (en-tête avec nom/classe/date, barème, lignes de réponse).
+
+## Prérequis
+
+Ces fichiers chargent `outilsprof.sty` (présent à la racine du
+dépôt) et supposent une compilation avec `xelatex`.
+
+## Utilisation
+
+Copier le fichier voulu à l'extérieur du dépôt, ou créer un
+sous-dossier `perso/` (non versionné) dans le dépôt pour y
+travailler.
+
 ## Licence
 
 MIT

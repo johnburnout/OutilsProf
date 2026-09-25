@@ -1,0 +1,78 @@
+\documentclass[12pt]{extarticle}
+
+% --- PACKAGES ---
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\setsansfont{Helvetica}
+\setmonofont{Menlo}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+\usepackage{lmodern}
+\usepackage{amsmath, amssymb}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{tikz}
+\usepackage{eurosym}
+\usepackage{xcolor}
+\usepackage[top=2cm, bottom=2cm, left=1cm, right=1cm]{geometry}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+% --- COMMANDES PERSONNALISÉES ---
+\newcommand{\grandeRep}[1][1]{\underline{\hspace{\dimexpr #1\textwidth\relax}}}
+\newcommand{\reponse}[1][6cm]{\underline{\hspace{#1}}}
+
+% --- BOÎTE À RETENIR ---
+\newtcolorbox{boiteRetenir}{
+    colback=gray!10,
+    colframe=gray!50!black,
+    coltitle=white,              % Titre BLANC
+    fonttitle=\bfseries,
+    arc=4pt,
+    boxrule=1pt,
+    title={\textbf{À retenir absolument}},
+    top=3mm,
+    bottom=3mm,
+    left=3mm,
+    right=3mm
+}
+
+% --- BOÎTE MÉTHODE ---
+\newtcolorbox{boiteMethode}{
+    colback=gray!5,
+    colframe=gray!40!black,
+    coltitle=white,              % Titre BLANC
+    fonttitle=\bfseries,
+    arc=4pt,
+    boxrule=0.5pt,
+    title={\textbf{Méthode de résolution}},
+    top=3mm,
+    bottom=3mm,
+    left=3mm,
+    right=3mm
+}
+
+\renewcommand{\thesection}{\Roman{section}.}
+\renewcommand{\thesubsection}{\thesection.\Alph{subsection}.}
+\renewcommand{\thesubsubsection}{\thesubsection.\arabic{subsubsection}.}
+\renewcommand{\theparagraph}{\thesubsubsection.\alph{paragraph}.}
+\renewcommand{\thesubparagraph}{\theparagraph.\roman{subparagraph}.}
+
+% --- EN-TÊTE ---
+\pagestyle{fancy}
+\fancyhf{CH¿?-¿Titre?}
+\renewcommand{\headrulewidth}{0pt}
+\fancyhead[L]{\small{Classe de ?ème}}
+\fancyhead[R]{{\small 2026/27}}
+\fancyfoot[C]{Page \thepage}
+\fancyfoot[L]{\small Collège La Boétie - Sarlat}
+\fancyfoot[R]{\small Mr Roussie}
+
+\begin{document}
+
+\end{document}
