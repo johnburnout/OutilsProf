@@ -24,38 +24,6 @@
 \tcbuselibrary{skins,breakable}
 
 % --- COMMANDES PERSONNALISÉES ---
-\newcommand{\grandeRep}[1][1]{\underline{\hspace{\dimexpr #1\textwidth\relax}}}
-\newcommand{\reponse}[1][6cm]{\underline{\hspace{#1}}}
-
-% --- BOÎTE À RETENIR ---
-\newtcolorbox{boiteRetenir}{
-    colback=gray!10,
-    colframe=gray!50!black,
-    coltitle=white,              % Titre BLANC
-    fonttitle=\bfseries,
-    arc=4pt,
-    boxrule=1pt,
-    title={\textbf{À retenir absolument}},
-    top=3mm,
-    bottom=3mm,
-    left=3mm,
-    right=3mm
-}
-
-% --- BOÎTE MÉTHODE ---
-\newtcolorbox{boiteMethode}{
-    colback=gray!5,
-    colframe=gray!40!black,
-    coltitle=white,              % Titre BLANC
-    fonttitle=\bfseries,
-    arc=4pt,
-    boxrule=0.5pt,
-    title={\textbf{Méthode de résolution}},
-    top=3mm,
-    bottom=3mm,
-    left=3mm,
-    right=3mm
-}
 
 \renewcommand{\thesection}{\Roman{section}.}
 \renewcommand{\thesubsection}{\thesection.\Alph{subsection}.}
