@@ -5,6 +5,45 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.10.1] - 2026-09-25
+
+### Corrigé
+- Section 3-B : le rectangle de masquage `|` s'affiche désormais en
+  gris clair (`gray!20`) via un `\fill` TikZ pur, au lieu d'un
+  rectangle noir dû à `\fcolorbox` mal interprété dans un nœud.
+- Section 3-B : suppression de l'option `baseline={...current
+  bounding box...}` dans les trois `tikzpicture` d'opérations
+  (`\addition`, `\soustraction`, `\multiplication`), qui
+  provoquait l'erreur `No shape named 'currentboundingbox' is
+  known`. L'alignement vertical est désormais assuré par un
+  `\raisebox{-0.5\height}{...}` autour de chaque picture.
+- Section 3-B : position des traits horizontaux ajustée
+  (`+ 0.5mm` au lieu de `+ 3.5mm` / `+ 2mm`) dans `\addition`,
+  `\soustraction` et `\multiplication`. Suppression d'un bloc de
+  trait dupliqué dans la multiplication, qui produisait un trait
+  double sous les produits partiels.
+- Section 3-B, `\addition` : le trait et le résultat sont désormais
+  positionnés relativement au dernier terme (décalages de `-3mm` et
+  `-6mm` par rapport à `-n \l__op_h_dim`) au lieu d'occuper une
+  ligne complète supplémentaire (`-(n+1)` et `-(n+1.2)`). Rendu
+  plus compact et lisible.
+
+### Modifié
+- Section 3-B, `\multiplication` : l'espace réservé aux produits
+  partiels et le trait de séparation qui les suit sont toujours
+  affichés (dès que le multiplicateur comporte plusieurs chiffres),
+  y compris sans l'option `solution`. En revanche, les **valeurs**
+  des produits partiels et le **résultat final** ne s'affichent que
+  si `solution` est activée. Comportement adapté à la préparation
+  d'exercices à trous.
+
+### Exemple
+\multiplication{234, 56}             → place réservée, rien rempli
+\multiplication[solution]{234, 56}   → tout affiché (1 404, 11 700, 13 104)
+
+### Version
+- 1.10 → 1.10.1
+
 ## [1.10] - 2026-09-24
 
 ### Ajouté
