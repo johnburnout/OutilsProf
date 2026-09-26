@@ -5,6 +5,28 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.10.2] - 2026-09-26
+
+### Corrigé
+- Section 3-B : correction de la macro `\__op_underscore:` qui
+  provoquait l'erreur `pgfkeys Error: I do not know the key
+  '/tikz/linewidth'` à chaque appel de `\addition`,
+  `\soustraction` ou `\multiplication`. En mode expl3, `line width`
+  (avec espace) est lu comme `linewidth` ; la clé correcte est
+  `line~width` (tilde = espace non absorbé), ou plus simplement
+  `thin`.
+
+### Modifié
+- Section 3-B : les rectangles de masquage des chiffres ont
+  désormais un contour blanc fin (`draw=white, thin`) qui les
+  sépare visuellement des chiffres voisins.
+- Section 3-B : les rectangles sont descendus d'1 mm
+  (`baseline=-0.5ex+1mm`) pour mieux s'aligner avec la ligne
+  de base du texte.
+
+### Version
+- 1.10.1 → 1.10.2
+
 ## [1.10.1] - 2026-09-25
 
 ### Corrigé

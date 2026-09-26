@@ -2,12 +2,12 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.10.1
-% Date : 2026/09/24
+% Version : 1.10.2
+% Date : 2026/09/26
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/09/24 v1.10.1 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/09/26 v1.10.2 Outils pour l'enseignement]
 
 % ============================================================
 % DÉPENDANCES
@@ -1063,12 +1063,17 @@
 % Masquage des chiffres avec « | »
 % ------------------------------------------------------------
 
-% Rectangle plein, sans contour, gris très clair
+% Rectangle plein, contour blanc fin, gris très clair
 % Version TikZ pure : fiable dans tous les contextes (nœuds compris).
+% Le contour blanc sépare le rectangle des chiffres adjacents.
+% NOTE : en mode expl3, utiliser « line~width » (le ~ est un espace
+%        non absorbé) ; « line width » serait lu comme « linewidth »
+%        et provoquerait une erreur pgfkeys.
 \cs_new_protected:Npn \__op_underscore:
 {
-    \tikz[baseline=-0.5ex]
-        \fill[gray!20] (0,0) rectangle (0.45em,0.7em);
+    \tikz[baseline=-0.5ex+1mm]
+        \fill[gray!20, draw=white, thin]
+            (0,0) rectangle (0.45em,0.7em);
 }
 
 % Nettoyage : retire les « | » pour le calcul
