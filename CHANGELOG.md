@@ -5,6 +5,47 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.11.1] - 2026-09-27
+
+### Corrigé
+- Section 3-B (`\addition`, `\soustraction`, `\multiplication`) :
+  un `|` en fin de nombre masque désormais un `0` implicite qui
+  est **utilisé dans le calcul**, et non plus ignoré.
+
+  Avant, `47|` était nettoyé en `47` pour le calcul, alors que
+  l'affichage montrait `47▢` — la valeur affichée ne correspondait
+  pas à la valeur calculée.
+
+  | Entrée        | Avant           | Après             |
+  |---------------|-----------------|-------------------|
+  | `47\|`        | 47              | **470**           |
+  | `47\|\|`      | 47              | **4700**          |
+  | `4\|7`        | 47 (inchangé)   | 47 (inchangé)     |
+  | `\|47`        | 47 (inchangé)   | 47 (inchangé)     |
+
+  Les `|` **au milieu** ou **en début** de nombre restent de
+  simples marqueurs de masquage : aucun `0` n'est ajouté.
+
+- Section 4-D (`\additiondurees`, `\soustractiondurees`,
+  `\additionangles`, `\soustractionangles`) : même correction,
+  appliquée composante par composante.
+
+  Exemple : `\soustraction[solution]{8|3, 47|}` affiche
+  maintenant `387` (calcul de `470 − 83`), au lieu de `36`
+  (calcul de `47 − 83`).
+
+### Ajouté
+- Dossier `tests/` avec un fichier de non-régression
+  `tests/test-commandes.tex` couvrant toutes les commandes du
+  package : masquage `|` (additions, soustractions,
+  multiplications, durées, angles), division euclidienne et
+  décimale, axes, repères, boîtes colorées, unités.
+- Règles `.gitignore` pour les fichiers de test temporaires à la
+  racine (`/test_*.tex`, `/testminimal.tex`) et les PDF générés.
+
+### Version
+- 1.11.0 → 1.11.1
+
 ## [1.11.0] - 2026-09-27
 
 ### Ajouté
