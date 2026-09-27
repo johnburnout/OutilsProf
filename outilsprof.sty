@@ -2,12 +2,12 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.11.0
+% Version : 1.11.1
 % Date : 2026/09/27
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/09/27 v1.11.0 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/09/27 v1.11.1 Outils pour l'enseignement]
 
 % ============================================================
 % DÉPENDANCES
@@ -1102,6 +1102,7 @@
 \tl_new:N     \l__op_resultat_tl
 \seq_new:N    \l__op_produits_seq
 \int_new:N    \l__op_nbchiffres_int
+\int_new:N    \l__op_trailing_int
 
 % ------------------------------------------------------------
 % Paramètres géométriques TikZ (opérations)
@@ -1150,15 +1151,31 @@
             (0,0) rectangle (0.45em,0.7em);
 }
 
-% Nettoyage : retire les « | » pour le calcul
+% Nettoyage : retire les « | » pour le calcul.
+% Un « | » en fin de nombre masque un 0 implicite : on l'ajoute
+% à la valeur pour que le calcul soit cohérent avec l'affichage.
+%   « 47| »  → 470
+%   « 47|| » → 4700
+%   « 4|7 »  → 47   (le | est au milieu, pas de 0 ajouté)
 \cs_new_protected:Npn \__op_nettoie:nN #1 #2
 {
     \tl_set:Nx \l_tmpa_tl { \tl_to_str:n {#1} }
     \tl_clear:N #2
+    \int_zero:N \l__op_trailing_int
     \tl_map_inline:Nn \l_tmpa_tl
     {
-        \tl_if_eq:nnF {##1} { | }
-            { \tl_put_right:Nn #2 {##1} }
+        \tl_if_eq:nnTF {##1} { | }
+            { \int_incr:N \l__op_trailing_int }
+            {
+                \tl_put_right:Nn #2 {##1}
+                \int_zero:N \l__op_trailing_int
+            }
+    }
+    \int_zero:N \l_tmpc_int
+    \int_while_do:nNnn { \l_tmpc_int } < { \l__op_trailing_int }
+    {
+        \tl_put_right:Nn #2 { 0 }
+        \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
     }
 }
 
@@ -1793,6 +1810,7 @@
 \bool_new:N  \l__dop_solution_bool
 \bool_new:N  \l__dop_angles_bool
 \bool_new:N  \l__dop_addition_bool
+\int_new:N   \l__dop_trailing_int
 
 % Cumul global (réinitialisé à chaque appel)
 \int_new:N \g__dop_j_int
@@ -1817,18 +1835,29 @@
 }
 
 % ------------------------------------------------------------
-% Nettoyage d'une composante : retire les « | » pour le calcul
-% \str_set:Nx expanse d'abord (donc \seq_item:Nn donne "12"),
-% puis convertit en chaîne à catcode uniforme (12).
+% Nettoyage d'une composante : retire les « | » pour le calcul.
+% Un « | » en fin de composante masque un 0 implicite : on
+% l'ajoute pour que le calcul soit cohérent avec l'affichage.
 % ------------------------------------------------------------
 \cs_new_protected:Npn \__dop_clean:n #1
 {
     \str_set:Nx \l__dop_str { #1 }
     \tl_clear:N \l__dop_clean_tl
+    \int_zero:N \l__dop_trailing_int
     \str_map_inline:Nn \l__dop_str
     {
-        \str_if_eq:nnF {##1} { | }
-            { \tl_put_right:Nn \l__dop_clean_tl {##1} }
+        \str_if_eq:nnTF {##1} { | }
+            { \int_incr:N \l__dop_trailing_int }
+            {
+                \tl_put_right:Nn \l__dop_clean_tl {##1}
+                \int_zero:N \l__dop_trailing_int
+            }
+    }
+    \int_zero:N \l_tmpc_int
+    \int_while_do:nNnn { \l_tmpc_int } < { \l__dop_trailing_int }
+    {
+        \tl_put_right:Nn \l__dop_clean_tl { 0 }
+        \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
     }
 }
 

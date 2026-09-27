@@ -1,0 +1,202 @@
+% ============================================================
+% tests/test-commandes.tex
+% Fichier de test de non-régression pour outilsprof
+% ============================================================
+% Compilation : xelatex test-commandes.tex
+% ============================================================
+
+\documentclass[12pt]{extarticle}
+
+% --- Polices (XeLaTeX) ---
+\usepackage{fontspec}
+\setmainfont{Times New Roman}
+\setsansfont{Helvetica}
+\setmonofont{Menlo}
+
+% --- Maths et tableaux ---
+\usepackage{amsmath, amssymb}
+\usepackage{array}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{fancyhdr}
+\usepackage{multirow}
+\usepackage{multicol}
+
+% --- Graphiques et boîtes ---
+\usepackage{tikz}
+\usepackage{geometry}                % sans options (tcolorbox l'inclut)
+\usepackage{tcolorbox}
+\tcbuselibrary{skins,breakable}
+
+% --- Le package à tester ---
+\usepackage{outilsprof}
+
+% --- Réglages globaux ---
+\geometry{top=2cm, bottom=2cm, left=1cm, right=1cm}
+\setlength{\headheight}{14pt}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{1em}
+
+% --- Notation pour la case grise attendue ---
+\newcommand{\grise}{\ensuremath{\square}}
+
+\begin{document}
+
+\begin{center}
+  {\Large\bfseries Tests de non-régression — \texttt{outilsprof} v1.11.0}
+\end{center}
+
+% ============================================================
+\section*{1. Masquage \texttt{|} — additions}
+% ============================================================
+
+\subsection*{1.1 — Le 4 est masqué}
+
+\textbf{Entrée :} \verb!\addition[solution]{1|4, 56}!
+\quad\textbf{Attendu :} $1\grise + 56 = 70$
+
+\addition[solution]{1|4, 56}
+
+\subsection*{1.2 — Le 1 est masqué}
+
+\textbf{Entrée :} \verb!\addition[solution]{|14, 56}!
+\quad\textbf{Attendu :} $\grise 4 + 56 = 70$
+
+\addition[solution]{|14, 56}
+
+\subsection*{1.3 — Un 0 implicite est masqué (fin de nombre)}
+
+\textbf{Entrée :} \verb!\addition[solution]{47|, 12}!
+\quad\textbf{Attendu :} $47\grise + 12 = 482$
+
+\addition[solution]{47|, 12}
+
+\subsection*{1.4 — Plusieurs masques}
+
+\textbf{Entrée :} \verb!\addition[solution]{6|34, |72|8}!
+\quad\textbf{Attendu :} $6\grise 4 + \grise 2\grise = 1362$
+
+\addition[solution]{6|34, |72|8}
+
+% ============================================================
+\section*{2. Masquage \texttt{|} — soustractions}
+% ============================================================
+
+\subsection*{2.1 — \texttt{8|3, 47|}}
+
+\soustraction[solution]{8|3, 47|}
+
+\subsection*{2.2 — \texttt{|73|4, 2|78}}
+
+\soustraction[solution]{|73|4, 2|78}
+
+\subsection*{2.1b — Vérification du 0 implicite : \texttt{8|3, 47|}}
+
+\textbf{Calcul attendu :} $470 - 83 = 387$
+\quad(Les termes sont permutés : 83 < 470)
+
+\soustraction[solution]{8|3, 47|}
+
+% ============================================================
+\section*{3. Masquage \texttt{|} — multiplications}
+% ============================================================
+
+\subsection*{3.1 — \texttt{24, 5|6}}
+
+\multiplication[solution]{24, 5|6}
+
+\subsection*{3.2 — \texttt{|1|2|3, |45}}
+
+\multiplication[solution]{|1|2|3, |45}
+
+% ============================================================
+\section*{4. Masquage \texttt{|} — durées}
+% ============================================================
+
+\subsection*{4.1 — \texttt{3+1|2, 5+30}}
+
+\additiondurees[solution]{3+1|2, 5+30}
+
+\subsection*{4.2 — \texttt{3+|5+45, 2+30}}
+
+\additiondurees[solution]{3+|5+45, 2+30}
+
+% ============================================================
+\section*{5. Masquage \texttt{|} — angles}
+% ============================================================
+
+\subsection*{5.1 — \texttt{5|6+30, 12+45}}
+
+\additionangles[solution]{5|6+30, 12+45}
+
+% ============================================================
+\section*{6. Division euclidienne et décimale}
+% ============================================================
+
+\subsection*{6.1 — Division euclidienne simple}
+
+\division[dividende=1234, diviseur=56, solution]
+
+\subsection*{6.2 — Division euclidienne avec étapes}
+
+\division[dividende=1234, diviseur=56, solution, etapes={112, 112}]
+
+\subsection*{6.3 — Division décimale : $22 \div 7$}
+
+\division[dividende=22, diviseur=7, solution, decimales=3,
+          etapes={21, 7, 28, 14}]
+
+\subsection*{6.4 — Division décimale : $1000 \div 70$}
+
+\division[dividende=1000, diviseur=70, solution, decimales=5,
+          etapes={70, 280, 140, 560, 350, 490, 70}]
+
+\subsection*{6.5 — Padding à gauche : $1 \div 8$}
+
+\division[dividende=1, diviseur=8, solution, decimales=3]
+
+\subsection*{6.6 — Padding à droite : $12 \div 8$}
+
+\division[dividende=12, diviseur=8, solution, decimales=2]
+
+% ============================================================
+\section*{7. Autres commandes (test de fumée)}
+% ============================================================
+
+\subsection*{7.1 — Axe gradué}
+
+\axegradue[fin=400, pas=100, nombre=5,
+           points={A/120, B/340/blue, C/60/green}]
+
+\subsection*{7.2 — Repère gradué}
+
+\reperegradue[bg={(-5,-5)}, hd={(5,5)},
+              points={A/(4,5), B/(-2,3)/blue},
+              affichernom=true, affichercoords=true]
+
+\subsection*{7.3 — Boîtes}
+
+\begin{retenir}
+  Le théorème de Pythagore : $a^2 + b^2 = c^2$.
+\end{retenir}
+
+\begin{vigilance}
+  Ne pas oublier de vérifier les unités.
+\end{vigilance}
+
+\begin{methode}
+  1. Identifier les données \\
+  2. Appliquer la formule
+\end{methode}
+
+\subsection*{7.4 — Grandeurs, angles, durées}
+
+\unite{9,81}{m/s^2} \quad
+\degre{56+30+15} \quad
+\dureeheure{5+45+30}
+
+\subsection*{7.5 — Lignes de réponse}
+
+Le résultat est \reponse. \grandeReponse[0.5]
+
+\end{document}

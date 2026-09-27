@@ -21,13 +21,20 @@
 *.swp
 *~
 
-# Fichiers de compilation
+# Fichiers de compilation : on ignore tous les PDF...
 *.pdf
-test*
-!doc/*.pdf
-!exemples/*.pdfoutilsprof.pdf
 
-# Exception : garder le PDF d'exemple
-!examples/exemples.pdf
-*.pdf
-*.pdf
+# ...sauf ceux explicitement listés ci-dessous
+!exemples/*.pdf
+!examples/*.pdf
+!doc/*.pdf
+outilsprof.pdf
+
+# Fichiers de test temporaires à la racine
+/test_*.tex
+/test-*.tex
+/testminimal.tex
+
+# PDF d'exemples : à décider
+# (décommenter pour les ignorer)
+# examples/exemples.pdf
