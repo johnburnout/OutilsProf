@@ -416,31 +416,81 @@ Aire du rectangle : \reponse[3cm]\,cm\textsuperscript{2}.
 \end{vigilance}
 
 % ============================================================
-\section{Division euclidienne}
+\section{Division}
 % ============================================================
 
-\subsection{Division simple (sans étapes)}
+\subsection{Division euclidienne}
+
+\subsubsection{Division simple (sans étapes)}
 
 \begin{center}
 \division[dividende=1234, diviseur=56, solution]
 \end{center}
 
-\subsection{Division complète avec étapes}
+\subsubsection{Division complète avec étapes}
 
 \begin{center}
 \division[dividende=1234, diviseur=56, solution, etapes={112, 112}]
 \end{center}
 
-\subsection{Division avec reste à plusieurs chiffres}
+\subsubsection{Division avec reste à plusieurs chiffres}
 
 \begin{center}
 \division[dividende=87765, diviseur=123, solution, etapes={861, 123, 369}]
 \end{center}
 
-\subsection{Division sans solution (données seules)}
+\subsubsection{Division sans solution (données seules)}
 
 \begin{center}
 \division[dividende=1234, diviseur=56, etapes={112, 112}]
+\end{center}
+
+\subsection{Division décimale}
+
+\subsubsection{Division exacte : $12 \div 8 = 1,5$}
+
+\begin{center}
+\division[dividende=12, diviseur=8, solution, decimales=1,
+          etapes={8, 40}]
+\end{center}
+
+\subsubsection{Quotient avec padding à droite : $12 \div 8 = 1,50$}
+
+\begin{center}
+\division[dividende=12, diviseur=8, solution, decimales=2,
+          etapes={8, 40}]
+\end{center}
+
+\subsubsection{Quotient inférieur à 1 : $1 \div 8 = 0,125$}
+
+\begin{center}
+\division[dividende=1, diviseur=8, solution, decimales=3,
+          etapes={8, 16, 40}]
+\end{center}
+
+\subsubsection{Quotient long : $1000 \div 70 \approx 14,28571$}
+
+\begin{center}
+\division[dividende=1000, diviseur=70, solution, decimales=5,
+          etapes={70, 280, 140, 560, 350, 490, 70}]
+\end{center}
+
+\subsubsection{Division décimale sans solution}
+
+\begin{center}
+\division[dividende=22, diviseur=7, decimales=3,
+          etapes={21, 7, 28, 14}]
+\end{center}
+
+\subsection{Comparaison euclidien / décimal}
+
+\begin{center}
+\division[dividende=100, diviseur=7, solution]
+\end{center}
+
+\begin{center}
+\division[dividende=100, diviseur=7, solution, decimales=4,
+          etapes={7, 28, 14, 56, 35, 49}]
 \end{center}
 
 % ============================================================

@@ -499,12 +499,22 @@ Donne :
 
 * * *
 
-## Division euclidienne et utilitaire `division_etapes.py`
+## Division euclidienne et décimale
 
-La commande `\division` pose une division euclidienne complète
-avec le dividende, le diviseur, la barre verticale, le quotient
-et — si fournies — les étapes intermédiaires (produits partiels
-à soustraire).
+La commande `\division` pose une division posée complète avec le
+dividende, le diviseur, la barre verticale, le quotient et — si
+fournies — les étapes intermédiaires (produits partiels à
+soustraire).
+
+Deux modes sont disponibles :
+
+- **Division euclidienne** (par défaut, `decimales=0`) : quotient
+  entier, reste entier.
+- **Division décimale** (`decimales=n`) : le dividende est étendu
+  de `n` zéros pour le calcul, mais reste affiché **entier** ;
+  seules les colonnes vides sont réservées à droite pour le
+  développement décimal. Le quotient est affiché avec `n`
+  décimales.
 
 ### Options de `\division`
 
@@ -514,15 +524,57 @@ Clé | Description | Défaut
 `diviseur` | Entier diviseur (non nul) | `1`
 `solution` | Affiche quotient et reste | `false`
 `etapes` | Liste des produits partiels, séparés par des virgules | vide
+`decimales` | Nombre de décimales du quotient (0 = division euclidienne) | `0`
 
 > **Les nombres doivent être saisis sans espaces insécables (`~`).**
 > Utilisez uniquement l'espace normal ou rien du tout.
 
+### Division euclidienne
+
+```latex
+\division[dividende=1234, diviseur=56, solution]
+\division[dividende=87765, diviseur=123, solution, etapes={861, 123, 369}]
+```
+
+### Division décimale
+
+```latex
+% 22 ÷ 7 ≈ 3,142
+\division[dividende=22, diviseur=7, solution, decimales=3,
+          etapes={21, 7, 28, 14}]
+
+% 1000 ÷ 70 ≈ 14,28571
+\division[dividende=1000, diviseur=70, solution, decimales=5,
+          etapes={70, 280, 140, 560, 350, 490, 70}]
+
+% 1 ÷ 8 = 0,125 (padding à gauche)
+\division[dividende=1, diviseur=8, solution, decimales=3]
+
+% 12 ÷ 8 = 1,50 (padding à droite)
+\division[dividende=12, diviseur=8, solution, decimales=2]
+```
+
+**Comportement** :
+
+- Le dividende reste un entier : aucune virgule ni zéro parasite
+  n'est affiché.
+- Le quotient est padded à gauche (pour `0,125`) ou à droite
+  (pour `1,50`) selon les besoins.
+- Le reste final est celui de l'algorithme étendu, pas le reste
+  euclidien initial. Pour `1000 ÷ 70` avec 5 décimales, il vaut
+  `30`.
+- L'option `etapes` doit correspondre aux produits partiels
+  calculés sur le dividende étendu (avec les zéros ajoutés).
+
 ### Calcul des étapes : `division_etapes.py`
 
 Le script `outils/division_etapes.py` calcule automatiquement les
-étapes d'une division euclidienne et génère la commande `\division`
-correspondante, prête à copier dans un document LaTeX.
+étapes d'une division **euclidienne** et génère la commande
+`\division` correspondante, prête à copier dans un document LaTeX.
+
+> **Note** : le script ne gère pas encore les décimales. Pour une
+> division décimale, calculez les étapes à la main ou adaptez le
+> script.
 
 #### Utilisation
 
@@ -561,7 +613,7 @@ python3 division_etapes.py 87765 123 -o division.tex
 pdflatex division.tex
 ```
 
-#### Comportement en cas d'erreur
+### Comportement en cas d'erreur
 
 Si les étapes fournies à `\division` ne correspondent pas au calcul
 attendu, le package affiche une boîte d'erreur rouge à la place de
