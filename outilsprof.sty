@@ -2,12 +2,12 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.10.2
-% Date : 2026/09/26
+% Version : 1.11.0
+% Date : 2026/09/27
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/09/26 v1.10.2 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/09/27 v1.11.0 Outils pour l'enseignement]
 
 % ============================================================
 % DÉPENDANCES
@@ -542,21 +542,24 @@
 % ============================================================
 % Syntaxe :
 %   \division[dividende=1234, diviseur=56, solution,
-%             etapes={112, 112}]
+%             etapes={112, 112}, decimales=3]
 %
 % Options :
 %   dividende : entier
 %   diviseur  : entier
 %   solution  : bool — affiche quotient et reste
 %   etapes    : liste des produits à soustraire
+%   decimales : entier ≥ 0 — nombre de décimales du quotient
+%               (0 par défaut = division euclidienne classique)
 %
 % Rendu :
-%   - 1 colonne par chiffre du dividende
+%   - 1 colonne par chiffre du dividende (étendu si decimales > 0)
 %   - barre verticale
-%   - max(nb diviseur, nb quotient) colonnes à droite
+%   - max(nb diviseur, nb quotient affiché) colonnes à droite
 %   - Sans etapes : pas de produits intermédiaires
 %   - Avec etapes : nombres affichés, alignés sur le partiel
 %   - Trait sous le diviseur toujours affiché
+%   - Virgule affichée si decimales > 0
 % ============================================================
 
 \ExplSyntaxOn
@@ -588,10 +591,21 @@
 \tl_new:N  \l__div_quotient_tl
 \tl_new:N  \l__div_reste_tl
 \tl_new:N  \l__div_etapes_user_tl
+\tl_new:N  \l__div_decimales_tl
 \tl_new:N  \l_tmpc_tl
 \bool_new:N \l__div_etapes_ok_bool
 \bool_new:N \l__div_etapes_fournies_bool
 \bool_new:N \l__op_solution_bool
+
+% --- Variables pour la gestion des décimales ---
+\int_new:N \l__div_nbdec_int
+\int_new:N \l__div_nbpositions_int
+\int_new:N \l__div_nbquo_entier_int
+\int_new:N \l__div_nbquo_affiche_int
+\tl_new:N  \l__div_dividende_etendu_tl
+\int_new:N \l__div_quotient_etendu_int
+\tl_new:N  \l__div_quotient_etendu_tl
+\tl_new:N  \l__div_quotient_affiche_tl
 
 % ------------------------------------------------------------
 % Options
@@ -606,6 +620,8 @@
     solution  .initial:n  = false,
     etapes    .tl_set:N   = \l__div_etapes_user_tl,
     etapes    .initial:n  = {},
+    decimales .tl_set:N   = \l__div_decimales_tl,
+    decimales .initial:n  = 0,
 }
 
 % ------------------------------------------------------------
@@ -616,7 +632,14 @@
 {
     \int_set:Nn \l__div_dividende_int { \l__div_dividende_tl }
     \int_set:Nn \l__div_diviseur_int  { \l__div_diviseur_tl }
+    \int_set:Nn \l__div_nbdec_int     { \l__div_decimales_tl }
 
+    \int_set:Nn \l__div_nbchiffres_int
+        { \tl_count:N \l__div_dividende_tl }
+    \int_set:Nn \l__div_nbdiv_int
+        { \tl_count:N \l__div_diviseur_tl }
+
+    % --- Quotient et reste entiers (compatibilité) ---
     \int_set:Nn \l__div_quotient_int
         { \int_div_truncate:nn
             { \l__div_dividende_int }
@@ -630,40 +653,73 @@
     \tl_set:Nx \l__div_reste_tl
         { \int_use:N \l__div_reste_int }
 
-    \int_set:Nn \l__div_nbchiffres_int
-        { \tl_count:N \l__div_dividende_tl }
-    \int_set:Nn \l__div_nbdiv_int
-        { \tl_count:N \l__div_diviseur_tl }
-    \int_set:Nn \l__div_nbquo_int
-        { \tl_count:N \l__div_quotient_tl }
-
-    \int_set:Nn \l__div_nbcol_droite_int
-        { \int_max:nn
-            { \l__div_nbdiv_int }
-            { \l__div_nbquo_int } }
-
-    \seq_clear:N \l__div_etapes_calc_seq
-    \int_zero:N \l__div_partiel_int
-    \int_zero:N \l__div_nb_etapes_int
-    \int_set:Nn \l__div_puissance_int { 1 }
-
+    % --- Dividende étendu : ajout de nbdec zéros ---
+    \tl_set:Nx \l__div_dividende_etendu_tl
+        { \l__div_dividende_tl }
     \int_set:Nn \l_tmpc_int { 1 }
-    \int_while_do:nNnn { \l_tmpc_int } < { \l__div_nbchiffres_int }
+    \int_while_do:nNnn { \l_tmpc_int } < { \l__div_nbdec_int + 1 }
     {
-        \int_set:Nn \l__div_puissance_int
-            { \l__div_puissance_int * 10 }
+        \tl_put_right:Nn \l__div_dividende_etendu_tl { 0 }
         \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
     }
 
+    % --- Nombre total de positions (colonnes) du dividende étendu ---
+    \int_set:Nn \l__div_nbpositions_int
+        { \l__div_nbchiffres_int + \l__div_nbdec_int }
+
+    % --- Quotient étendu = (dividende × 10^nbdec) ÷ diviseur ---
+    \int_set:Nn \l_tmpa_int { \l__div_dividende_int }
     \int_set:Nn \l_tmpc_int { 1 }
-    \int_while_do:nNnn { \l_tmpc_int } < { \l__div_nbchiffres_int + 1 }
+    \int_while_do:nNnn { \l_tmpc_int } < { \l__div_nbdec_int + 1 }
     {
-        \int_set:Nn \l__div_chiffre_int
-            { \int_div_truncate:nn
-                { \l__div_dividende_int }
-                { \l__div_puissance_int } }
-        \int_set:Nn \l__div_chiffre_int
-            { \int_mod:nn { \l__div_chiffre_int } { 10 } }
+        \int_set:Nn \l_tmpa_int { \l_tmpa_int * 10 }
+        \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
+    }
+    \int_set:Nn \l__div_quotient_etendu_int
+        { \int_div_truncate:nn
+            { \l_tmpa_int }
+            { \l__div_diviseur_int } }
+    \tl_set:Nx \l__div_quotient_etendu_tl
+        { \int_use:N \l__div_quotient_etendu_int }
+
+    % --- Nombre de chiffres de la partie entière du quotient ---
+    \int_set:Nn \l__div_nbquo_entier_int
+        { \tl_count:V \l__div_quotient_tl }
+    \int_compare:nT { \l__div_quotient_int == 0 }
+        { \int_set:Nn \l__div_nbquo_entier_int { 1 } }
+
+    % --- Nombre total de chiffres du quotient affiché ---
+    \int_set:Nn \l__div_nbquo_affiche_int
+        { \l__div_nbquo_entier_int + \l__div_nbdec_int }
+
+    % --- Quotient affiché : padding avec des zéros à gauche ---
+    \tl_set:Nx \l__div_quotient_affiche_tl
+        { \l__div_quotient_etendu_tl }
+    \int_set:Nn \l_tmpc_int
+        { \tl_count:V \l__div_quotient_affiche_tl }
+    \int_while_do:nNnn { \l_tmpc_int } < { \l__div_nbquo_affiche_int }
+    {
+        \tl_put_left:Nn \l__div_quotient_affiche_tl { 0 }
+        \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
+    }
+
+    % --- Nombre de colonnes à droite de la barre ---
+    \int_set:Nn \l__div_nbcol_droite_int
+        { \int_max:nn
+            { \l__div_nbdiv_int }
+            { \l__div_nbquo_affiche_int } }
+
+    % --- Algorithme pas à pas sur le dividende étendu ---
+    \seq_clear:N \l__div_etapes_calc_seq
+    \int_zero:N \l__div_partiel_int
+    \int_zero:N \l__div_nb_etapes_int
+
+    \int_set:Nn \l_tmpc_int { 1 }
+    \int_while_do:nNnn { \l_tmpc_int } < { \l__div_nbpositions_int + 1 }
+    {
+        \__div_char:nn {\l__div_dividende_etendu_tl} {\l_tmpc_int}
+        \int_set:Nn \l__div_chiffre_int { \l_tmpa_tl }
+
         \int_set:Nn \l__div_partiel_int
             { \l__div_partiel_int * 10 + \l__div_chiffre_int }
 
@@ -697,10 +753,14 @@
                 { \l__div_partiel_int - \l__div_produit_int }
         }
 
-        \int_set:Nn \l__div_puissance_int
-            { \l__div_puissance_int / 10 }
         \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
     }
+
+    % --- Mise à jour du reste avec la valeur finale du partiel ---
+    % En division décimale, le reste final est le partiel restant
+    % après la dernière étape (et non le reste euclidien initial).
+    \int_set:Nn \l__div_reste_int { \l__div_partiel_int }
+    \tl_set:Nx \l__div_reste_tl { \int_use:N \l__div_reste_int }
 }
 
 % ------------------------------------------------------------
@@ -792,12 +852,14 @@
             x=1mm, y=1mm,
             every~node/.style={font=\small, inner~sep=0pt}
         ]
-            % ===== Ligne 1 : chiffres du dividende =====
+            % ===== Ligne 1 : chiffres du dividende (entier seulement) =====
+            % Les colonnes supplémentaires (décimales) sont réservées
+            % par l'espace, mais aucun chiffre n'y est dessiné.
             \int_set:Nn \l_tmpc_int { 1 }
             \int_while_do:nNnn { \l_tmpc_int }
                 < { \l__div_nbchiffres_int + 1 }
             {
-                \__div_char:nn {\l__div_dividende_tl} {\l_tmpc_int}
+                \__div_char:nn {\l__div_dividende_etendu_tl} {\l_tmpc_int}
                 \node[anchor=center]
                     at ( { (\l_tmpc_int - 0.5) * \l__div_w_dim } ,
                          { -0.5 * \l__div_h_dim } )
@@ -812,7 +874,7 @@
             {
                 \__div_char:nn {\l__div_diviseur_tl} {\l_tmpc_int}
                 \node[anchor=center]
-                    at ( { (\l__div_nbchiffres_int + \l_tmpc_int
+                    at ( { (\l__div_nbpositions_int + \l_tmpc_int
                             - 0.5) * \l__div_w_dim } ,
                          { -0.5 * \l__div_h_dim } )
                     { \l_tmpa_tl };
@@ -821,9 +883,9 @@
 
             % ===== Barre verticale =====
             \draw[line~width=\l__div_sep_dim]
-                ( { \l__div_nbchiffres_int * \l__div_w_dim } ,
+                ( { \l__div_nbpositions_int * \l__div_w_dim } ,
                   { 0 * \l__div_h_dim } )
-                -- ( { \l__div_nbchiffres_int * \l__div_w_dim } ,
+                -- ( { \l__div_nbpositions_int * \l__div_w_dim } ,
                      { -\l_tmpb_int * \l__div_h_dim } );
 
             % ===== Quotient (si solution) =====
@@ -831,23 +893,35 @@
             {
                 \int_set:Nn \l_tmpd_int { 1 }
                 \int_while_do:nNnn { \l_tmpd_int }
-                    < { \l__div_nbquo_int + 1 }
+                    < { \l__div_nbquo_affiche_int + 1 }
                 {
-                    \__div_char:nn {\l__div_quotient_tl} {\l_tmpd_int}
+                    \__div_char:nn {\l__div_quotient_affiche_tl}
+                        {\l_tmpd_int}
                     \node[anchor=center]
-                        at ( { (\l__div_nbchiffres_int + \l_tmpd_int
+                        at ( { (\l__div_nbpositions_int + \l_tmpd_int
                                 - 0.5) * \l__div_w_dim } ,
                              { -1.5 * \l__div_h_dim } )
                         { \l_tmpa_tl };
                     \int_set:Nn \l_tmpd_int { \l_tmpd_int + 1 }
                 }
+
+                % Virgule dans le quotient (si decimales > 0)
+                \int_compare:nT { \l__div_nbdec_int > 0 }
+                {
+                    \node[anchor=center, font=\small\bfseries]
+                        at ( { (\l__div_nbpositions_int
+                                + \l__div_nbquo_entier_int)
+                               * \l__div_w_dim + 0.5mm } ,
+                             { -1.5 * \l__div_h_dim - 1.5mm } )
+                        { , };
+                }
             }
 
             % ===== Trait sous le diviseur (toujours affiché) =====
             \draw[line~width=\l__div_sep_dim]
-                ( { \l__div_nbchiffres_int * \l__div_w_dim } ,
+                ( { \l__div_nbpositions_int * \l__div_w_dim } ,
                   { -1 * \l__div_h_dim } )
-                -- ( { (\l__div_nbchiffres_int
+                -- ( { (\l__div_nbpositions_int
                        + \l__div_nbcol_droite_int)
                        * \l__div_w_dim } ,
                      { -1 * \l__div_h_dim } );
@@ -893,7 +967,7 @@
                     \draw[line~width=\l__div_sep_dim]
                         ( { 0 * \l__div_w_dim } ,
                           { -\l_tmpa_int * \l__div_h_dim } )
-                        -- ( { \l__div_nbchiffres_int
+                        -- ( { \l__div_nbpositions_int
                                * \l__div_w_dim } ,
                              { -\l_tmpa_int * \l__div_h_dim } );
 
@@ -938,7 +1012,7 @@
                 \int_compare:nT { \l__div_reste_int > 0 }
                 {
                     \int_set:Nn \l__div_debut_int
-                        { \l__div_nbchiffres_int
+                        { \l__div_nbpositions_int
                           - \tl_count:V \l__div_reste_tl + 1 }
                     \int_set:Nn \l_tmpd_int { 1 }
                     \int_while_do:nNnn { \l_tmpd_int }
