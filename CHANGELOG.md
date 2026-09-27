@@ -5,6 +5,18 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.11.0] - 2026-09-27
+
+### Ajouté
+- Section 3-A : option `decimales=n` pour `\division`. Le dividende
+  reste un entier, mais `n` colonnes vides sont réservées à droite
+  pour le développement décimal, et le quotient est affiché avec
+  `n` décimales.
+
+  ```latex
+  \division[dividende=1000, diviseur=70, solution, decimales=5,
+            etapes={70, 280, 140, 560, 350, 490, 70}]
+
 ## [1.10.2] - 2026-09-26
 
 ### Corrigé
