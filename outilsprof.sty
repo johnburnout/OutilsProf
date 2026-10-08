@@ -2,12 +2,12 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.11.1
-% Date : 2026/09/27
+% Version : 1.12.0
+% Date : 2026/10/08
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/09/27 v1.11.1 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/10/08 v1.12.0 Outils pour l'enseignement]
 
 % ============================================================
 % DÉPENDANCES
@@ -1103,6 +1103,8 @@
 \seq_new:N    \l__op_produits_seq
 \int_new:N    \l__op_nbchiffres_int
 \int_new:N    \l__op_trailing_int
+\bool_new:N   \l__op_corrige_bool
+\tl_new:N     \l__op_couleurcorrige_tl
 
 % ------------------------------------------------------------
 % Paramètres géométriques TikZ (opérations)
@@ -1127,6 +1129,10 @@
     solution .initial:n  = false,
     taille   .tl_set:N   = \l__op_taille_tl,
     taille   .initial:n  = normalsize,
+    corrige          .bool_set:N = \l__op_corrige_bool,
+    corrige          .initial:n  = false,
+    couleurcorrige   .tl_set:N   = \l__op_couleurcorrige_tl,
+    couleurcorrige   .initial:n  = blue!80!black,
 }
 
 \cs_new_protected:Npn \__op_appliquer_taille:
@@ -1144,11 +1150,18 @@
 % NOTE : en mode expl3, utiliser « line~width » (le ~ est un espace
 %        non absorbé) ; « line width » serait lu comme « linewidth »
 %        et provoquerait une erreur pgfkeys.
+% Rectangle gris (mode normal) : le chiffre masqué n'est pas lisible.
 \cs_new_protected:Npn \__op_underscore:
 {
     \tikz[baseline=-0.5ex+1mm]
         \fill[gray!20, draw=white, thin]
             (0,0) rectangle (0.45em,0.7em);
+}
+
+% Chiffre caché affiché en couleur (mode corrigé).
+\cs_new_protected:Npn \__op_chiffrecache:n #1
+{
+    \textcolor{\l__op_couleurcorrige_tl}{\textbf{#1}}%
 }
 
 % Nettoyage : retire les « | » pour le calcul.
@@ -1179,7 +1192,8 @@
     }
 }
 
-% Masquage : « |X » devient un rectangle (X masqué)
+% Masquage : « |X » devient soit un rectangle gris (mode normal),
+% soit le chiffre X coloré (mode corrigé).
 \cs_new_protected:Npn \__op_masque:nN #1 #2
 {
     \tl_set:Nx \l_tmpa_tl { \tl_to_str:n {#1} }
@@ -1189,8 +1203,10 @@
     {
         \bool_if:NTF \l_tmpa_bool
             {
-                % On sort d'un « | » : écrire le rectangle
-                \tl_put_right:Nn #2 { \__op_underscore: }
+                % On sort d'un « | » : émettre le masque ou le chiffre
+                \bool_if:NTF \l__op_corrige_bool
+                    { \tl_put_right:Nn #2 { \__op_chiffrecache:n {##1} } }
+                    { \tl_put_right:Nn #2 { \__op_underscore: } }
                 \tl_if_eq:nnTF {##1} { | }
                     { }   % « || » : rester en mode masquage
                     { \bool_set_false:N \l_tmpa_bool }
@@ -1201,9 +1217,13 @@
                     { \tl_put_right:Nn #2 {##1} }
             }
     }
-    % Si on finit sur un « | », insérer un rectangle pour le 0 implicite
+    % Si on finit sur un « | », insérer un masque ou un 0 implicite
     \bool_if:NT \l_tmpa_bool
-        { \tl_put_right:Nn #2 { \__op_underscore: } }
+        {
+            \bool_if:NTF \l__op_corrige_bool
+                { \tl_put_right:Nn #2 { \__op_chiffrecache:n {0} } }
+                { \tl_put_right:Nn #2 { \__op_underscore: } }
+        }
 }
 
 % ------------------------------------------------------------
@@ -1774,14 +1794,16 @@
 % Les composantes manquantes sont implicitement 0.
 %
 % Options communes :
-%   solution : bool — affiche le résultat (défaut : false)
+%   solution         : bool — affiche le résultat (défaut : false)
+%   corrige          : bool — affiche les chiffres cachés en couleur
+%   couleurcorrige   : couleur des chiffres cachés (défaut : blue!80!black)
 %
 % MASQUAGE : un « | » placé dans une composante masque le chiffre
-%   qui suit (remplacé par un underscore bas). Le chiffre reste
-%   utilisé dans le calcul.
+%   qui suit (remplacé par un rectangle gris, ou affiché en couleur
+%   en mode corrigé). Le chiffre reste utilisé dans le calcul.
 %   Exemple : \additiondurees[solution]{3+1|2, 5+30}
 %              → calcul 3 j 12 h + 5 h 30 min
-%              → affichage « 3 j 1 _ h » + « 5 h 30 min »
+%              → affichage « 3 j 1 ▢ h » + « 5 h 30 min »
 %
 % Affichage : les composantes nulles à droite sont masquées,
 %             les colonnes sont alignées verticalement,
@@ -1811,6 +1833,8 @@
 \bool_new:N  \l__dop_angles_bool
 \bool_new:N  \l__dop_addition_bool
 \int_new:N   \l__dop_trailing_int
+\bool_new:N  \l__dop_corrige_bool
+\tl_new:N    \l__dop_couleurcorrige_tl
 
 % Cumul global (réinitialisé à chaque appel)
 \int_new:N \g__dop_j_int
@@ -1830,8 +1854,12 @@
 % ------------------------------------------------------------
 \keys_define:nn { outilsprof / dureeop }
 {
-    solution .bool_set:N = \l__dop_solution_bool,
-    solution .initial:n  = false,
+    solution         .bool_set:N = \l__dop_solution_bool,
+    solution         .initial:n  = false,
+    corrige          .bool_set:N = \l__dop_corrige_bool,
+    corrige          .initial:n  = false,
+    couleurcorrige   .tl_set:N   = \l__dop_couleurcorrige_tl,
+    couleurcorrige   .initial:n  = blue!80!black,
 }
 
 % ------------------------------------------------------------
@@ -1862,7 +1890,8 @@
 }
 
 % ------------------------------------------------------------
-% Masquage d'une composante : chaque « |X » devient un « _ »
+% Masquage d'une composante : chaque « |X » devient un rectangle
+% gris (mode normal) ou le chiffre X coloré (mode corrigé).
 % Résultat dans \dopMaskedContent (compatible TikZ).
 % ------------------------------------------------------------
 \cs_new_protected:Npn \__dop_mask:n #1
@@ -1874,10 +1903,16 @@
     {
         \bool_if:NTF \l__dop_mask_bool
             {
-                \tl_put_right:Nn \l__dop_masked_tl { \__op_underscore: }
                 \str_if_eq:nnTF {##1} { | }
                     { }
-                    { \bool_set_false:N \l__dop_mask_bool }
+                    {
+                        \bool_if:NTF \l__dop_corrige_bool
+                            { \tl_put_right:Nn \l__dop_masked_tl
+                                { \__op_chiffrecache:n {##1} } }
+                            { \tl_put_right:Nn \l__dop_masked_tl
+                                { \__op_underscore: } }
+                        \bool_set_false:N \l__dop_mask_bool
+                    }
             }
             {
                 \str_if_eq:nnTF {##1} { | }
@@ -1885,8 +1920,15 @@
                     { \tl_put_right:Nn \l__dop_masked_tl {##1} }
             }
     }
+    % Si on finit sur un « | », insérer un masque ou un 0 implicite
     \bool_if:NT \l__dop_mask_bool
-        { \tl_put_right:Nn \l__dop_masked_tl { \__op_underscore: } }
+        {
+            \bool_if:NTF \l__dop_corrige_bool
+                { \tl_put_right:Nn \l__dop_masked_tl
+                    { \__op_chiffrecache:n {0} } }
+                { \tl_put_right:Nn \l__dop_masked_tl
+                    { \__op_underscore: } }
+        }
     \cs_set:Npx \dopMaskedContent { \l__dop_masked_tl }
 }
 
