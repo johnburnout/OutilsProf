@@ -5,6 +5,38 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.12.0] - 2026-10-08
+
+### Ajouté
+- Section 3-B et 4-D : option `corrige` pour afficher en couleur
+  (bleu par défaut) les chiffres masqués par `|`, au lieu du
+  rectangle gris. Utile pour générer un corrigé d'exercice.
+- Option `couleurcorrige` pour personnaliser la couleur des
+  chiffres cachés (défaut : `blue!80!black`).
+
+  ```latex
+  \addition[solution]{1|4, 56}                 % élève : 1▢ + 56
+  \addition[solution, corrige]{1|4, 56}        % corrigé : 1𝟒 + 56
+  \addition[solution, corrige,
+            couleurcorrige=red!80!black]{1|4, 56}  % en rouge
+  ```
+
+  L'option est disponible sur `\addition`, `\soustraction`,
+  `\multiplication`, ainsi que sur les quatre opérations de la
+  section 4 (`\additiondurees`, `\soustractiondurees`,
+  `\additionangles`, `\soustractionangles`).
+
+### Ajouté (tests)
+- Dossier `tests/` avec un fichier de non-régression enrichi
+  `tests/test-commandes.tex` couvrant les cas limites du masquage
+  (`47|`, `4||`, `|12`, nombres entièrement masqués), les
+  opérations sur nombres, durées et angles, la division
+  euclidienne et décimale, les axes, repères, boîtes colorées,
+  et le mode corrigé avec couleurs personnalisées.
+
+### Version
+- 1.11.1 → 1.12.0
+
 ## [1.11.1] - 2026-09-27
 
 ### Corrigé

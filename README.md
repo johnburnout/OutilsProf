@@ -25,7 +25,8 @@ Placez `outilsprof.sty` dans un dossier reconnu par TeX Live, puis lancez `texha
 - Boîtes colorées — mise en valeur pédagogique
 - `\division` — division euclidienne posée
 - `\addition`, `\soustraction`, `\multiplication` — opérations posées
-- Masquage de chiffres avec `|` dans les opérations
+- Masquage de chiffres avec `|` dans les opérations (mode élève)
+- Mode corrigé : chiffres cachés affichés en couleur
 - `\unite` — grandeur avec unité
 - `\degre` — angle en degrés, minutes, secondes
 - `\dureeminute`, `\dureeheure`, `\dureejour`, `\dureesemaine` — durées
@@ -392,6 +393,33 @@ ci-dessous pour la syntaxe complète.
 \division[dividende=87765, diviseur=123, solution, etapes={861, 123, 369}]
 ```
 
+### Mode corrigé
+
+Par défaut, un chiffre masqué est remplacé par un rectangle gris.
+L'option `corrige` affiche à la place le chiffre caché, en couleur,
+pour préparer un corrigé.
+
+```latex
+% Version élève (chiffre masqué)
+\addition[solution]{1|4, 56}
+
+% Version corrigé (le 4 apparaît en bleu)
+\addition[solution, corrige]{1|4, 56}
+```
+
+La couleur par défaut est `blue!80!black`. Elle se personnalise
+avec l'option `couleurcorrige` :
+
+```latex
+\addition[solution, corrige,
+          couleurcorrige=red!80!black]{1|4, 56}
+```
+
+L'option est disponible sur `\addition`, `\soustraction`,
+`\multiplication`, ainsi que sur les quatre opérations de la
+section 4 (`\additiondurees`, `\soustractiondurees`,
+`\additionangles`, `\soustractionangles`).
+
 * * *
 
 ## Grandeurs, angles et durées
@@ -662,9 +690,15 @@ Un fichier de démonstration complet est disponible dans `examples/exemples.tex`
     \multiplication[solution]{234, 56}
     \division[dividende=1234, diviseur=56, solution, etapes={112, 112}]
 
-    % Masquage de chiffres
+    % Masquage de chiffres (mode élève)
     \addition[solution]{1|4, 56}
     \additiondurees[solution]{3+1|2, 5+30}
+
+    % Mode corrigé (chiffres cachés en bleu)
+    \addition[solution, corrige]{1|4, 56}
+    \additiondurees[solution, corrige]{3+1|2, 5+30}
+    \addition[solution, corrige,
+              couleurcorrige=red!80!black]{1|4, 56}
 
     % Grandeurs, angles, durées
     \unite{9,81}{m/s^2}

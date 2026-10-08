@@ -1,6 +1,7 @@
 % ============================================================
 % tests/test-commandes.tex
 % Fichier de test de non-régression pour outilsprof
+% Version : 1.12.0 (branche feat/mode-corrige)
 % ============================================================
 % Compilation : xelatex test-commandes.tex
 % ============================================================
@@ -43,11 +44,11 @@
 \begin{document}
 
 \begin{center}
-  {\Large\bfseries Tests de non-régression — \texttt{outilsprof} v1.11.0}
+  {\Large\bfseries Tests de non-régression — \texttt{outilsprof} v1.12.0}
 \end{center}
 
 % ============================================================
-\section*{1. Masquage \texttt{|} — additions}
+\section*{1. Masquage \texttt{|} — additions (mode normal)}
 % ============================================================
 
 \subsection*{1.1 — Le 4 est masqué}
@@ -71,18 +72,39 @@
 
 \addition[solution]{47|, 12}
 
-\subsection*{1.4 — Plusieurs masques}
+\subsection*{1.4 — Deux 0 implicites (double \texttt{||})}
+
+\textbf{Entrée :} \verb!\addition[solution]{4||, 12}!
+\quad\textbf{Attendu :} $4\grise\grise + 12 = 412$
+
+\addition[solution]{4||, 12}
+
+\subsection*{1.5 — Plusieurs masques}
 
 \textbf{Entrée :} \verb!\addition[solution]{6|34, |72|8}!
 \quad\textbf{Attendu :} $6\grise 4 + \grise 2\grise = 1362$
 
 \addition[solution]{6|34, |72|8}
 
+\subsection*{1.6 — Nombre entièrement masqué}
+
+\textbf{Entrée :} \verb!\addition[solution]{|12, 34}!
+\quad\textbf{Attendu :} $\grise\grise + 34 = 46$
+
+\addition[solution]{|12, 34}
+
+\subsection*{1.7 — Addition de trois termes}
+
+\addition[solution]{1|2, 3|4, 5|6}
+
 % ============================================================
-\section*{2. Masquage \texttt{|} — soustractions}
+\section*{2. Masquage \texttt{|} — soustractions (mode normal)}
 % ============================================================
 
 \subsection*{2.1 — \texttt{8|3, 47|}}
+
+\textbf{Calcul attendu :} $83 - 47 = 36$
+\quad(ici 83 > 47, pas de permutation)
 
 \soustraction[solution]{8|3, 47|}
 
@@ -90,15 +112,19 @@
 
 \soustraction[solution]{|73|4, 2|78}
 
-\subsection*{2.1b — Vérification du 0 implicite : \texttt{8|3, 47|}}
+\subsection*{2.3 — Vérification du 0 implicite : \texttt{8|3, 47|}}
 
 \textbf{Calcul attendu :} $470 - 83 = 387$
 \quad(Les termes sont permutés : 83 < 470)
 
 \soustraction[solution]{8|3, 47|}
 
+\subsection*{2.4 — Soustraction avec les deux nombres masqués}
+
+\soustraction[solution]{|9|8, |4|3}
+
 % ============================================================
-\section*{3. Masquage \texttt{|} — multiplications}
+\section*{3. Masquage \texttt{|} — multiplications (mode normal)}
 % ============================================================
 
 \subsection*{3.1 — \texttt{24, 5|6}}
@@ -109,8 +135,16 @@
 
 \multiplication[solution]{|1|2|3, |45}
 
+\subsection*{3.3 — Multiplicateur à un chiffre}
+
+\multiplication[solution]{24, |5}
+
+\subsection*{3.4 — Multiplicateur avec zéro implicite}
+
+\multiplication[solution]{24, 5|}
+
 % ============================================================
-\section*{4. Masquage \texttt{|} — durées}
+\section*{4. Masquage \texttt{|} — durées (mode normal)}
 % ============================================================
 
 \subsection*{4.1 — \texttt{3+1|2, 5+30}}
@@ -121,13 +155,21 @@
 
 \additiondurees[solution]{3+|5+45, 2+30}
 
+\subsection*{4.3 — Soustraction de durées avec masquage}
+
+\soustractiondurees[solution]{8+3|0, 5+4|5}
+
 % ============================================================
-\section*{5. Masquage \texttt{|} — angles}
+\section*{5. Masquage \texttt{|} — angles (mode normal)}
 % ============================================================
 
 \subsection*{5.1 — \texttt{5|6+30, 12+45}}
 
 \additionangles[solution]{5|6+30, 12+45}
+
+\subsection*{5.2 — Soustraction d'angles avec masquage}
+
+\soustractionangles[solution]{5|6+30, 1|2+45}
 
 % ============================================================
 \section*{6. Division euclidienne et décimale}
@@ -158,6 +200,10 @@
 \subsection*{6.6 — Padding à droite : $12 \div 8$}
 
 \division[dividende=12, diviseur=8, solution, decimales=2]
+
+\subsection*{6.7 — Division avec reste non nul}
+
+\division[dividende=853, diviseur=7, solution]
 
 % ============================================================
 \section*{7. Autres commandes (test de fumée)}
@@ -198,5 +244,70 @@
 \subsection*{7.5 — Lignes de réponse}
 
 Le résultat est \reponse. \grandeReponse[0.5]
+
+% ============================================================
+\section*{8. Mode corrigé — opérations sur nombres}
+% ============================================================
+
+\subsection*{8.1 — Addition, mode élève (rectangles gris)}
+\addition[solution]{1|4, 56}
+
+\subsection*{8.2 — Addition, mode corrigé (chiffres en bleu)}
+\addition[solution, corrige]{1|4, 56}
+
+\subsection*{8.3 — Addition avec 0 implicite, mode corrigé}
+\addition[solution, corrige]{47|, 12}
+
+\subsection*{8.4 — Soustraction, mode corrigé}
+\soustraction[solution, corrige]{8|3, 47|}
+
+\subsection*{8.5 — Multiplication, mode corrigé}
+\multiplication[solution, corrige]{|1|2|3, |45}
+
+\subsection*{8.6 — Couleur personnalisée (rouge)}
+\addition[solution, corrige, couleurcorrige=red!80!black]{1|4, 56}
+
+\subsection*{8.7 — Couleur personnalisée (vert foncé)}
+\soustraction[solution, corrige, couleurcorrige=green!50!black]{8|3, 47|}
+
+% ============================================================
+\section*{9. Mode corrigé — durées et angles}
+% ============================================================
+
+\subsection*{9.1 — Durées, mode corrigé}
+\additiondurees[solution, corrige]{3+1|2, 5+30}
+
+\subsection*{9.2 — Angles, mode corrigé}
+\additionangles[solution, corrige]{5|6+30, 12+45}
+
+\subsection*{9.3 — Soustraction de durées, mode corrigé}
+\soustractiondurees[solution, corrige]{8+3|0, 5+4|5}
+
+\subsection*{9.4 — Soustraction d'angles, mode corrigé}
+\soustractionangles[solution, corrige]{5|6+30, 1|2+45}
+
+% ============================================================
+\section*{10. Cas limites et combinaisons}
+% ============================================================
+
+\subsection*{10.1 — Addition sans solution}
+
+\addition{1|4, 56}
+
+\subsection*{10.2 — Addition avec plusieurs termes sans masque}
+
+\addition[solution]{12, 34, 56}
+
+\subsection*{10.3 — Multiplication avec masque et solution}
+
+\multiplication[solution, corrige]{23, |45|6}
+
+\subsection*{10.4 — Addition, taille large}
+
+\addition[solution, taille=large]{1|4, 56}
+
+\subsection*{10.5 — Division sans solution}
+
+\division[dividende=1234, diviseur=56]
 
 \end{document}
