@@ -2,12 +2,12 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.12.5
+% Version : 1.12.6
 % Date : 2026/10/23
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/10/23 v1.12.5 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/10/24 v1.12.6 Outils pour l'enseignement]
 
 % ============================================================
 % DÉPENDANCES
@@ -171,6 +171,8 @@
         { \def\repereAfficherCoords{1} }
         { \def\repereAfficherCoords{0} }
 }
+% Retire les espaces en début et en fin du contenu d'une macro
+\cs_new_protected:Npn \repereSupprimerEspaces #1 { \tl_trim_spaces:N #1 }
 \ExplSyntaxOff
 
 \newcommand{\repereExtraireCoords}[3]{%
@@ -194,7 +196,10 @@
         \edef#2{\tmpNom}%
         \edef#3{\tmpCoords}%
         \edef#4{\tmpCouleur}%
+        \repereSupprimerEspaces#4%
     \fi
+    \repereSupprimerEspaces#2%
+    \repereSupprimerEspaces#3%
 }
 
 % Nombre au format français : virgule décimale, espace des milliers
@@ -214,6 +219,13 @@
     \def\repereElementCourant{}%
     \reperePremierElementtrue
     \repereDecouperListeAux#1\@nil
+    \repereTerminerElement
+}
+
+% Ajoute l'élément courant à la liste, sans ses espaces de début et de fin,
+% s'il n'est pas vide
+\newcommand{\repereTerminerElement}{%
+    \repereSupprimerEspaces\repereElementCourant
     \ifx\repereElementCourant\@empty\else
         \repereAjouterElement
     \fi
@@ -231,7 +243,27 @@
     \def\repereElementCourant{}%
 }
 
-\def\repereDecouperListeAux#1{%
+% Un argument non délimité saute les espaces : on regarde d'abord le jeton
+% suivant pour garder ceux des noms de points (« Point A/(1,2) »)
+\def\repereDecouperListeAux{%
+    \futurelet\repereJetonSuivant\repereDecouperListeTri
+}
+
+\def\repereDecouperListeTri{%
+    \ifx\repereJetonSuivant\@sptoken
+        \expandafter\repereDecouperListeEspace
+    \else
+        \expandafter\repereDecouperListeJeton
+    \fi
+}
+
+% Macro délimitée par un espace : elle l'absorbe et l'ajoute à l'élément
+\@firstofone{\def\repereDecouperListeEspace} {%
+    \g@addto@macro\repereElementCourant{ }%
+    \repereDecouperListeAux
+}
+
+\def\repereDecouperListeJeton#1{%
     \ifx#1\@nil
     \else
         \ifx#1(%
@@ -246,9 +278,7 @@
             \else
                 \ifnum\value{repereProfondeur}=0
                     \ifx#1,%
-                        \ifx\repereElementCourant\@empty\else
-                            \repereAjouterElement
-                        \fi
+                        \repereTerminerElement
                     \else
                         \expandafter\g@addto@macro
                             \expandafter\repereElementCourant
