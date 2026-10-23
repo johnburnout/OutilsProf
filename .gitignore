@@ -28,13 +28,15 @@
 !exemples/*.pdf
 !examples/*.pdf
 !doc/*.pdf
-outilsprof.pdf
 
-# Fichiers de test temporaires à la racine
+# Anciens fichiers de test (hors suivi Git)
 /test_*.tex
 /test-*.tex
 /testminimal.tex
+tests/anciens/
 
-# PDF d'exemples : à décider
-# (décommenter pour les ignorer)
-# examples/exemples.pdf*.synctex.gz(busy)
+# Fichiers synctex en cours d'écriture
+*.synctex.gz(busy)
+
+# PDF d'exemples : régénéré par `make compile`, non suivi
+examples/exemples.pdf
