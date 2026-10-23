@@ -356,4 +356,27 @@ Le résultat est \reponse. \grandeReponse[0.5]
 
 \division[dividende=1234, diviseur=56, solution, taille=large]
 
+% ============================================================
+\section*{12 — Non-régression v1.12.3 (audit 2)}
+% ============================================================
+% Les dépassements de capacité (\addition, 4-D) produisent une
+% erreur volontaire : ils ne sont pas testés ici.
+
+\subsection*{12.1 — Repère, origine (2;3) (attendu : « 0 » affiché sur les deux axes, ni « 2 » ni « 3 » sous Ω)}
+
+\reperegradue[bg={(-1,-1)}, hd={(6,5)}, origine={(2,3)}]
+
+\subsection*{12.2 — Repère, milliers (attendu : 1 000, 2 000… et non 1.000)}
+
+\reperegradue[bg={(0,0)}, hd={(5000,2000)}, pasx=1000, pasy=1000, grille=1000]
+
+\subsection*{12.3 — Repère au bord (attendu : étiquettes sans chevauchement avec ce texte)}
+
+\reperegradue[bg={(0,0)}, hd={(4,2)}]
+Ce paragraphe ne doit pas être recouvert par les graduations.
+
+\subsection*{12.4 — Division avec espace (attendu : 1234 ÷ 5 = 246, reste 4)}
+
+\division[dividende=1 234, diviseur=5, solution]
+
 \end{document}
