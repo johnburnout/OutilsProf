@@ -5,6 +5,20 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.12.9] - 2026-10-24
+
+### Modifié
+- Noms internes préfixés : les 87 macros, longueurs, compteurs et
+  booléens internes des sections 1-A et 1-B (`\axeLongueur`, `\tmpX`,
+  `\repereListeElements`, `\largeurPt`…) deviennent `\op@…`, et
+  `\dopMaskedContent` devient `\__dop_contenu_masque:`. Ils ne peuvent
+  plus entrer en conflit avec un autre package ou une macro du
+  document. Seules les commandes documentées restent sans préfixe.
+  Rendu inchangé (exemples et tests identiques au pixel près).
+
+### Version
+- 1.12.8 → 1.12.9
+
 ## [1.12.8] - 2026-10-24
 
 ### Modifié
