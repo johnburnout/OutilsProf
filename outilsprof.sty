@@ -2,12 +2,15 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.12.8
+% Version : 1.12.9
 % Date : 2026/10/23
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/10/24 v1.12.8 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/10/24 v1.12.9 Outils pour l'enseignement]
+
+% Noms internes : préfixe \op@ (style LaTeX2e) ou __op, __div, __dop,
+% __repere (expl3) ; seules les commandes documentées sont sans préfixe.
 
 % ============================================================
 % DÉPENDANCES
@@ -52,64 +55,64 @@
 \cs_new_protected:Npn \__axe_recuperer:n #1
 {
     \keys_set:nn { outilsprof / axegradue } { #1 }
-    \tl_set:Nx \axeLongueur { \l__axe_longueur_tl }
-    \tl_set:Nx \axeDebut    { \l__axe_debut_tl }
-    \tl_set:Nx \axeFin      { \l__axe_fin_tl }
-    \tl_set:Nx \axePas      { \l__axe_pas_tl }
-    \tl_set:Nx \axeNombre   { \l__axe_nombre_tl }
-    \tl_set:Nx \axePoints   { \l__axe_points_tl }
+    \tl_set:Nx \op@axeLongueur { \l__axe_longueur_tl }
+    \tl_set:Nx \op@axeDebut    { \l__axe_debut_tl }
+    \tl_set:Nx \op@axeFin      { \l__axe_fin_tl }
+    \tl_set:Nx \op@axePas      { \l__axe_pas_tl }
+    \tl_set:Nx \op@axeNombre   { \l__axe_nombre_tl }
+    \tl_set:Nx \op@axePoints   { \l__axe_points_tl }
 }
 % Calcul décimal exact (évite 0.20001) ; résultat sans « .0 » final
 \cs_new:Npn \outilsprofFpEval #1 { \fp_eval:n { round( #1 , 6 ) } }
 \ExplSyntaxOff
 
-\newlength{\largeurPt}
+\newlength{\op@largeurPt}
 
 \NewDocumentCommand{\axegradue}{O{}}{%
     \begingroup
     \csname __axe_recuperer:n\endcsname {#1}%
     \begin{tikzpicture}[every node/.style={font=\small}]
-        \setlength{\largeurPt}{\axeLongueur\textwidth}%
-        \pgfmathsetmacro{\largeurTotale}{\largeurPt/1pt}%
-        \pgfmathsetmacro{\nbIntervallesPrincipaux}{int((\axeFin-\axeDebut)/\axePas)}%
-        \pgfmathsetmacro{\pasPrincipal}{\largeurTotale/\nbIntervallesPrincipaux}%
-        \pgfmathsetmacro{\pasSecondaire}{\pasPrincipal/\axeNombre}%
-        \pgfmathsetmacro{\depassement}{0.08*\largeurTotale}%
-        \pgfmathsetmacro{\largeurAxe}{\largeurTotale+\depassement}%
+        \setlength{\op@largeurPt}{\op@axeLongueur\textwidth}%
+        \pgfmathsetmacro{\op@largeurTotale}{\op@largeurPt/1pt}%
+        \pgfmathsetmacro{\op@nbIntervallesPrincipaux}{int((\op@axeFin-\op@axeDebut)/\op@axePas)}%
+        \pgfmathsetmacro{\op@pasPrincipal}{\op@largeurTotale/\op@nbIntervallesPrincipaux}%
+        \pgfmathsetmacro{\op@pasSecondaire}{\op@pasPrincipal/\op@axeNombre}%
+        \pgfmathsetmacro{\op@depassement}{0.08*\op@largeurTotale}%
+        \pgfmathsetmacro{\op@largeurAxe}{\op@largeurTotale+\op@depassement}%
 
-        \draw[->, thick, >=stealth] (0,0) -- (\largeurAxe pt,0);
+        \draw[->, thick, >=stealth] (0,0) -- (\op@largeurAxe pt,0);
 
-        \foreach \i in {0,1,...,\nbIntervallesPrincipaux} {%
-            \pgfmathsetmacro{\x}{\i*\pasPrincipal}%
-            \edef\valeur{\outilsprofFpEval{\axeDebut+\i*\axePas}}%
-            \draw[thick] (\x pt,0) -- (\x pt,-0.25)
-                node[below, font=\small, yshift=-2pt] {\num{\valeur}};
+        \foreach \i in {0,1,...,\op@nbIntervallesPrincipaux} {%
+            \pgfmathsetmacro{\op@x}{\i*\op@pasPrincipal}%
+            \edef\op@valeur{\outilsprofFpEval{\op@axeDebut+\i*\op@axePas}}%
+            \draw[thick] (\op@x pt,0) -- (\op@x pt,-0.25)
+                node[below, font=\small, yshift=-2pt] {\num{\op@valeur}};
         }
 
-        \pgfmathsetmacro{\nbSecondaires}{\nbIntervallesPrincipaux*\axeNombre}%
-        \foreach \i in {1,...,\nbSecondaires} {%
-            \pgfmathtruncatemacro{\estPrincipal}{mod(\i,\axeNombre)==0 ? 1 : 0}%
-            \ifnum\estPrincipal=0
-                \pgfmathsetmacro{\x}{\i*\pasSecondaire}%
-                \draw (\x pt,0) -- (\x pt,-0.12);
+        \pgfmathsetmacro{\op@nbSecondaires}{\op@nbIntervallesPrincipaux*\op@axeNombre}%
+        \foreach \i in {1,...,\op@nbSecondaires} {%
+            \pgfmathtruncatemacro{\op@estPrincipal}{mod(\i,\op@axeNombre)==0 ? 1 : 0}%
+            \ifnum\op@estPrincipal=0
+                \pgfmathsetmacro{\op@x}{\i*\op@pasSecondaire}%
+                \draw (\op@x pt,0) -- (\op@x pt,-0.12);
             \fi
         }
 
-        \foreach \point in \axePoints {%
-            \StrCount{\point}{/}[\nbSlash]%
-            \ifnum\nbSlash=1
-                \StrCut{\point}{/}{\nom}{\position}%
-                \def\couleurPoint{red}%
+        \foreach \op@point in \op@axePoints {%
+            \StrCount{\op@point}{/}[\op@nbSlash]%
+            \ifnum\op@nbSlash=1
+                \StrCut{\op@point}{/}{\op@nom}{\op@position}%
+                \def\op@couleurPoint{red}%
             \else
-                \StrCut{\point}{/}{\nom}{\reste}%
-                \StrCut{\reste}{/}{\position}{\couleurPoint}%
+                \StrCut{\op@point}{/}{\op@nom}{\op@reste}%
+                \StrCut{\op@reste}{/}{\op@position}{\op@couleurPoint}%
             \fi
             % Même échelle que les graduations (et non fin-debut)
-            \pgfmathsetmacro{\x}{((\position-\axeDebut)/\axePas)*\pasPrincipal}%
-            \fill[\couleurPoint] (\x pt,0) circle (2.5pt);
-            \draw[black, thick] (\x pt,0) circle (2.5pt);
+            \pgfmathsetmacro{\op@x}{((\op@position-\op@axeDebut)/\op@axePas)*\op@pasPrincipal}%
+            \fill[\op@couleurPoint] (\op@x pt,0) circle (2.5pt);
+            \draw[black, thick] (\op@x pt,0) circle (2.5pt);
             \node[above, font=\small\bfseries, black, yshift=2pt]
-                at (\x pt,0) {\nom};
+                at (\op@x pt,0) {\op@nom};
         }
     \end{tikzpicture}%
     \endgroup
@@ -155,280 +158,280 @@
 \cs_new_protected:Npn \__repere_recuperer:n #1
 {
     \keys_set:nn { outilsprof / reperegradue } { #1 }
-    \tl_set:Nx \repereLongueur { \l__repere_longueur_tl }
-    \tl_set:Nx \repereBG       { \l__repere_bg_tl }
-    \tl_set:Nx \repereHD       { \l__repere_hd_tl }
-    \tl_set:Nx \repereOrigine  { \l__repere_origine_tl }
-    \tl_set:Nx \repereGrille   { \l__repere_grille_tl }
-    \tl_set:Nx \reperePasX     { \l__repere_pasx_tl }
-    \tl_set:Nx \reperePasY     { \l__repere_pasy_tl }
-    \tl_set:Nx \repereNombreX  { \l__repere_nombrex_tl }
-    \tl_set:Nx \repereNombreY  { \l__repere_nombrey_tl }
-    \tl_set:Nx \reperePoints   { \l__repere_points_tl }
+    \tl_set:Nx \op@repereLongueur { \l__repere_longueur_tl }
+    \tl_set:Nx \op@repereBG       { \l__repere_bg_tl }
+    \tl_set:Nx \op@repereHD       { \l__repere_hd_tl }
+    \tl_set:Nx \op@repereOrigine  { \l__repere_origine_tl }
+    \tl_set:Nx \op@repereGrille   { \l__repere_grille_tl }
+    \tl_set:Nx \op@reperePasX     { \l__repere_pasx_tl }
+    \tl_set:Nx \op@reperePasY     { \l__repere_pasy_tl }
+    \tl_set:Nx \op@repereNombreX  { \l__repere_nombrex_tl }
+    \tl_set:Nx \op@repereNombreY  { \l__repere_nombrey_tl }
+    \tl_set:Nx \op@reperePoints   { \l__repere_points_tl }
     \bool_if:NTF \l__repere_affichernom_bool
-        { \def\repereAfficherNom{1} }
-        { \def\repereAfficherNom{0} }
+        { \def\op@repereAfficherNom{1} }
+        { \def\op@repereAfficherNom{0} }
     \bool_if:NTF \l__repere_affichercoords_bool
-        { \def\repereAfficherCoords{1} }
-        { \def\repereAfficherCoords{0} }
+        { \def\op@repereAfficherCoords{1} }
+        { \def\op@repereAfficherCoords{0} }
 }
 % Retire les espaces en début et en fin du contenu d'une macro
-\cs_new_protected:Npn \repereSupprimerEspaces #1 { \tl_trim_spaces:N #1 }
+\cs_new_protected:Npn \op@repereSupprimerEspaces #1 { \tl_trim_spaces:N #1 }
 \ExplSyntaxOff
 
-\newcommand{\repereExtraireCoords}[3]{%
-    \StrDel{#1}{(}[\tmpSansParenG]%
-    \StrDel{\tmpSansParenG}{)}[\tmpCoords]%
-    \StrCut{\tmpCoords}{,}{\tmpX}{\tmpY}%
-    \edef#2{\tmpX}%
-    \edef#3{\tmpY}%
+\newcommand{\op@repereExtraireCoords}[3]{%
+    \StrDel{#1}{(}[\op@tmpSansParenG]%
+    \StrDel{\op@tmpSansParenG}{)}[\op@tmpCoords]%
+    \StrCut{\op@tmpCoords}{,}{\op@tmpX}{\op@tmpY}%
+    \edef#2{\op@tmpX}%
+    \edef#3{\op@tmpY}%
 }
 
-\newcommand{\repereDecouperPoint}[4]{%
-    \StrCount{#1}{/}[\tmpNbSlash]%
-    \ifnum\tmpNbSlash=1
-        \StrCut{#1}{/}{\tmpNom}{\tmpCoords}%
-        \edef#2{\tmpNom}%
-        \edef#3{\tmpCoords}%
+\newcommand{\op@repereDecouperPoint}[4]{%
+    \StrCount{#1}{/}[\op@tmpNbSlash]%
+    \ifnum\op@tmpNbSlash=1
+        \StrCut{#1}{/}{\op@tmpNom}{\op@tmpCoords}%
+        \edef#2{\op@tmpNom}%
+        \edef#3{\op@tmpCoords}%
         \def#4{red}%
     \else
-        \StrCut{#1}{/}{\tmpNom}{\tmpReste}%
-        \StrCut{\tmpReste}{/}{\tmpCoords}{\tmpCouleur}%
-        \edef#2{\tmpNom}%
-        \edef#3{\tmpCoords}%
-        \edef#4{\tmpCouleur}%
-        \repereSupprimerEspaces#4%
+        \StrCut{#1}{/}{\op@tmpNom}{\op@tmpReste}%
+        \StrCut{\op@tmpReste}{/}{\op@tmpCoords}{\op@tmpCouleur}%
+        \edef#2{\op@tmpNom}%
+        \edef#3{\op@tmpCoords}%
+        \edef#4{\op@tmpCouleur}%
+        \op@repereSupprimerEspaces#4%
     \fi
-    \repereSupprimerEspaces#2%
-    \repereSupprimerEspaces#3%
+    \op@repereSupprimerEspaces#2%
+    \op@repereSupprimerEspaces#3%
 }
 
 % Nombre au format français : virgule décimale, espace des milliers
 % (« use comma » seul mettrait un point comme séparateur des milliers)
-\newcommand{\repereFormaterNombre}[1]{%
+\newcommand{\op@repereFormaterNombre}[1]{%
     \pgfmathprintnumber[fixed, precision=2, use comma, 1000 sep={\,}]{#1}%
 }
 
-\newcounter{repereProfondeur}
-\def\repereListeElements{}
-\def\repereElementCourant{}
-\newif\ifreperePremierElement
+\newcounter{op@repereProfondeur}
+\def\op@repereListeElements{}
+\def\op@repereElementCourant{}
+\newif\ifop@reperePremierElement
 
-\newcommand{\repereDecouperListe}[1]{%
-    \setcounter{repereProfondeur}{0}%
-    \def\repereListeElements{}%
-    \def\repereElementCourant{}%
-    \reperePremierElementtrue
-    \repereDecouperListeAux#1\@nil
-    \repereTerminerElement
+\newcommand{\op@repereDecouperListe}[1]{%
+    \setcounter{op@repereProfondeur}{0}%
+    \def\op@repereListeElements{}%
+    \def\op@repereElementCourant{}%
+    \op@reperePremierElementtrue
+    \op@repereDecouperListeAux#1\@nil
+    \op@repereTerminerElement
 }
 
 % Ajoute l'élément courant à la liste, sans ses espaces de début et de fin,
 % s'il n'est pas vide
-\newcommand{\repereTerminerElement}{%
-    \repereSupprimerEspaces\repereElementCourant
-    \ifx\repereElementCourant\@empty\else
-        \repereAjouterElement
+\newcommand{\op@repereTerminerElement}{%
+    \op@repereSupprimerEspaces\op@repereElementCourant
+    \ifx\op@repereElementCourant\@empty\else
+        \op@repereAjouterElement
     \fi
 }
 
-\newcommand{\repereAjouterElement}{%
-    \ifreperePremierElement
-        \reperePremierElementfalse
-        \expandafter\g@addto@macro\expandafter\repereListeElements
-            \expandafter{\expandafter{\repereElementCourant}}%
+\newcommand{\op@repereAjouterElement}{%
+    \ifop@reperePremierElement
+        \op@reperePremierElementfalse
+        \expandafter\g@addto@macro\expandafter\op@repereListeElements
+            \expandafter{\expandafter{\op@repereElementCourant}}%
     \else
-        \expandafter\g@addto@macro\expandafter\repereListeElements
-            \expandafter{\expandafter,\expandafter{\repereElementCourant}}%
+        \expandafter\g@addto@macro\expandafter\op@repereListeElements
+            \expandafter{\expandafter,\expandafter{\op@repereElementCourant}}%
     \fi
-    \def\repereElementCourant{}%
+    \def\op@repereElementCourant{}%
 }
 
 % Un argument non délimité saute les espaces : on regarde d'abord le jeton
 % suivant pour garder ceux des noms de points (« Point A/(1,2) »)
-\def\repereDecouperListeAux{%
-    \futurelet\repereJetonSuivant\repereDecouperListeTri
+\def\op@repereDecouperListeAux{%
+    \futurelet\op@repereJetonSuivant\op@repereDecouperListeTri
 }
 
-\def\repereDecouperListeTri{%
-    \ifx\repereJetonSuivant\@sptoken
-        \expandafter\repereDecouperListeEspace
+\def\op@repereDecouperListeTri{%
+    \ifx\op@repereJetonSuivant\@sptoken
+        \expandafter\op@repereDecouperListeEspace
     \else
-        \expandafter\repereDecouperListeJeton
+        \expandafter\op@repereDecouperListeJeton
     \fi
 }
 
 % Macro délimitée par un espace : elle l'absorbe et l'ajoute à l'élément
-\@firstofone{\def\repereDecouperListeEspace} {%
-    \g@addto@macro\repereElementCourant{ }%
-    \repereDecouperListeAux
+\@firstofone{\def\op@repereDecouperListeEspace} {%
+    \g@addto@macro\op@repereElementCourant{ }%
+    \op@repereDecouperListeAux
 }
 
-\def\repereDecouperListeJeton#1{%
+\def\op@repereDecouperListeJeton#1{%
     \ifx#1\@nil
     \else
         \ifx#1(%
-            \stepcounter{repereProfondeur}%
-            \expandafter\g@addto@macro\expandafter\repereElementCourant
+            \stepcounter{op@repereProfondeur}%
+            \expandafter\g@addto@macro\expandafter\op@repereElementCourant
                 \expandafter{(}%
         \else
             \ifx#1)%
-                \addtocounter{repereProfondeur}{-1}%
-                \expandafter\g@addto@macro\expandafter\repereElementCourant
+                \addtocounter{op@repereProfondeur}{-1}%
+                \expandafter\g@addto@macro\expandafter\op@repereElementCourant
                     \expandafter{)}%
             \else
-                \ifnum\value{repereProfondeur}=0
+                \ifnum\value{op@repereProfondeur}=0
                     \ifx#1,%
-                        \repereTerminerElement
+                        \op@repereTerminerElement
                     \else
                         \expandafter\g@addto@macro
-                            \expandafter\repereElementCourant
+                            \expandafter\op@repereElementCourant
                             \expandafter{#1}%
                     \fi
                 \else
                     \expandafter\g@addto@macro
-                        \expandafter\repereElementCourant
+                        \expandafter\op@repereElementCourant
                         \expandafter{#1}%
                 \fi
             \fi
         \fi
-        \expandafter\repereDecouperListeAux
+        \expandafter\op@repereDecouperListeAux
     \fi
 }
 
 \NewDocumentCommand{\reperegradue}{O{}}{%
     \begingroup
     \csname __repere_recuperer:n\endcsname {#1}%
-    \repereExtraireCoords{\repereBG}{\bgX}{\bgY}%
-    \repereExtraireCoords{\repereHD}{\hdX}{\hdY}%
-    \repereExtraireCoords{\repereOrigine}{\oriX}{\oriY}%
-    \expandafter\repereDecouperListe\expandafter{\reperePoints}%
-    \setlength{\largeurPt}{\repereLongueur\textwidth}%
-    \pgfmathsetmacro{\largeurTotale}{\largeurPt/1pt}%
-    \pgfmathsetmacro{\etendueX}{\hdX-\bgX}%
-    \pgfmathsetmacro{\etendueY}{\hdY-\bgY}%
-    \pgfmathsetmacro{\repereunite}{\largeurTotale/\etendueX}%
-    \pgfmathsetmacro{\hauteurTotale}{\etendueY*\repereunite}%
-    \pgfmathsetmacro{\oriXfig}{(\oriX-\bgX)*\repereunite}%
-    \pgfmathsetmacro{\oriYfig}{(\oriY-\bgY)*\repereunite}%
+    \op@repereExtraireCoords{\op@repereBG}{\op@bgX}{\op@bgY}%
+    \op@repereExtraireCoords{\op@repereHD}{\op@hdX}{\op@hdY}%
+    \op@repereExtraireCoords{\op@repereOrigine}{\op@oriX}{\op@oriY}%
+    \expandafter\op@repereDecouperListe\expandafter{\op@reperePoints}%
+    \setlength{\op@largeurPt}{\op@repereLongueur\textwidth}%
+    \pgfmathsetmacro{\op@largeurTotale}{\op@largeurPt/1pt}%
+    \pgfmathsetmacro{\op@etendueX}{\op@hdX-\op@bgX}%
+    \pgfmathsetmacro{\op@etendueY}{\op@hdY-\op@bgY}%
+    \pgfmathsetmacro{\op@repereunite}{\op@largeurTotale/\op@etendueX}%
+    \pgfmathsetmacro{\op@hauteurTotale}{\op@etendueY*\op@repereunite}%
+    \pgfmathsetmacro{\op@oriXfig}{(\op@oriX-\op@bgX)*\op@repereunite}%
+    \pgfmathsetmacro{\op@oriYfig}{(\op@oriY-\op@bgY)*\op@repereunite}%
 
     % Pas de \useasboundingbox : la boîte englobe aussi les étiquettes
     % des graduations, qui ne débordent plus sur le texte voisin.
     \begin{tikzpicture}[every node/.style={font=\small}]
-        \pgfmathparse{\repereGrille > 0 ? 1 : 0}%
+        \pgfmathparse{\op@repereGrille > 0 ? 1 : 0}%
         \ifnum\pgfmathresult=1
-            \pgfmathsetmacro{\nbGrilleX}{int(\etendueX/\repereGrille)}%
-            \pgfmathsetmacro{\nbGrilleY}{int(\etendueY/\repereGrille)}%
-            \foreach \i in {0,1,...,\nbGrilleX} {%
-                \pgfmathsetmacro{\x}{\bgX+\i*\repereGrille}%
-                \pgfmathsetmacro{\xFig}{(\x-\bgX)*\repereunite}%
+            \pgfmathsetmacro{\op@nbGrilleX}{int(\op@etendueX/\op@repereGrille)}%
+            \pgfmathsetmacro{\op@nbGrilleY}{int(\op@etendueY/\op@repereGrille)}%
+            \foreach \i in {0,1,...,\op@nbGrilleX} {%
+                \pgfmathsetmacro{\op@x}{\op@bgX+\i*\op@repereGrille}%
+                \pgfmathsetmacro{\op@xFig}{(\op@x-\op@bgX)*\op@repereunite}%
                 \draw[gray!25, very thin]
-                    (\xFig pt,0) -- (\xFig pt,\hauteurTotale pt);
+                    (\op@xFig pt,0) -- (\op@xFig pt,\op@hauteurTotale pt);
             }%
-            \foreach \i in {0,1,...,\nbGrilleY} {%
-                \pgfmathsetmacro{\y}{\bgY+\i*\repereGrille}%
-                \pgfmathsetmacro{\yFig}{(\y-\bgY)*\repereunite}%
+            \foreach \i in {0,1,...,\op@nbGrilleY} {%
+                \pgfmathsetmacro{\op@y}{\op@bgY+\i*\op@repereGrille}%
+                \pgfmathsetmacro{\op@yFig}{(\op@y-\op@bgY)*\op@repereunite}%
                 \draw[gray!25, very thin]
-                    (0,\yFig pt) -- (\largeurTotale pt,\yFig pt);
+                    (0,\op@yFig pt) -- (\op@largeurTotale pt,\op@yFig pt);
             }%
         \fi
 
         \draw[->, thick, >=stealth]
-            (0,\oriYfig pt) -- (\largeurTotale pt,\oriYfig pt);
+            (0,\op@oriYfig pt) -- (\op@largeurTotale pt,\op@oriYfig pt);
         \draw[->, thick, >=stealth]
-            (\oriXfig pt,0) -- (\oriXfig pt,\hauteurTotale pt);
+            (\op@oriXfig pt,0) -- (\op@oriXfig pt,\op@hauteurTotale pt);
 
-        \pgfmathsetmacro{\nbX}{int((\hdX-\bgX)/\reperePasX)}%
-        \foreach \i in {0,1,...,\nbX} {%
-            \pgfmathsetmacro{\x}{\bgX+\i*\reperePasX}%
-            \pgfmathparse{\x <= \hdX+0.001 ? 1 : 0}%
+        \pgfmathsetmacro{\op@nbX}{int((\op@hdX-\op@bgX)/\op@reperePasX)}%
+        \foreach \i in {0,1,...,\op@nbX} {%
+            \pgfmathsetmacro{\op@x}{\op@bgX+\i*\op@reperePasX}%
+            \pgfmathparse{\op@x <= \op@hdX+0.001 ? 1 : 0}%
             \ifnum\pgfmathresult=1
-                \pgfmathsetmacro{\xFig}{(\x-\bgX)*\repereunite}%
+                \pgfmathsetmacro{\op@xFig}{(\op@x-\op@bgX)*\op@repereunite}%
                 \draw[thick]
-                    (\xFig pt,\oriYfig pt) -- (\xFig pt,\oriYfig pt-0.2);
+                    (\op@xFig pt,\op@oriYfig pt) -- (\op@xFig pt,\op@oriYfig pt-0.2);
                 % Pas d'étiquette à l'origine (remplacée par O ou Ω)
-                \pgfmathparse{abs(\x-\oriX) < 0.001 ? 0 : 1}%
+                \pgfmathparse{abs(\op@x-\op@oriX) < 0.001 ? 0 : 1}%
                 \ifnum\pgfmathresult=1
                     \node[below, font=\small, yshift=-2pt]
-                        at (\xFig pt,\oriYfig pt)
-                        {\repereFormaterNombre{\x}};
+                        at (\op@xFig pt,\op@oriYfig pt)
+                        {\op@repereFormaterNombre{\op@x}};
                 \fi
             \fi
         }%
 
-        \pgfmathsetmacro{\nbY}{int((\hdY-\bgY)/\reperePasY)}%
-        \foreach \i in {0,1,...,\nbY} {%
-            \pgfmathsetmacro{\y}{\bgY+\i*\reperePasY}%
-            \pgfmathparse{\y <= \hdY+0.001 ? 1 : 0}%
+        \pgfmathsetmacro{\op@nbY}{int((\op@hdY-\op@bgY)/\op@reperePasY)}%
+        \foreach \i in {0,1,...,\op@nbY} {%
+            \pgfmathsetmacro{\op@y}{\op@bgY+\i*\op@reperePasY}%
+            \pgfmathparse{\op@y <= \op@hdY+0.001 ? 1 : 0}%
             \ifnum\pgfmathresult=1
-                \pgfmathsetmacro{\yFig}{(\y-\bgY)*\repereunite}%
+                \pgfmathsetmacro{\op@yFig}{(\op@y-\op@bgY)*\op@repereunite}%
                 \draw[thick]
-                    (\oriXfig pt,\yFig pt) -- (\oriXfig pt+0.2,\yFig pt);
-                \pgfmathparse{abs(\y-\oriY) < 0.001 ? 0 : 1}%
+                    (\op@oriXfig pt,\op@yFig pt) -- (\op@oriXfig pt+0.2,\op@yFig pt);
+                \pgfmathparse{abs(\op@y-\op@oriY) < 0.001 ? 0 : 1}%
                 \ifnum\pgfmathresult=1
                     \node[left, font=\small, xshift=-2pt]
-                        at (\oriXfig pt,\yFig pt)
-                        {\repereFormaterNombre{\y}};
+                        at (\op@oriXfig pt,\op@yFig pt)
+                        {\op@repereFormaterNombre{\op@y}};
                 \fi
             \fi
         }%
 
-        \pgfmathparse{abs(\oriX) < 0.001 && abs(\oriY) < 0.001 ? 1 : 0}%
+        \pgfmathparse{abs(\op@oriX) < 0.001 && abs(\op@oriY) < 0.001 ? 1 : 0}%
         \ifnum\pgfmathresult=1
             \node[below left, font=\small, xshift=1pt, yshift=-2pt]
-                at (\oriXfig pt,\oriYfig pt) {$O$};
+                at (\op@oriXfig pt,\op@oriYfig pt) {$O$};
         \else
             \node[below left, font=\small, xshift=1pt, yshift=-2pt]
-                at (\oriXfig pt,\oriYfig pt)
-                {$\Omega(\repereFormaterNombre{\oriX};%
-                          \repereFormaterNombre{\oriY})$};
+                at (\op@oriXfig pt,\op@oriYfig pt)
+                {$\Omega(\op@repereFormaterNombre{\op@oriX};%
+                          \op@repereFormaterNombre{\op@oriY})$};
         \fi
 
-        \pgfmathsetmacro{\nbSecX}{\nbX*\repereNombreX}%
-        \foreach \i in {1,...,\nbSecX} {%
-            \pgfmathparse{mod(\i,\repereNombreX)==0 ? 1 : 0}%
+        \pgfmathsetmacro{\op@nbSecX}{\op@nbX*\op@repereNombreX}%
+        \foreach \i in {1,...,\op@nbSecX} {%
+            \pgfmathparse{mod(\i,\op@repereNombreX)==0 ? 1 : 0}%
             \ifnum\pgfmathresult=0
-                \pgfmathsetmacro{\x}{\bgX+\i*\reperePasX/\repereNombreX}%
-                \pgfmathparse{\x <= \hdX+0.001 ? 1 : 0}%
+                \pgfmathsetmacro{\op@x}{\op@bgX+\i*\op@reperePasX/\op@repereNombreX}%
+                \pgfmathparse{\op@x <= \op@hdX+0.001 ? 1 : 0}%
                 \ifnum\pgfmathresult=1
-                    \pgfmathsetmacro{\xFig}{(\x-\bgX)*\repereunite}%
+                    \pgfmathsetmacro{\op@xFig}{(\op@x-\op@bgX)*\op@repereunite}%
                     \draw
-                        (\xFig pt,\oriYfig pt) -- (\xFig pt,\oriYfig pt-0.1);
+                        (\op@xFig pt,\op@oriYfig pt) -- (\op@xFig pt,\op@oriYfig pt-0.1);
                 \fi
             \fi
         }%
-        \pgfmathsetmacro{\nbSecY}{\nbY*\repereNombreY}%
-        \foreach \i in {1,...,\nbSecY} {%
-            \pgfmathparse{mod(\i,\repereNombreY)==0 ? 1 : 0}%
+        \pgfmathsetmacro{\op@nbSecY}{\op@nbY*\op@repereNombreY}%
+        \foreach \i in {1,...,\op@nbSecY} {%
+            \pgfmathparse{mod(\i,\op@repereNombreY)==0 ? 1 : 0}%
             \ifnum\pgfmathresult=0
-                \pgfmathsetmacro{\y}{\bgY+\i*\reperePasY/\repereNombreY}%
-                \pgfmathparse{\y <= \hdY+0.001 ? 1 : 0}%
+                \pgfmathsetmacro{\op@y}{\op@bgY+\i*\op@reperePasY/\op@repereNombreY}%
+                \pgfmathparse{\op@y <= \op@hdY+0.001 ? 1 : 0}%
                 \ifnum\pgfmathresult=1
-                    \pgfmathsetmacro{\yFig}{(\y-\bgY)*\repereunite}%
+                    \pgfmathsetmacro{\op@yFig}{(\op@y-\op@bgY)*\op@repereunite}%
                     \draw
-                        (\oriXfig pt,\yFig pt) -- (\oriXfig pt+0.1,\yFig pt);
+                        (\op@oriXfig pt,\op@yFig pt) -- (\op@oriXfig pt+0.1,\op@yFig pt);
                 \fi
             \fi
         }%
 
-        \foreach \point in \repereListeElements {%
-            \repereDecouperPoint{\point}{\nomPoint}{\coordsPoint}{\couleurPoint}%
-            \repereExtraireCoords{\coordsPoint}{\px}{\py}%
-            \pgfmathsetmacro{\pxFig}{(\px-\bgX)*\repereunite}%
-            \pgfmathsetmacro{\pyFig}{(\py-\bgY)*\repereunite}%
-            \fill[\couleurPoint] (\pxFig pt,\pyFig pt) circle (2.5pt);
-            \draw[black, thick] (\pxFig pt,\pyFig pt) circle (2.5pt);
-            \ifnum\repereAfficherNom=1
+        \foreach \op@point in \op@repereListeElements {%
+            \op@repereDecouperPoint{\op@point}{\op@nomPoint}{\op@coordsPoint}{\op@couleurPoint}%
+            \op@repereExtraireCoords{\op@coordsPoint}{\op@px}{\op@py}%
+            \pgfmathsetmacro{\op@pxFig}{(\op@px-\op@bgX)*\op@repereunite}%
+            \pgfmathsetmacro{\op@pyFig}{(\op@py-\op@bgY)*\op@repereunite}%
+            \fill[\op@couleurPoint] (\op@pxFig pt,\op@pyFig pt) circle (2.5pt);
+            \draw[black, thick] (\op@pxFig pt,\op@pyFig pt) circle (2.5pt);
+            \ifnum\op@repereAfficherNom=1
                 \node[above right, font=\small\bfseries, black,
                       xshift=2pt, yshift=1pt]
-                    at (\pxFig pt,\pyFig pt) {\nomPoint};
+                    at (\op@pxFig pt,\op@pyFig pt) {\op@nomPoint};
             \fi
-            \ifnum\repereAfficherCoords=1
+            \ifnum\op@repereAfficherCoords=1
                 \node[below right, font=\scriptsize, black,
                       xshift=2pt, yshift=-1pt]
-                    at (\pxFig pt,\pyFig pt)
-                    {(\repereFormaterNombre{\px};%
-                      \repereFormaterNombre{\py})};
+                    at (\op@pxFig pt,\op@pyFig pt)
+                    {(\op@repereFormaterNombre{\op@px};%
+                      \op@repereFormaterNombre{\op@py})};
             \fi
         }%
     \end{tikzpicture}%
@@ -1949,7 +1952,7 @@
 % ------------------------------------------------------------
 % Export vers un nom LaTeX2e pour TikZ
 % ------------------------------------------------------------
-\cs_new:Npn \dopMaskedContent {}
+\cs_new:Npn \__dop_contenu_masque: {}
 
 % ------------------------------------------------------------
 % Options
@@ -2000,12 +2003,12 @@
 
 % ------------------------------------------------------------
 % Masquage d'une composante (même règle que la section 3-B).
-% Résultat dans \dopMaskedContent (compatible TikZ).
+% Résultat dans \__dop_contenu_masque: (compatible TikZ).
 % ------------------------------------------------------------
 \cs_new_protected:Npn \__dop_mask:n #1
 {
     \__op_analyser:nNN {#1} \l__dop_clean_tl \l__dop_masked_tl
-    \cs_set:Npx \dopMaskedContent { \l__dop_masked_tl }
+    \cs_set:Npx \__dop_contenu_masque: { \l__dop_masked_tl }
 }
 
 % ------------------------------------------------------------
@@ -2109,7 +2112,7 @@
                     \__dop_mask:n { \seq_item:Nn \l__dop_parts_seq {1} }
                     \node[anchor=east]
                         at ( 22mm , { -(#2 - 0.5) * 6mm } )
-                        { \dopMaskedContent };
+                        { \__dop_contenu_masque: };
                     \node[anchor=west]
                         at ( 23mm , { -(#2 - 0.5) * 6mm } )
                         { \ensuremath{{}^\circ} };
@@ -2119,7 +2122,7 @@
                     \__dop_mask:n { \seq_item:Nn \l__dop_parts_seq {2} }
                     \node[anchor=east]
                         at ( 40mm , { -(#2 - 0.5) * 6mm } )
-                        { \dopMaskedContent };
+                        { \__dop_contenu_masque: };
                     \node[anchor=west]
                         at ( 41mm , { -(#2 - 0.5) * 6mm } )
                         { \ensuremath{{}^\prime} };
@@ -2129,7 +2132,7 @@
                     \__dop_mask:n { \seq_item:Nn \l__dop_parts_seq {3} }
                     \node[anchor=east]
                         at ( 58mm , { -(#2 - 0.5) * 6mm } )
-                        { \dopMaskedContent };
+                        { \__dop_contenu_masque: };
                     \node[anchor=west]
                         at ( 59mm , { -(#2 - 0.5) * 6mm } )
                         { \ensuremath{{}^{\prime\prime}} };
@@ -2141,7 +2144,7 @@
                     \__dop_mask:n { \seq_item:Nn \l__dop_parts_seq {1} }
                     \node[anchor=east]
                         at ( 14mm , { -(#2 - 0.5) * 6mm } )
-                        { \dopMaskedContent };
+                        { \__dop_contenu_masque: };
                     \node[anchor=west]
                         at ( 15mm , { -(#2 - 0.5) * 6mm } )
                         { j };
@@ -2151,7 +2154,7 @@
                     \__dop_mask:n { \seq_item:Nn \l__dop_parts_seq {2} }
                     \node[anchor=east]
                         at ( 30mm , { -(#2 - 0.5) * 6mm } )
-                        { \dopMaskedContent };
+                        { \__dop_contenu_masque: };
                     \node[anchor=west]
                         at ( 31mm , { -(#2 - 0.5) * 6mm } )
                         { h };
@@ -2161,7 +2164,7 @@
                     \__dop_mask:n { \seq_item:Nn \l__dop_parts_seq {3} }
                     \node[anchor=east]
                         at ( 48mm , { -(#2 - 0.5) * 6mm } )
-                        { \dopMaskedContent };
+                        { \__dop_contenu_masque: };
                     \node[anchor=west]
                         at ( 49mm , { -(#2 - 0.5) * 6mm } )
                         { min };
@@ -2171,7 +2174,7 @@
                     \__dop_mask:n { \seq_item:Nn \l__dop_parts_seq {4} }
                     \node[anchor=east]
                         at ( 64mm , { -(#2 - 0.5) * 6mm } )
-                        { \dopMaskedContent };
+                        { \__dop_contenu_masque: };
                     \node[anchor=west]
                         at ( 65mm , { -(#2 - 0.5) * 6mm } )
                         { s };
