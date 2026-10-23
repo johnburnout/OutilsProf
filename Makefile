@@ -6,7 +6,8 @@
 
 # --- Configuration ---
 PACKAGE      := outilsprof
-VERSION      := 1.12.7
+# Version lue dans le .sty (ligne « % Version : x.y.z ») : une seule source
+VERSION      := $(shell sed -n 's/^% Version : //p' $(PACKAGE).sty)
 STY          := $(PACKAGE).sty
 EXAMPLES_DIR := examples
 EXAMPLES     := $(wildcard $(EXAMPLES_DIR)/*.tex)
@@ -14,6 +15,7 @@ EXAMPLES_PDF := $(EXAMPLES:.tex=.pdf)
 TESTS_DIR    := tests
 TESTS        := $(wildcard $(TESTS_DIR)/*.tex)
 TESTS_PDF    := $(TESTS:.tex=.pdf)
+SMOKE_DIR    := $(TESTS_DIR)/smoke
 
 # --- Détection de l'OS ---
 UNAME := $(shell uname -s)
@@ -44,7 +46,7 @@ GIT      := git
 # ============================================================
 
 .PHONY: all help compile compile-tests clean cleanall install uninstall \
-        check version tag git-commit test smoke-test ci distclean \
+        check version tag git-commit push test smoke-test ci distclean \
         compile-verbose
 
 # Un PDF dont la compilation échoue est supprimé : il ne passe pas
@@ -71,7 +73,8 @@ help:
 	@echo "  make test           Compile exemples et tests, affiche un résumé"
 	@echo "  make ci             CI locale (clean + compile + test)"
 	@echo "  make tag            Crée un tag Git v$(VERSION)"
-	@echo "  make git-commit     Commit et push toutes les modifications"
+	@echo "  make git-commit     Commite les fichiers indexés (git add avant)"
+	@echo "  make push           Pousse la branche courante"
 	@echo ""
 	@echo "TEXMF_HOME : $(TEXMF_HOME)"
 	@echo "Dossier d'installation : $(TEXMF_DIR)"
@@ -129,6 +132,7 @@ clean:
 	@$(RM) $(EXAMPLES_DIR)/*.vrb
 	@$(RM) $(TESTS_DIR)/*.aux $(TESTS_DIR)/*.log $(TESTS_DIR)/*.out
 	@$(RM) $(TESTS_DIR)/*.toc $(TESTS_DIR)/*.synctex.gz
+	@$(RM) -r $(SMOKE_DIR)
 	@echo ">>> Fait."
 
 # --- Supprime aussi les PDF ---
@@ -182,24 +186,29 @@ version:
 # ============================================================
 
 # --- Test rapide : compile un fichier minimal ---
+# Dans tests/smoke/ (et non /tmp), avec le .sty du dépôt ; le .tex est
+# supprimé si le test réussit, gardé pour le débogage sinon
 smoke-test:
 	@echo ">>> Test de fumée (smoke test)"
+	@$(MKDIR) $(SMOKE_DIR)
 	@printf '%s\n' \
 	  '\documentclass{article}' \
 	  '\usepackage{$(PACKAGE)}' \
 	  '\begin{document}' \
 	  '\reperegradue[points={A/(4,5), B/(-2,3)/blue}]' \
 	  '\end{document}' \
-	  > /tmp/smoke-test.tex
-	@cd /tmp && $(LATEX) $(LATEXOPT) smoke-test.tex > /dev/null 2>&1
-	@if [ -f /tmp/smoke-test.pdf ]; then \
-	  echo ">>> ✅ Test réussi : /tmp/smoke-test.pdf"; \
+	  > $(SMOKE_DIR)/smoke-test.tex
+	@$(RM) $(SMOKE_DIR)/smoke-test.pdf
+	@cd $(SMOKE_DIR) && TEXINPUTS=$(CURDIR): $(LATEX) $(LATEXOPT) smoke-test.tex > /dev/null 2>&1 || true
+	@if [ -f $(SMOKE_DIR)/smoke-test.pdf ]; then \
+	  $(RM) $(SMOKE_DIR)/smoke-test.tex $(SMOKE_DIR)/smoke-test.aux; \
+	  echo ">>> ✅ Test réussi : $(SMOKE_DIR)/smoke-test.pdf"; \
 	else \
 	  echo ">>> ❌ Test échoué"; \
-	  echo ">>> Contenu de /tmp/smoke-test.tex :"; \
-	  cat -v /tmp/smoke-test.tex; \
+	  echo ">>> Contenu de $(SMOKE_DIR)/smoke-test.tex :"; \
+	  cat -v $(SMOKE_DIR)/smoke-test.tex; \
 	  echo ">>> Dernières lignes du log :"; \
-	  tail -30 /tmp/smoke-test.log; \
+	  tail -30 $(SMOKE_DIR)/smoke-test.log; \
 	  exit 1; \
 	fi
 
@@ -224,12 +233,18 @@ test: compile compile-tests
 # Git : commit et tag
 # ============================================================
 
-# --- Commit et push ---
+# --- Commit des fichiers déjà indexés (git add fait à la main) ---
+# Pas de « git add . » ni de push automatique : on choisit ce qui part
 git-commit:
-	@echo ">>> Git commit"
-	@$(GIT) add .
-	@$(GIT) commit -m "v$(VERSION) : mise à jour" || echo "(rien à commiter)"
-	@$(GIT) push origin main
+	@echo ">>> Git commit (fichiers indexés)"
+	@$(GIT) diff --cached --quiet \
+	  && { echo ">>> Rien d'indexé : faire git add <fichiers> avant"; exit 1; } || true
+	@$(GIT) commit -m "v$(VERSION) : mise à jour"
+	@echo ">>> Pour publier : make push"
+
+# --- Push de la branche courante ---
+push:
+	@$(GIT) push origin $$($(GIT) rev-parse --abbrev-ref HEAD)
 
 # --- Tag Git ---
 tag:
@@ -242,7 +257,10 @@ tag:
 # CI locale : à utiliser avant de pousser
 # ============================================================
 
-ci: clean compile test
+# cleanall (et non clean) : les PDF supprimés sont forcément recompilés
+ci:
+	@$(MAKE) --no-print-directory cleanall
+	@$(MAKE) --no-print-directory test
 	@echo ""
 	@echo ">>> ✅ CI locale terminée avec succès"
 
