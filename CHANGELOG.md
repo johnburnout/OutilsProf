@@ -35,6 +35,10 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 - Commentaire du `.sty` corrigé : `\additiondurees{3+12, 5+30}`
   signifie 3 j 12 h + 5 j 30 h (le premier champ est le jour).
 
+### Modifié
+- Cases des chiffres masqués : rectangle gris avec une bordure
+  noire fine (au lieu d'un contour blanc), plus visible à l'impression.
+
 ### Ajouté (tests)
 - `tests/test-commandes.tex` : section 11, un cas par correction.
 

@@ -1190,18 +1190,23 @@
 % Masquage des chiffres avec « | »
 % ------------------------------------------------------------
 
-% Rectangle plein, contour blanc fin, gris très clair
+% Rectangle gris très clair, bordure noire fine (mode normal) :
+% le chiffre masqué n'est pas lisible.
 % Version TikZ pure : fiable dans tous les contextes (nœuds compris).
-% Le contour blanc sépare le rectangle des chiffres adjacents.
+% La boîte englobante fait exactement la largeur d'un chiffre
+% (0,5 em) ; le rectangle est légèrement en retrait pour que deux
+% cases voisines (« || ») restent séparées par un petit blanc.
 % NOTE : en mode expl3, utiliser « line~width » (le ~ est un espace
 %        non absorbé) ; « line width » serait lu comme « linewidth »
 %        et provoquerait une erreur pgfkeys.
-% Rectangle gris (mode normal) : le chiffre masqué n'est pas lisible.
 \cs_new_protected:Npn \__op_underscore:
 {
     \tikz[baseline=-0.5ex+1mm]
-        \fill[gray!20, draw=white, thin]
-            (0.2pt,0) rectangle (0.5em-0.2pt,0.7em);
+        {
+            \useasboundingbox (0,0) rectangle (0.5em,0.7em);
+            \filldraw[fill=gray!20, draw=black, thin]
+                (0.6pt,0.2pt) rectangle (0.5em-0.6pt,0.7em-0.2pt);
+        }
 }
 
 % Chiffre caché affiché en couleur (mode corrigé).
