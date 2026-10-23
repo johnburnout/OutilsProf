@@ -2,12 +2,12 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.12.0
-% Date : 2026/10/08
+% Version : 1.12.1
+% Date : 2026/10/23
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/10/08 v1.12.0 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/10/23 v1.12.1 Outils pour l'enseignement]
 
 % ============================================================
 % DÉPENDANCES
@@ -58,6 +58,8 @@
     \tl_set:Nx \axeNombre   { \l__axe_nombre_tl }
     \tl_set:Nx \axePoints   { \l__axe_points_tl }
 }
+% Calcul décimal exact (évite 0.20001) ; résultat sans « .0 » final
+\cs_new:Npn \outilsprofFpEval #1 { \fp_eval:n { round( #1 , 6 ) } }
 \ExplSyntaxOff
 
 \newlength{\largeurPt}
@@ -77,9 +79,9 @@
 
         \foreach \i in {0,1,...,\nbIntervallesPrincipaux} {%
             \pgfmathsetmacro{\x}{\i*\pasPrincipal}%
-            \pgfmathsetmacro{\valeur}{\axeDebut+\i*\axePas}%
+            \edef\valeur{\outilsprofFpEval{\axeDebut+\i*\axePas}}%
             \draw[thick] (\x pt,0) -- (\x pt,-0.25)
-                node[below, font=\small, yshift=-2pt] {\valeur};
+                node[below, font=\small, yshift=-2pt] {\num{\valeur}};
         }
 
         \pgfmathsetmacro{\nbSecondaires}{\nbIntervallesPrincipaux*\axeNombre}%
@@ -307,7 +309,7 @@
                 \ifnum\pgfmathresult=1
                     \node[below, font=\small, yshift=-2pt]
                         at (\xFig pt,\oriYfig pt)
-                        {\pgfmathprintnumber[fixed,precision=2]{\x}};
+                        {\pgfmathprintnumber[fixed,precision=2,use comma]{\x}};
                 \fi
             \fi
         }%
@@ -324,7 +326,7 @@
                 \ifnum\pgfmathresult=1
                     \node[left, font=\small, xshift=-2pt]
                         at (\oriXfig pt,\yFig pt)
-                        {\pgfmathprintnumber[fixed,precision=2]{\y}};
+                        {\pgfmathprintnumber[fixed,precision=2,use comma]{\y}};
                 \fi
             \fi
         }%
@@ -336,8 +338,8 @@
         \else
             \node[below left, font=\small, xshift=1pt, yshift=-2pt]
                 at (\oriXfig pt,\oriYfig pt)
-                {$\Omega(\pgfmathprintnumber[fixed,precision=2]{\oriX};%
-                          \pgfmathprintnumber[fixed,precision=2]{\oriY})$};
+                {$\Omega(\pgfmathprintnumber[fixed,precision=2,use comma]{\oriX};%
+                          \pgfmathprintnumber[fixed,precision=2,use comma]{\oriY})$};
         \fi
 
         \pgfmathsetmacro{\nbSecX}{\nbX*\repereNombreX}%
@@ -383,8 +385,8 @@
                 \node[below right, font=\scriptsize, black,
                       xshift=2pt, yshift=-1pt]
                     at (\pxFig pt,\pyFig pt)
-                    {(\pgfmathprintnumber[fixed,precision=2]{\px};%
-                      \pgfmathprintnumber[fixed,precision=2]{\py})};
+                    {(\pgfmathprintnumber[fixed,precision=2,use comma]{\px};%
+                      \pgfmathprintnumber[fixed,precision=2,use comma]{\py})};
             \fi
         }%
     \end{tikzpicture}%

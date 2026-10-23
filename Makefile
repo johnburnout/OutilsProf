@@ -6,7 +6,7 @@
 
 # --- Configuration ---
 PACKAGE      := outilsprof
-VERSION      := 1.2
+VERSION      := 1.12.1
 STY          := $(PACKAGE).sty
 EXAMPLES_DIR := examples
 EXAMPLES     := $(wildcard $(EXAMPLES_DIR)/*.tex)

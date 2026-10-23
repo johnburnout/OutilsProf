@@ -5,6 +5,24 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.12.1] - 2026-10-23
+
+### Corrigé
+- Section 1-A (`\axegradue`) : les graduations s'affichent sans
+  « .0 » final (`1, 2, 3` au lieu de `1.0, 2.0, 3.0`), avec la
+  virgule décimale (`0,5`) et l'espace des milliers (`1 000`).
+  Le calcul des valeurs est désormais décimal exact (`\fp_eval:n`),
+  ce qui supprime les erreurs d'arrondi (`0.20001`, `0.30002`…).
+- Section 1-B (`\reperegradue`) : virgule décimale sur les
+  graduations, l'origine Ω et les coordonnées des points.
+
+### Divers
+- Makefile : `VERSION` alignée sur la version du package
+  (était restée à `1.2`).
+
+### Version
+- 1.12.0 → 1.12.1
+
 ## [1.12.0] - 2026-10-08
 
 ### Ajouté
