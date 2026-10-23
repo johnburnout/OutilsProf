@@ -29,6 +29,16 @@
 \usepackage{tcolorbox}
 \tcbuselibrary{skins,breakable}
 
+% --- Non-régression v1.12.5 : un autre package peut déclarer ces
+%     variables ; outilsprof ne doit plus les redéclarer
+%     (sinon : « Control sequence \l_tmpc_int already defined »)
+\ExplSyntaxOn
+\int_new:N \l_tmpc_int
+\int_new:N \l_tmpd_int
+\tl_new:N  \l_tmpc_tl
+\tl_new:N  \l_tmpd_tl
+\ExplSyntaxOff
+
 % --- Le package à tester ---
 \usepackage{outilsprof}
 

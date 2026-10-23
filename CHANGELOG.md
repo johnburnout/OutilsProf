@@ -5,6 +5,26 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.12.5] - 2026-10-23
+
+### Corrigé
+- Variables internes `\l_tmpc_int`, `\l_tmpd_int`, `\l_tmpc_tl`
+  déclarées dans l'espace de noms du noyau LaTeX : si un autre
+  package les déclarait aussi, le chargement échouait
+  (« Control sequence \l_tmpc_int already defined »). Elles
+  deviennent `\l__op_tmpc_int`, `\l__op_tmpd_int`, `\l__op_tmpc_tl`.
+- `\l_tmpd_tl` était utilisée sans être déclarée ; elle devient
+  `\l__op_tmpd_tl`, déclarée. Vérifié avec le mode
+  `check-declarations` d'expl3 : plus aucune variable expl3 non
+  déclarée.
+
+### Ajouté (tests)
+- `tests/test-commandes.tex` : le préambule déclare ces variables
+  avant de charger le package.
+
+### Version
+- 1.12.4 → 1.12.5
+
 ## [1.12.4] - 2026-10-23
 
 ### Ajouté
