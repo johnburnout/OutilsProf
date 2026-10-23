@@ -2,12 +2,12 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.12.4
+% Version : 1.12.5
 % Date : 2026/10/23
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/10/23 v1.12.4 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/10/23 v1.12.5 Outils pour l'enseignement]
 
 % ============================================================
 % DÉPENDANCES
@@ -597,8 +597,8 @@
 \int_new:N \l__div_position_int
 \int_new:N \l__div_debut_int
 \int_new:N \l__div_ligne_depart_int
-\int_new:N \l_tmpc_int
-\int_new:N \l_tmpd_int
+\int_new:N \l__op_tmpc_int
+\int_new:N \l__op_tmpd_int
 \seq_new:N \l__div_etapes_calc_seq
 \tl_new:N  \l__div_dividende_tl
 \tl_new:N  \l__div_diviseur_tl
@@ -606,7 +606,8 @@
 \tl_new:N  \l__div_reste_tl
 \tl_new:N  \l__div_etapes_user_tl
 \tl_new:N  \l__div_decimales_tl
-\tl_new:N  \l_tmpc_tl
+\tl_new:N  \l__op_tmpc_tl
+\tl_new:N  \l__op_tmpd_tl
 \bool_new:N \l__div_etapes_ok_bool
 \bool_new:N \l__div_etapes_fournies_bool
 \bool_new:N \l__op_solution_bool
@@ -704,11 +705,11 @@
     % --- Dividende étendu : ajout de nbdec zéros ---
     \tl_set:Nx \l__div_dividende_etendu_tl
         { \l__div_dividende_tl }
-    \int_set:Nn \l_tmpc_int { 1 }
-    \int_while_do:nNnn { \l_tmpc_int } < { \l__div_nbdec_int + 1 }
+    \int_set:Nn \l__op_tmpc_int { 1 }
+    \int_while_do:nNnn { \l__op_tmpc_int } < { \l__div_nbdec_int + 1 }
     {
         \tl_put_right:Nn \l__div_dividende_etendu_tl { 0 }
-        \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
+        \int_set:Nn \l__op_tmpc_int { \l__op_tmpc_int + 1 }
     }
 
     % --- Nombre total de positions (colonnes) du dividende étendu ---
@@ -717,11 +718,11 @@
 
     % --- Quotient étendu = (dividende × 10^nbdec) ÷ diviseur ---
     \int_set:Nn \l_tmpa_int { \l__div_dividende_int }
-    \int_set:Nn \l_tmpc_int { 1 }
-    \int_while_do:nNnn { \l_tmpc_int } < { \l__div_nbdec_int + 1 }
+    \int_set:Nn \l__op_tmpc_int { 1 }
+    \int_while_do:nNnn { \l__op_tmpc_int } < { \l__div_nbdec_int + 1 }
     {
         \int_set:Nn \l_tmpa_int { \l_tmpa_int * 10 }
-        \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
+        \int_set:Nn \l__op_tmpc_int { \l__op_tmpc_int + 1 }
     }
     \int_set:Nn \l__div_quotient_etendu_int
         { \int_div_truncate:nn
@@ -743,12 +744,12 @@
     % --- Quotient affiché : padding avec des zéros à gauche ---
     \tl_set:Nx \l__div_quotient_affiche_tl
         { \l__div_quotient_etendu_tl }
-    \int_set:Nn \l_tmpc_int
+    \int_set:Nn \l__op_tmpc_int
         { \tl_count:V \l__div_quotient_affiche_tl }
-    \int_while_do:nNnn { \l_tmpc_int } < { \l__div_nbquo_affiche_int }
+    \int_while_do:nNnn { \l__op_tmpc_int } < { \l__div_nbquo_affiche_int }
     {
         \tl_put_left:Nn \l__div_quotient_affiche_tl { 0 }
-        \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
+        \int_set:Nn \l__op_tmpc_int { \l__op_tmpc_int + 1 }
     }
 
     % --- Nombre de colonnes à droite de la barre ---
@@ -762,10 +763,10 @@
     \int_zero:N \l__div_partiel_int
     \int_zero:N \l__div_nb_etapes_int
 
-    \int_set:Nn \l_tmpc_int { 1 }
-    \int_while_do:nNnn { \l_tmpc_int } < { \l__div_nbpositions_int + 1 }
+    \int_set:Nn \l__op_tmpc_int { 1 }
+    \int_while_do:nNnn { \l__op_tmpc_int } < { \l__div_nbpositions_int + 1 }
     {
-        \__div_char:nn {\l__div_dividende_etendu_tl} {\l_tmpc_int}
+        \__div_char:nn {\l__div_dividende_etendu_tl} {\l__op_tmpc_int}
         \int_set:Nn \l__div_chiffre_int { \l_tmpa_tl }
 
         \int_set:Nn \l__div_partiel_int
@@ -784,13 +785,13 @@
             \int_compare:nTF { \l__div_nb_etapes_int == 0 }
                 {
                     \seq_put_right:Nx \l__div_etapes_calc_seq
-                        { \int_use:N \l_tmpc_int
+                        { \int_use:N \l__op_tmpc_int
                           ; 0
                           ; \int_use:N \l__div_produit_int }
                 }
                 {
                     \seq_put_right:Nx \l__div_etapes_calc_seq
-                        { \int_use:N \l_tmpc_int
+                        { \int_use:N \l__op_tmpc_int
                           ; \int_use:N \l__div_partiel_int
                           ; \int_use:N \l__div_produit_int }
                 }
@@ -801,7 +802,7 @@
                 { \l__div_partiel_int - \l__div_produit_int }
         }
 
-        \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
+        \int_set:Nn \l__op_tmpc_int { \l__op_tmpc_int + 1 }
     }
 
     % --- Mise à jour du reste avec la valeur finale du partiel ---
@@ -813,14 +814,14 @@
 
 % ------------------------------------------------------------
 % Macro sans argument : découpe \l_tmpa_tl (format "a;b;c") en :
-%   \l_tmpa_tl = a, \l_tmpb_tl = b, \l_tmpc_tl = c
+%   \l_tmpa_tl = a, \l_tmpb_tl = b, \l__op_tmpc_tl = c
 % ------------------------------------------------------------
 \cs_new_protected:Npn \__div_decouper_trois:
 {
     \expandafter\StrCut\expandafter{\l_tmpa_tl}{;}
         {\l_tmpa_tl}{\l_tmpb_tl}
     \expandafter\StrCut\expandafter{\l_tmpb_tl}{;}
-        {\l_tmpb_tl}{\l_tmpc_tl}
+        {\l_tmpb_tl}{\l__op_tmpc_tl}
 }
 
 % ------------------------------------------------------------
@@ -840,16 +841,16 @@
             { \c_space_token } { }
 
         \seq_clear:N \l_tmpa_seq
-        \int_set:Nn \l_tmpc_int { 1 }
-        \int_while_do:nNnn { \l_tmpc_int }
+        \int_set:Nn \l__op_tmpc_int { 1 }
+        \int_while_do:nNnn { \l__op_tmpc_int }
             < { \l__div_nb_etapes_int + 1 }
         {
             \tl_set:Nx \l_tmpa_tl
                 { \seq_item:Nn \l__div_etapes_calc_seq
-                    { \l_tmpc_int } }
+                    { \l__op_tmpc_int } }
             \__div_decouper_trois:
-            \seq_put_right:NV \l_tmpa_seq \l_tmpc_tl
-            \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
+            \seq_put_right:NV \l_tmpa_seq \l__op_tmpc_tl
+            \int_set:Nn \l__op_tmpc_int { \l__op_tmpc_int + 1 }
         }
         \tl_set:Nx \l_tmpa_tl
             { \seq_use:Nn \l_tmpa_seq { , } }
@@ -890,10 +891,10 @@
     {
         % ----- Ligne de départ des étapes -----
         \bool_if:NTF \l__op_solution_bool
-            { \int_set:Nn \l_tmpd_int { 3 } }
-            { \int_set:Nn \l_tmpd_int { 2 } }
+            { \int_set:Nn \l__op_tmpd_int { 3 } }
+            { \int_set:Nn \l__op_tmpd_int { 2 } }
         \int_set:Nn \l_tmpb_int
-            { \l_tmpd_int + 2 * \l__div_nb_etapes_int }
+            { \l__op_tmpd_int + 2 * \l__div_nb_etapes_int }
 
         \noindent\makebox[\textwidth][c]{%
         \begin{tikzpicture}[
@@ -903,30 +904,30 @@
             % ===== Ligne 1 : chiffres du dividende (entier seulement) =====
             % Les colonnes supplémentaires (décimales) sont réservées
             % par l'espace, mais aucun chiffre n'y est dessiné.
-            \int_set:Nn \l_tmpc_int { 1 }
-            \int_while_do:nNnn { \l_tmpc_int }
+            \int_set:Nn \l__op_tmpc_int { 1 }
+            \int_while_do:nNnn { \l__op_tmpc_int }
                 < { \l__div_nbchiffres_int + 1 }
             {
-                \__div_char:nn {\l__div_dividende_etendu_tl} {\l_tmpc_int}
+                \__div_char:nn {\l__div_dividende_etendu_tl} {\l__op_tmpc_int}
                 \node[anchor=center]
-                    at ( { (\l_tmpc_int - 0.5) * \l__div_w_dim } ,
+                    at ( { (\l__op_tmpc_int - 0.5) * \l__div_w_dim } ,
                          { -0.5 * \l__div_h_dim } )
                     { \l_tmpa_tl };
-                \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
+                \int_set:Nn \l__op_tmpc_int { \l__op_tmpc_int + 1 }
             }
 
             % ===== Ligne 1 : chiffres du diviseur =====
-            \int_set:Nn \l_tmpc_int { 1 }
-            \int_while_do:nNnn { \l_tmpc_int }
+            \int_set:Nn \l__op_tmpc_int { 1 }
+            \int_while_do:nNnn { \l__op_tmpc_int }
                 < { \l__div_nbdiv_int + 1 }
             {
-                \__div_char:nn {\l__div_diviseur_tl} {\l_tmpc_int}
+                \__div_char:nn {\l__div_diviseur_tl} {\l__op_tmpc_int}
                 \node[anchor=center]
-                    at ( { (\l__div_nbpositions_int + \l_tmpc_int
+                    at ( { (\l__div_nbpositions_int + \l__op_tmpc_int
                             - 0.5) * \l__div_w_dim } ,
                          { -0.5 * \l__div_h_dim } )
                     { \l_tmpa_tl };
-                \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
+                \int_set:Nn \l__op_tmpc_int { \l__op_tmpc_int + 1 }
             }
 
             % ===== Barre verticale =====
@@ -939,18 +940,18 @@
             % ===== Quotient (si solution) =====
             \bool_if:NT \l__op_solution_bool
             {
-                \int_set:Nn \l_tmpd_int { 1 }
-                \int_while_do:nNnn { \l_tmpd_int }
+                \int_set:Nn \l__op_tmpd_int { 1 }
+                \int_while_do:nNnn { \l__op_tmpd_int }
                     < { \l__div_nbquo_affiche_int + 1 }
                 {
                     \__div_char:nn {\l__div_quotient_affiche_tl}
-                        {\l_tmpd_int}
+                        {\l__op_tmpd_int}
                     \node[anchor=center]
-                        at ( { (\l__div_nbpositions_int + \l_tmpd_int
+                        at ( { (\l__div_nbpositions_int + \l__op_tmpd_int
                                 - 0.5) * \l__div_w_dim } ,
                              { -1.5 * \l__div_h_dim } )
                         { \l_tmpa_tl };
-                    \int_set:Nn \l_tmpd_int { \l_tmpd_int + 1 }
+                    \int_set:Nn \l__op_tmpd_int { \l__op_tmpd_int + 1 }
                 }
 
                 % Virgule dans le quotient (si decimales > 0)
@@ -977,38 +978,38 @@
             % ===== Étapes (uniquement si fournies) =====
             \bool_if:NT \l__div_etapes_fournies_bool
             {
-                \int_set:Nn \l_tmpc_int { 1 }
-                \int_while_do:nNnn { \l_tmpc_int }
+                \int_set:Nn \l__op_tmpc_int { 1 }
+                \int_while_do:nNnn { \l__op_tmpc_int }
                     < { \l__div_nb_etapes_int + 1 }
                 {
                     \tl_set:Nx \l_tmpa_tl
                         { \seq_item:Nn \l__div_etapes_calc_seq
-                            { \l_tmpc_int } }
+                            { \l__op_tmpc_int } }
                     \__div_decouper_trois:
 
                     \int_set:Nn \l__div_position_int { \l_tmpa_tl }
 
                     % Ligne du produit : 2 + 2*(k-1)
                     \int_set:Nn \l_tmpa_int
-                        { 2 + 2 * (\l_tmpc_int - 1) }
+                        { 2 + 2 * (\l__op_tmpc_int - 1) }
 
                     % ----- Produit chiffre par chiffre -----
                     \int_set:Nn \l__div_debut_int
                         { \l__div_position_int
-                          - \tl_count:V \l_tmpc_tl + 1 }
-                    \int_set:Nn \l_tmpd_int { 1 }
-                    \int_while_do:nNnn { \l_tmpd_int }
-                        < { \tl_count:V \l_tmpc_tl + 1 }
+                          - \tl_count:V \l__op_tmpc_tl + 1 }
+                    \int_set:Nn \l__op_tmpd_int { 1 }
+                    \int_while_do:nNnn { \l__op_tmpd_int }
+                        < { \tl_count:V \l__op_tmpc_tl + 1 }
                     {
-                        \__div_char:nn {\l_tmpc_tl} {\l_tmpd_int}
+                        \__div_char:nn {\l__op_tmpc_tl} {\l__op_tmpd_int}
                         \node[anchor=center]
-                            at ( { (\l__div_debut_int + \l_tmpd_int
+                            at ( { (\l__div_debut_int + \l__op_tmpd_int
                                     - 1.5) * \l__div_w_dim } ,
                                  { -(\l_tmpa_int - 0.5)
                                     * \l__div_h_dim } )
                             { \l_tmpa_tl };
-                        \int_set:Nn \l_tmpd_int
-                            { \l_tmpd_int + 1 }
+                        \int_set:Nn \l__op_tmpd_int
+                            { \l__op_tmpd_int + 1 }
                     }
 
                     % ----- Trait horizontal sous le produit -----
@@ -1021,36 +1022,36 @@
 
                     % ----- Partiel suivant -----
                     \int_compare:nT
-                        { \l_tmpc_int < \l__div_nb_etapes_int }
+                        { \l__op_tmpc_int < \l__div_nb_etapes_int }
                     {
                         \tl_set:Nx \l_tmpa_tl
                             { \seq_item:Nn \l__div_etapes_calc_seq
-                                { \l_tmpc_int + 1 } }
+                                { \l__op_tmpc_int + 1 } }
                         \__div_decouper_trois:
                         \int_set:Nn \l__div_position_int { \l_tmpa_tl }
 
                         \int_set:Nn \l__div_debut_int
                             { \l__div_position_int
                               - \tl_count:V \l_tmpb_tl + 1 }
-                        \int_set:Nn \l_tmpd_int { 1 }
-                        \int_while_do:nNnn { \l_tmpd_int }
+                        \int_set:Nn \l__op_tmpd_int { 1 }
+                        \int_while_do:nNnn { \l__op_tmpd_int }
                             < { \tl_count:V \l_tmpb_tl + 1 }
                         {
                             \__div_char:nn {\l_tmpb_tl}
-                                {\l_tmpd_int}
+                                {\l__op_tmpd_int}
                             \node[anchor=center]
                                 at ( { (\l__div_debut_int
-                                        + \l_tmpd_int - 1.5)
+                                        + \l__op_tmpd_int - 1.5)
                                        * \l__div_w_dim } ,
                                      { -(\l_tmpa_int + 0.5)
                                         * \l__div_h_dim } )
                                 { \l_tmpa_tl };
-                            \int_set:Nn \l_tmpd_int
-                                { \l_tmpd_int + 1 }
+                            \int_set:Nn \l__op_tmpd_int
+                                { \l__op_tmpd_int + 1 }
                         }
                     }
 
-                    \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
+                    \int_set:Nn \l__op_tmpc_int { \l__op_tmpc_int + 1 }
                 }
             }
 
@@ -1061,21 +1062,21 @@
                 \int_set:Nn \l__div_debut_int
                     { \l__div_nbpositions_int
                       - \tl_count:V \l__div_reste_tl + 1 }
-                \int_set:Nn \l_tmpd_int { 1 }
-                \int_while_do:nNnn { \l_tmpd_int }
+                \int_set:Nn \l__op_tmpd_int { 1 }
+                \int_while_do:nNnn { \l__op_tmpd_int }
                     < { \tl_count:V \l__div_reste_tl + 1 }
                 {
                     \__div_char:nn {\l__div_reste_tl}
-                        {\l_tmpd_int}
+                        {\l__op_tmpd_int}
                     \node[anchor=center]
                         at ( { (\l__div_debut_int
-                                + \l_tmpd_int - 1.5)
+                                + \l__op_tmpd_int - 1.5)
                                * \l__div_w_dim } ,
                              { -(\l_tmpb_int - 2)
                                 * \l__div_h_dim } )
                         { \l_tmpa_tl };
-                    \int_set:Nn \l_tmpd_int
-                        { \l_tmpd_int + 1 }
+                    \int_set:Nn \l__op_tmpd_int
+                        { \l__op_tmpd_int + 1 }
                 }
             }
         \end{tikzpicture}%
@@ -1297,9 +1298,9 @@
         \tl_if_empty:NF \l_tmpa_tl
             {
                 % Version nettoyée (calcul) et masquée (affichage)
-                \__op_analyser:nNN {##1} \l_tmpb_tl \l_tmpc_tl
+                \__op_analyser:nNN {##1} \l_tmpb_tl \l__op_tmpc_tl
                 \seq_put_right:NV \l__op_liste_seq \l_tmpb_tl
-                \seq_put_right:NV \l__op_liste_masquee_seq \l_tmpc_tl
+                \seq_put_right:NV \l__op_liste_masquee_seq \l__op_tmpc_tl
             }
     }
     \int_set:Nn \l__op_n_int { \seq_count:N \l__op_liste_seq }
@@ -1366,15 +1367,15 @@
     \int_set:Nn \l__op_nbchiffres_int { 0 }
     \seq_map_inline:Nn \l__op_liste_seq
     {
-        \int_set:Nn \l_tmpc_int { \tl_count:n {##1} }
-        \int_compare:nT { \l_tmpc_int > \l__op_nbchiffres_int }
-            { \int_set:Nn \l__op_nbchiffres_int { \l_tmpc_int } }
+        \int_set:Nn \l__op_tmpc_int { \tl_count:n {##1} }
+        \int_compare:nT { \l__op_tmpc_int > \l__op_nbchiffres_int }
+            { \int_set:Nn \l__op_nbchiffres_int { \l__op_tmpc_int } }
     }
     \bool_if:NT \l__op_solution_bool
     {
-        \int_set:Nn \l_tmpc_int { \tl_count:V \l__op_resultat_tl }
-        \int_compare:nT { \l_tmpc_int > \l__op_nbchiffres_int }
-            { \int_set:Nn \l__op_nbchiffres_int { \l_tmpc_int } }
+        \int_set:Nn \l__op_tmpc_int { \tl_count:V \l__op_resultat_tl }
+        \int_compare:nT { \l__op_tmpc_int > \l__op_nbchiffres_int }
+            { \int_set:Nn \l__op_nbchiffres_int { \l__op_tmpc_int } }
     }
 
     \dim_set:Nn \l_tmpa_dim
@@ -1389,19 +1390,19 @@
         every~node/.style={font=\__op_appliquer_taille:, inner~sep=0pt}
     ]
         % ----- Termes (version masquée pour l'affichage) -----
-        \int_set:Nn \l_tmpc_int { 1 }
+        \int_set:Nn \l__op_tmpc_int { 1 }
         \seq_map_inline:Nn \l__op_liste_masquee_seq
         {
-            \int_compare:nTF { \l_tmpc_int == 1 }
+            \int_compare:nTF { \l__op_tmpc_int == 1 }
                 { }
                 { \node[anchor=east] at ( { \l__op_left_margin_dim - 1mm } ,
-                        { -(\l_tmpc_int - 0.5) * \l__op_h_dim } ) {$+$}; }
+                        { -(\l__op_tmpc_int - 0.5) * \l__op_h_dim } ) {$+$}; }
             \node[anchor=east]
                 at ( { \l__op_left_margin_dim
                        + \l__op_nbchiffres_int * \l__op_w_dim } ,
-                     { -(\l_tmpc_int - 0.5) * \l__op_h_dim } )
+                     { -(\l__op_tmpc_int - 0.5) * \l__op_h_dim } )
                 { ##1 };
-            \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
+            \int_set:Nn \l__op_tmpc_int { \l__op_tmpc_int + 1 }
         }
 
                % ----- Trait -----
@@ -1439,49 +1440,49 @@
     \int_compare:nTF { \l__op_n_int == 2 }
     {
         % Versions nettoyées (pour calcul)
-        \tl_set:Nx \l_tmpc_tl { \seq_item:Nn \l__op_liste_seq { 1 } }
-        \tl_set:Nx \l_tmpd_tl { \seq_item:Nn \l__op_liste_seq { 2 } }
+        \tl_set:Nx \l__op_tmpc_tl { \seq_item:Nn \l__op_liste_seq { 1 } }
+        \tl_set:Nx \l__op_tmpd_tl { \seq_item:Nn \l__op_liste_seq { 2 } }
         % Versions masquées (pour affichage)
         \tl_set:Nx \l_tmpa_tl
             { \seq_item:Nn \l__op_liste_masquee_seq { 1 } }
         \tl_set:Nx \l_tmpb_tl
             { \seq_item:Nn \l__op_liste_masquee_seq { 2 } }
 
-        \int_set:Nn \l_tmpa_int { \l_tmpc_tl }
-        \int_set:Nn \l_tmpb_int { \l_tmpd_tl }
+        \int_set:Nn \l_tmpa_int { \l__op_tmpc_tl }
+        \int_set:Nn \l_tmpb_int { \l__op_tmpd_tl }
         \int_compare:nTF { \l_tmpa_int >= \l_tmpb_int }
         {
             \int_set:Nn \l__op_somme_int { \l_tmpa_int - \l_tmpb_int }
         }
         {
             % Échange : on permute les 4 variables
-            \tl_set_eq:NN \l_tmpc_tl \l_tmpa_tl
-            \tl_set_eq:NN \l_tmpd_tl \l_tmpb_tl
+            \tl_set_eq:NN \l__op_tmpc_tl \l_tmpa_tl
+            \tl_set_eq:NN \l__op_tmpd_tl \l_tmpb_tl
             \tl_set:Nx \l_tmpa_tl
                 { \seq_item:Nn \l__op_liste_masquee_seq { 2 } }
             \tl_set:Nx \l_tmpb_tl
                 { \seq_item:Nn \l__op_liste_masquee_seq { 1 } }
             % Recalcul avec les valeurs dans le bon ordre
-            \tl_set:Nx \l_tmpc_tl
+            \tl_set:Nx \l__op_tmpc_tl
                 { \seq_item:Nn \l__op_liste_seq { 2 } }
-            \tl_set:Nx \l_tmpd_tl
+            \tl_set:Nx \l__op_tmpd_tl
                 { \seq_item:Nn \l__op_liste_seq { 1 } }
-            \int_set:Nn \l_tmpa_int { \l_tmpc_tl }
-            \int_set:Nn \l_tmpb_int { \l_tmpd_tl }
+            \int_set:Nn \l_tmpa_int { \l__op_tmpc_tl }
+            \int_set:Nn \l_tmpb_int { \l__op_tmpd_tl }
             \int_set:Nn \l__op_somme_int { \l_tmpa_int - \l_tmpb_int }
         }
         \tl_set:Nx \l__op_resultat_tl { \int_use:N \l__op_somme_int }
         \__op_appliquer_taille:
 
-        \int_set:Nn \l_tmpb_int { \tl_count:V \l_tmpc_tl }
-        \int_set:Nn \l_tmpc_int { \tl_count:V \l_tmpd_tl }
-        \int_compare:nT { \l_tmpc_int > \l_tmpb_int }
-            { \int_set:Nn \l_tmpb_int { \l_tmpc_int } }
+        \int_set:Nn \l_tmpb_int { \tl_count:V \l__op_tmpc_tl }
+        \int_set:Nn \l__op_tmpc_int { \tl_count:V \l__op_tmpd_tl }
+        \int_compare:nT { \l__op_tmpc_int > \l_tmpb_int }
+            { \int_set:Nn \l_tmpb_int { \l__op_tmpc_int } }
         \bool_if:NT \l__op_solution_bool
         {
-            \int_set:Nn \l_tmpc_int { \tl_count:V \l__op_resultat_tl }
-            \int_compare:nT { \l_tmpc_int > \l_tmpb_int }
-                { \int_set:Nn \l_tmpb_int { \l_tmpc_int } }
+            \int_set:Nn \l__op_tmpc_int { \tl_count:V \l__op_resultat_tl }
+            \int_compare:nT { \l__op_tmpc_int > \l_tmpb_int }
+                { \int_set:Nn \l_tmpb_int { \l__op_tmpc_int } }
         }
 
         \begin{center}
@@ -1548,24 +1549,24 @@
     \int_compare:nTF { \l__op_n_int == 2 }
     {
         % Versions nettoyées (pour calcul)
-        \tl_set:Nx \l_tmpc_tl { \seq_item:Nn \l__op_liste_seq { 1 } }
-        \tl_set:Nx \l_tmpd_tl { \seq_item:Nn \l__op_liste_seq { 2 } }
+        \tl_set:Nx \l__op_tmpc_tl { \seq_item:Nn \l__op_liste_seq { 1 } }
+        \tl_set:Nx \l__op_tmpd_tl { \seq_item:Nn \l__op_liste_seq { 2 } }
         % Versions masquées (pour affichage)
         \tl_set:Nx \l_tmpa_tl
             { \seq_item:Nn \l__op_liste_masquee_seq { 1 } }
         \tl_set:Nx \l_tmpb_tl
             { \seq_item:Nn \l__op_liste_masquee_seq { 2 } }
 
-        \fp_compare:nNnT { ( \l_tmpc_tl ) * ( \l_tmpd_tl ) } > { 2147483647 }
+        \fp_compare:nNnT { ( \l__op_tmpc_tl ) * ( \l__op_tmpd_tl ) } > { 2147483647 }
             {
                 \msg_error:nnn { outilsprof } { trop-grand } { multiplication }
-                \tl_set:Nn \l_tmpc_tl { 0 }
-                \tl_set:Nn \l_tmpd_tl { 0 }
+                \tl_set:Nn \l__op_tmpc_tl { 0 }
+                \tl_set:Nn \l__op_tmpd_tl { 0 }
             }
-        \int_set:Nn \l__op_a_int { \l_tmpc_tl }
-        \int_set:Nn \l__op_b_int { \l_tmpd_tl }
+        \int_set:Nn \l__op_a_int { \l__op_tmpc_tl }
+        \int_set:Nn \l__op_b_int { \l__op_tmpd_tl }
 
-        \int_set:Nn \l__op_nb_int { \tl_count:V \l_tmpd_tl }
+        \int_set:Nn \l__op_nb_int { \tl_count:V \l__op_tmpd_tl }
 
         \tl_set:Nx \l__op_resultat_tl
             { \int_eval:n { \l__op_a_int * \l__op_b_int } }
@@ -1574,8 +1575,8 @@
         \int_compare:nT { \l__op_nb_int > 1 }
         {
             \int_set:Nn \l__op_puissance_int { 1 }
-            \int_set:Nn \l_tmpc_int { 1 }
-            \int_while_do:nNnn { \l_tmpc_int }
+            \int_set:Nn \l__op_tmpc_int { 1 }
+            \int_while_do:nNnn { \l__op_tmpc_int }
                 < { \l__op_nb_int + 1 }
             {
                 \int_set:Nn \l__op_chiffre_int
@@ -1591,30 +1592,30 @@
                     { \int_use:N \l__op_produit_int }
                 \int_set:Nn \l__op_puissance_int
                     { \l__op_puissance_int * 10 }
-                \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
+                \int_set:Nn \l__op_tmpc_int { \l__op_tmpc_int + 1 }
             }
         }
 
         \__op_appliquer_taille:
 
         \int_set:Nn \l_tmpb_int { 0 }
-        \int_set:Nn \l_tmpc_int { \tl_count:V \l_tmpc_tl }
-        \int_compare:nT { \l_tmpc_int > \l_tmpb_int }
-            { \int_set:Nn \l_tmpb_int { \l_tmpc_int } }
-        \int_set:Nn \l_tmpc_int { \tl_count:V \l_tmpd_tl }
-        \int_compare:nT { \l_tmpc_int > \l_tmpb_int }
-            { \int_set:Nn \l_tmpb_int { \l_tmpc_int } }
+        \int_set:Nn \l__op_tmpc_int { \tl_count:V \l__op_tmpc_tl }
+        \int_compare:nT { \l__op_tmpc_int > \l_tmpb_int }
+            { \int_set:Nn \l_tmpb_int { \l__op_tmpc_int } }
+        \int_set:Nn \l__op_tmpc_int { \tl_count:V \l__op_tmpd_tl }
+        \int_compare:nT { \l__op_tmpc_int > \l_tmpb_int }
+            { \int_set:Nn \l_tmpb_int { \l__op_tmpc_int } }
         \seq_map_inline:Nn \l__op_produits_seq
         {
-            \int_set:Nn \l_tmpc_int { \tl_count:n {##1} }
-            \int_compare:nT { \l_tmpc_int > \l_tmpb_int }
-                { \int_set:Nn \l_tmpb_int { \l_tmpc_int } }
+            \int_set:Nn \l__op_tmpc_int { \tl_count:n {##1} }
+            \int_compare:nT { \l__op_tmpc_int > \l_tmpb_int }
+                { \int_set:Nn \l_tmpb_int { \l__op_tmpc_int } }
         }
         \bool_if:NT \l__op_solution_bool
         {
-            \int_set:Nn \l_tmpc_int { \tl_count:V \l__op_resultat_tl }
-            \int_compare:nT { \l_tmpc_int > \l_tmpb_int }
-                { \int_set:Nn \l_tmpb_int { \l_tmpc_int } }
+            \int_set:Nn \l__op_tmpc_int { \tl_count:V \l__op_resultat_tl }
+            \int_compare:nT { \l__op_tmpc_int > \l_tmpb_int }
+                { \int_set:Nn \l_tmpb_int { \l__op_tmpc_int } }
         }
 
         \int_set:Nn \l_tmpa_int { 3 }
@@ -1662,26 +1663,26 @@
             \int_compare:nT { \l__op_nb_int > 1 }
             {
                 % Trait sous les produits partiels (toujours affiché)
-                \int_set:Nn \l_tmpd_int { 2 + \l__op_nb_int }
+                \int_set:Nn \l__op_tmpd_int { 2 + \l__op_nb_int }
                 \draw[line~width=\l__op_sep_dim]
                     ( { \l__op_left_margin_dim - 2mm } ,
-                      { -\l_tmpd_int * \l__op_h_dim + 0.5mm } )
+                      { -\l__op_tmpd_int * \l__op_h_dim + 0.5mm } )
                     -- ( { \l__op_left_margin_dim
                            + \l_tmpb_int * \l__op_w_dim } ,
-                         { -\l_tmpd_int * \l__op_h_dim + 0.5mm } );
+                         { -\l__op_tmpd_int * \l__op_h_dim + 0.5mm } );
 
                 % Valeurs des produits partiels : uniquement si solution
                 \bool_if:NT \l__op_solution_bool
                 {
-                    \int_set:Nn \l_tmpc_int { 0 }
+                    \int_set:Nn \l__op_tmpc_int { 0 }
                     \seq_map_inline:Nn \l__op_produits_seq
                     {
-                        \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
-                        \int_set:Nn \l_tmpd_int { 2 + \l_tmpc_int }
+                        \int_set:Nn \l__op_tmpc_int { \l__op_tmpc_int + 1 }
+                        \int_set:Nn \l__op_tmpd_int { 2 + \l__op_tmpc_int }
                         \node[anchor=east]
                             at ( { \l__op_left_margin_dim
                                    + \l_tmpb_int * \l__op_w_dim } ,
-                                 { -(\l_tmpd_int - 0.5) * \l__op_h_dim } )
+                                 { -(\l__op_tmpd_int - 0.5) * \l__op_h_dim } )
                             { \__op_afficher_nombre:n {##1} };
                     }
                 }
@@ -1690,14 +1691,14 @@
             % ----- Résultat final (uniquement si solution) -----
             \bool_if:NT \l__op_solution_bool
             {
-                \int_set:Nn \l_tmpd_int
+                \int_set:Nn \l__op_tmpd_int
                     { 2 + \l__op_nb_int + 1 }
                 \int_compare:nT { \l__op_nb_int == 1 }
-                    { \int_set:Nn \l_tmpd_int { 3 } }
+                    { \int_set:Nn \l__op_tmpd_int { 3 } }
                 \node[anchor=east]
                     at ( { \l__op_left_margin_dim
                            + \l_tmpb_int * \l__op_w_dim } ,
-                         { -(\l_tmpd_int - 0.7) * \l__op_h_dim } )
+                         { -(\l__op_tmpd_int - 0.7) * \l__op_h_dim } )
                     { \__op_afficher_nombre:n { \l__op_resultat_tl } };
             }
         \end{tikzpicture}%
@@ -1986,8 +1987,8 @@
     \seq_set_split:Nnn \l__dop_parts_seq { + } { #1 }
     \int_zero:N \l_tmpa_int
     \int_zero:N \l_tmpb_int
-    \int_zero:N \l_tmpc_int
-    \int_zero:N \l_tmpd_int
+    \int_zero:N \l__op_tmpc_int
+    \int_zero:N \l__op_tmpd_int
     \int_set:Nn \l__dop_i_int { \seq_count:N \l__dop_parts_seq }
     \int_compare:nT { \l__dop_i_int >= 1 }
         {
@@ -2002,12 +2003,12 @@
     \int_compare:nT { \l__dop_i_int >= 3 }
         {
             \__dop_clean:n { \seq_item:Nn \l__dop_parts_seq {3} }
-            \int_set:Nn \l_tmpc_int { \l__dop_clean_tl }
+            \int_set:Nn \l__op_tmpc_int { \l__dop_clean_tl }
         }
     \int_compare:nT { \l__dop_i_int >= 4 }
         {
             \__dop_clean:n { \seq_item:Nn \l__dop_parts_seq {4} }
-            \int_set:Nn \l_tmpd_int { \l__dop_clean_tl }
+            \int_set:Nn \l__op_tmpd_int { \l__dop_clean_tl }
         }
 }
 
@@ -2027,10 +2028,10 @@
         \int_compare:nT { \l_tmpb_int > 0 }
             { \int_set:Nn \l__dop_derniere_col_int
                 { \int_max:nn { \l__dop_derniere_col_int } { 2 } } }
-        \int_compare:nT { \l_tmpc_int > 0 }
+        \int_compare:nT { \l__op_tmpc_int > 0 }
             { \int_set:Nn \l__dop_derniere_col_int
                 { \int_max:nn { \l__dop_derniere_col_int } { 3 } } }
-        \int_compare:nT { \l_tmpd_int > 0 }
+        \int_compare:nT { \l__op_tmpd_int > 0 }
             { \int_set:Nn \l__dop_derniere_col_int
                 { \int_max:nn { \l__dop_derniere_col_int } { 4 } } }
     }
@@ -2203,7 +2204,7 @@
         {
             \int_set:Nn \l_tmpa_int { \g__dop_j_int }
             \int_set:Nn \l_tmpb_int { \g__dop_m_int }
-            \int_set:Nn \l_tmpc_int { \g__dop_s_int }
+            \int_set:Nn \l__op_tmpc_int { \g__dop_s_int }
 
             \int_compare:nT { \l_tmpa_int > 0 }
                 {
@@ -2223,11 +2224,11 @@
                         at ( 41mm , { -(#1 - 0.5) * 6mm } )
                         { \ensuremath{{}^\prime} };
                 }
-            \int_compare:nT { \l_tmpc_int > 0 }
+            \int_compare:nT { \l__op_tmpc_int > 0 }
                 {
                     \node[anchor=east]
                         at ( 58mm , { -(#1 - 0.5) * 6mm } )
-                        { \int_use:N \l_tmpc_int };
+                        { \int_use:N \l__op_tmpc_int };
                     \node[anchor=west]
                         at ( 59mm , { -(#1 - 0.5) * 6mm } )
                         { \ensuremath{{}^{\prime\prime}} };
@@ -2236,8 +2237,8 @@
         {
             \int_set:Nn \l_tmpa_int { \g__dop_j_int }
             \int_set:Nn \l_tmpb_int { \g__dop_h_int }
-            \int_set:Nn \l_tmpc_int { \g__dop_m_int }
-            \int_set:Nn \l_tmpd_int { \g__dop_s_int }
+            \int_set:Nn \l__op_tmpc_int { \g__dop_m_int }
+            \int_set:Nn \l__op_tmpd_int { \g__dop_s_int }
 
             \int_compare:nT { \l_tmpa_int > 0 }
                 {
@@ -2257,20 +2258,20 @@
                         at ( 31mm , { -(#1 - 0.5) * 6mm } )
                         { h };
                 }
-            \int_compare:nT { \l_tmpc_int > 0 }
+            \int_compare:nT { \l__op_tmpc_int > 0 }
                 {
                     \node[anchor=east]
                         at ( 48mm , { -(#1 - 0.5) * 6mm } )
-                        { \int_use:N \l_tmpc_int };
+                        { \int_use:N \l__op_tmpc_int };
                     \node[anchor=west]
                         at ( 49mm , { -(#1 - 0.5) * 6mm } )
                         { min };
                 }
-            \int_compare:nT { \l_tmpd_int > 0 }
+            \int_compare:nT { \l__op_tmpd_int > 0 }
                 {
                     \node[anchor=east]
                         at ( 64mm , { -(#1 - 0.5) * 6mm } )
-                        { \int_use:N \l_tmpd_int };
+                        { \int_use:N \l__op_tmpd_int };
                     \node[anchor=west]
                         at ( 65mm , { -(#1 - 0.5) * 6mm } )
                         { s };
@@ -2292,13 +2293,13 @@
         {
             \int_gadd:Nn \g__dop_j_int { \l_tmpa_int }
             \int_gadd:Nn \g__dop_m_int { \l_tmpb_int }
-            \int_gadd:Nn \g__dop_s_int { \l_tmpc_int }
+            \int_gadd:Nn \g__dop_s_int { \l__op_tmpc_int }
         }
         {
             \int_gadd:Nn \g__dop_j_int { \l_tmpa_int }
             \int_gadd:Nn \g__dop_h_int { \l_tmpb_int }
-            \int_gadd:Nn \g__dop_m_int { \l_tmpc_int }
-            \int_gadd:Nn \g__dop_s_int { \l_tmpd_int }
+            \int_gadd:Nn \g__dop_m_int { \l__op_tmpc_int }
+            \int_gadd:Nn \g__dop_s_int { \l__op_tmpd_int }
         }
 }
 
@@ -2309,13 +2310,13 @@
         {
             \int_gsub:Nn \g__dop_j_int { \l_tmpa_int }
             \int_gsub:Nn \g__dop_m_int { \l_tmpb_int }
-            \int_gsub:Nn \g__dop_s_int { \l_tmpc_int }
+            \int_gsub:Nn \g__dop_s_int { \l__op_tmpc_int }
         }
         {
             \int_gsub:Nn \g__dop_j_int { \l_tmpa_int }
             \int_gsub:Nn \g__dop_h_int { \l_tmpb_int }
-            \int_gsub:Nn \g__dop_m_int { \l_tmpc_int }
-            \int_gsub:Nn \g__dop_s_int { \l_tmpd_int }
+            \int_gsub:Nn \g__dop_m_int { \l__op_tmpc_int }
+            \int_gsub:Nn \g__dop_s_int { \l__op_tmpd_int }
         }
 }
 
