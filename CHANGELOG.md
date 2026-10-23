@@ -5,6 +5,21 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.12.6] - 2026-10-24
+
+### Corrigé
+- `\reperegradue` : les espaces des noms de points disparaissaient
+  (`Point A/(1,2)` s'affichait « PointA »), car la liste était lue
+  jeton par jeton avec un argument non délimité. Les espaces sont
+  maintenant gardés dans les noms ; ceux en début et en fin de
+  chaque partie (nom, coordonnées, couleur) sont retirés.
+
+### Ajouté (tests)
+- `tests/test-commandes.tex` : section 14, noms de points avec espaces.
+
+### Version
+- 1.12.5 → 1.12.6
+
 ## [1.12.5] - 2026-10-23
 
 ### Corrigé

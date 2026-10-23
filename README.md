@@ -143,6 +143,8 @@ La liste `points` **n'a pas besoin** de cette protection : la virgule interne au
 
 - `nom/(x,y)` → intérieur rouge (défaut), étiquette noire
 - `nom/(x,y)/couleur` → intérieur de la couleur spécifiée
+- Le nom peut contenir des espaces (`Point A/(1,2)`) ; les espaces autour
+  des éléments et des `/` sont ignorés
 
 La couleur peut être n'importe quelle couleur TikZ, y compris les couleurs composées (`orange!80!black`, `red!70`, etc.).
 
