@@ -486,16 +486,25 @@ Chaque terme est une liste séparée par `+` :
 - **Durées** : `jours+heures+minutes+secondes`
 - **Angles** : `degrés+minutes+secondes`
 
-**Option commune** :
+**Options communes** :
 
 Clé | Description | Défaut
 ---|---|---
 `solution` | Affiche le résultat | `false`
+`corrige` | Affiche les chiffres masqués en couleur | `false`
+`couleurcorrige` | Couleur des chiffres masqués | `blue!80!black`
+`taille` | Taille de police (`small`, `large`, `Large`…) ; la figure s'agrandit avec la police | texte courant
+
+```latex
+\additiondurees[solution, taille=large]{3+12, 5+30}
+```
 
 **Comportement** :
 
 - Les colonnes sont alignées verticalement (j/h/min/s ou °/′/″).
 - Les composantes nulles à droite sont masquées.
+- Un résultat nul s'écrit `0` dans la dernière colonne utilisée par
+  les termes (par exemple « 0 h »).
 - Le trait horizontal s'arrête à la dernière colonne utilisée par
   les termes.
 - Si le résultat est négatif, un signe `−` est affiché devant.
@@ -553,6 +562,9 @@ Clé | Description | Défaut
 `solution` | Affiche quotient et reste | `false`
 `etapes` | Liste des produits partiels, séparés par des virgules | vide
 `decimales` | Nombre de décimales du quotient (0 = division euclidienne) | `0`
+`taille` | Taille de police (`small`, `large`, `Large`…) | `small`
+
+Avec `solution`, le reste est toujours écrit, même s'il est nul.
 
 > **Les nombres doivent être saisis sans espaces insécables (`~`).**
 > Utilisez uniquement l'espace normal ou rien du tout.
