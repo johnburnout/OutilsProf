@@ -2,12 +2,12 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.12.6
+% Version : 1.12.7
 % Date : 2026/10/23
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/10/24 v1.12.6 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/10/24 v1.12.7 Outils pour l'enseignement]
 
 % ============================================================
 % DÉPENDANCES
@@ -987,7 +987,7 @@
                 % Virgule dans le quotient (si decimales > 0)
                 \int_compare:nT { \l__div_nbdec_int > 0 }
                 {
-                    \node[anchor=center, font=\small\bfseries]
+                    \node[anchor=center, font=\__op_appliquer_taille:\bfseries]
                         at ( { (\l__div_nbpositions_int
                                 + \l__div_nbquo_entier_int)
                                * \l__div_w_dim + 0.5mm } ,
@@ -1159,7 +1159,7 @@
 %
 % Options communes :
 %   solution : bool — affiche le résultat
-%   taille   : taille de police (normalsize par défaut)
+%   taille   : taille de police (small par défaut)
 %
 % Rendu entièrement TikZ : aucun \halign, aucun &.
 %
