@@ -5,6 +5,23 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.12.7] - 2026-10-24
+
+### Corrigé
+- `\division` décimale : la virgule du quotient avait une police
+  fixe (`\small\bfseries`) et ignorait l'option `taille`. Elle
+  suit maintenant `taille`, en gras ; le rendu par défaut ne change
+  pas.
+- Commentaire de la section 3-B : `taille` vaut `small` par défaut,
+  et non `normalsize`.
+
+### Ajouté (tests)
+- `tests/test-commandes.tex` : section 15, division décimale en
+  `taille=Large`.
+
+### Version
+- 1.12.6 → 1.12.7
+
 ## [1.12.6] - 2026-10-24
 
 ### Corrigé
