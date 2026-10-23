@@ -5,6 +5,42 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.12.2] - 2026-10-23
+
+### Corrigé
+- Section 4-D : un `|` en fin de composante ajoutait des minutes
+  (ou des secondes pour les angles) fantômes au résultat.
+  `\additiondurees[solution]{3+4||, 0+5}` donnait « 19 j 21 h 2 min ».
+- Section 4-D : l'option `couleurcorrige` était ignorée.
+- Sections 3-B et 4-D : une seule règle de masquage, commune aux
+  deux sections. Chaque `|` masque le caractère suivant ; un `|`
+  suivi d'un autre `|` ou placé en fin de nombre masque un `0`
+  implicite compté dans le calcul. Corrige :
+  - `4||` en mode `corrige` qui affichait « 4|0 » au lieu de « 400 » ;
+  - `4||` en section 4-D qui n'affichait qu'une case ;
+  - `1||4` qui affichait trois cases mais valait 14 (vaut désormais 104).
+- `\axegradue`, `\reperegradue` : les options ne persistent plus
+  d'un appel au suivant.
+- `\axegradue` : les points sont placés à la même échelle que les
+  graduations, même si `fin − debut` n'est pas un multiple de `pas`.
+- Opérations posées : le résultat et les produits partiels sont
+  écrits en chiffres bruts (`6912` et non `6 912`), alignés sur les
+  termes ; les cases masquées ont la largeur d'un chiffre.
+- Option `taille` : elle n'avait aucun effet (nœuds forcés en
+  `\small`). Elle fonctionne désormais ; défaut `small`, rendu
+  inchangé. Ajoutée aussi à `\division`.
+- Messages d'erreur clairs pour un diviseur nul et pour les nombres
+  dépassant la limite de TeX (division, multiplication), au lieu de
+  « Arithmetic overflow ».
+- Commentaire du `.sty` corrigé : `\additiondurees{3+12, 5+30}`
+  signifie 3 j 12 h + 5 j 30 h (le premier champ est le jour).
+
+### Ajouté (tests)
+- `tests/test-commandes.tex` : section 11, un cas par correction.
+
+### Version
+- 1.12.1 → 1.12.2
+
 ## [1.12.1] - 2026-10-23
 
 ### Corrigé

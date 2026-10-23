@@ -2,12 +2,12 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.12.1
+% Version : 1.12.2
 % Date : 2026/10/23
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/10/23 v1.12.1 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/10/23 v1.12.2 Outils pour l'enseignement]
 
 % ============================================================
 % DÉPENDANCES
@@ -65,6 +65,7 @@
 \newlength{\largeurPt}
 
 \NewDocumentCommand{\axegradue}{O{}}{%
+    \begingroup
     \csname __axe_recuperer:n\endcsname {#1}%
     \begin{tikzpicture}[every node/.style={font=\small}]
         \setlength{\largeurPt}{\axeLongueur\textwidth}%
@@ -102,13 +103,15 @@
                 \StrCut{\point}{/}{\nom}{\reste}%
                 \StrCut{\reste}{/}{\position}{\couleurPoint}%
             \fi
-            \pgfmathsetmacro{\x}{((\position-\axeDebut)/(\axeFin-\axeDebut))*\largeurTotale}%
+            % Même échelle que les graduations (et non fin-debut)
+            \pgfmathsetmacro{\x}{((\position-\axeDebut)/\axePas)*\pasPrincipal}%
             \fill[\couleurPoint] (\x pt,0) circle (2.5pt);
             \draw[black, thick] (\x pt,0) circle (2.5pt);
             \node[above, font=\small\bfseries, black, yshift=2pt]
                 at (\x pt,0) {\nom};
         }
     \end{tikzpicture}%
+    \endgroup
 }
 
 \NewDocumentCommand{\axegraduepoints}{O{} m}{%
@@ -257,6 +260,7 @@
 }
 
 \NewDocumentCommand{\reperegradue}{O{}}{%
+    \begingroup
     \csname __repere_recuperer:n\endcsname {#1}%
     \repereExtraireCoords{\repereBG}{\bgX}{\bgY}%
     \repereExtraireCoords{\repereHD}{\hdX}{\hdY}%
@@ -390,6 +394,7 @@
             \fi
         }%
     \end{tikzpicture}%
+    \endgroup
 }
 
 \NewDocumentCommand{\reperegraduepoints}{O{} m}{%
@@ -624,6 +629,35 @@
     etapes    .initial:n  = {},
     decimales .tl_set:N   = \l__div_decimales_tl,
     decimales .initial:n  = 0,
+    taille    .code:n     = \tl_set:Nn \l__op_taille_tl {#1},
+}
+
+% ------------------------------------------------------------
+% Messages d'erreur
+% ------------------------------------------------------------
+\msg_new:nnn { outilsprof } { diviseur-nul }
+    { \iow_char:N \\division~:~le~diviseur~ne~peut~pas~etre~0. }
+\msg_new:nnn { outilsprof } { trop-grand }
+    { \iow_char:N \\#1~:~nombre~trop~grand~(limite~TeX~:~2~147~483~647). }
+\bool_new:N \l__div_entree_ok_bool
+\cs_new_protected:Npn \__div_verifier_entree:
+{
+    \bool_set_true:N \l__div_entree_ok_bool
+    \int_compare:nNnT { \l__div_diviseur_tl } = { 0 }
+        {
+            \msg_error:nn { outilsprof } { diviseur-nul }
+            \bool_set_false:N \l__div_entree_ok_bool
+        }
+    \bool_if:NT \l__div_entree_ok_bool
+        {
+            \fp_compare:nNnT
+                { ( \l__div_dividende_tl ) * 10 ^ ( \l__div_decimales_tl ) }
+                > { 2147483647 }
+                {
+                    \msg_error:nnn { outilsprof } { trop-grand } { division }
+                    \bool_set_false:N \l__div_entree_ok_bool
+                }
+        }
 }
 
 % ------------------------------------------------------------
@@ -832,7 +866,7 @@
 % ------------------------------------------------------------
 % Rendu principal
 % ------------------------------------------------------------
-\cs_new_protected:Npn \__op_rendre_division:nn #1 #2
+\cs_new_protected:Npn \__div_rendre_valide:nn #1 #2
 {
     \group_begin:
     \keys_set:nn { outilsprof / division } { #1 }
@@ -852,7 +886,7 @@
         \noindent\makebox[\textwidth][c]{%
         \begin{tikzpicture}[
             x=1mm, y=1mm,
-            every~node/.style={font=\small, inner~sep=0pt}
+            every~node/.style={font=\__op_appliquer_taille:, inner~sep=0pt}
         ]
             % ===== Ligne 1 : chiffres du dividende (entier seulement) =====
             % Les colonnes supplémentaires (décimales) sont réservées
@@ -1054,6 +1088,17 @@
     \group_end:
 }
 
+% Point d'entrée : vérifie les données avant de poser la division
+\cs_new_protected:Npn \__op_rendre_division:nn #1 #2
+{
+    \group_begin:
+    \keys_set:nn { outilsprof / division } { #1 }
+    \__div_verifier_entree:
+    \bool_if:NT \l__div_entree_ok_bool
+        { \__div_rendre_valide:nn {#1} {#2} }
+    \group_end:
+}
+
 % ------------------------------------------------------------
 % Commande publique
 % ------------------------------------------------------------
@@ -1104,7 +1149,6 @@
 \tl_new:N     \l__op_resultat_tl
 \seq_new:N    \l__op_produits_seq
 \int_new:N    \l__op_nbchiffres_int
-\int_new:N    \l__op_trailing_int
 \bool_new:N   \l__op_corrige_bool
 \tl_new:N     \l__op_couleurcorrige_tl
 
@@ -1130,7 +1174,7 @@
     solution .bool_set:N = \l__op_solution_bool,
     solution .initial:n  = false,
     taille   .tl_set:N   = \l__op_taille_tl,
-    taille   .initial:n  = normalsize,
+    taille   .initial:n  = small,  % rendu historique (nœuds en \small)
     corrige          .bool_set:N = \l__op_corrige_bool,
     corrige          .initial:n  = false,
     couleurcorrige   .tl_set:N   = \l__op_couleurcorrige_tl,
@@ -1157,7 +1201,7 @@
 {
     \tikz[baseline=-0.5ex+1mm]
         \fill[gray!20, draw=white, thin]
-            (0,0) rectangle (0.45em,0.7em);
+            (0.2pt,0) rectangle (0.5em-0.2pt,0.7em);
 }
 
 % Chiffre caché affiché en couleur (mode corrigé).
@@ -1166,65 +1210,58 @@
     \textcolor{\l__op_couleurcorrige_tl}{\textbf{#1}}%
 }
 
-% Nettoyage : retire les « | » pour le calcul.
-% Un « | » en fin de nombre masque un 0 implicite : on l'ajoute
-% à la valeur pour que le calcul soit cohérent avec l'affichage.
-%   « 47| »  → 470
-%   « 47|| » → 4700
-%   « 4|7 »  → 47   (le | est au milieu, pas de 0 ajouté)
-\cs_new_protected:Npn \__op_nettoie:nN #1 #2
+% Analyse d'un nombre contenant des « | » (masquage).
+% Règle unique, utilisée par les sections 3-B et 4-D :
+%   - « |X » : le chiffre X compte dans le calcul mais est masqué ;
+%   - un « | » suivi d'un autre « | » ou placé en fin de nombre
+%     masque un 0 implicite, lui aussi compté dans le calcul.
+%     « 47| » → 470    « 4|| » → 400    « 1||4 » → 104
+%     « 4|7 » → 47     « |12 » → 12
+% #1 : texte saisi ; #2 : valeur nettoyée (calcul) ;
+% #3 : version affichée (rectangles gris, ou chiffres colorés
+%      en mode corrigé).
+\str_new:N  \l__op_ana_str
+\tl_new:N   \l__op_ana_tl
+\bool_new:N \l__op_ana_bool
+
+\cs_new_protected:Npn \__op_masquer:nN #1 #2
 {
-    \tl_set:Nx \l_tmpa_tl { \tl_to_str:n {#1} }
-    \tl_clear:N #2
-    \int_zero:N \l__op_trailing_int
-    \tl_map_inline:Nn \l_tmpa_tl
-    {
-        \tl_if_eq:nnTF {##1} { | }
-            { \int_incr:N \l__op_trailing_int }
-            {
-                \tl_put_right:Nn #2 {##1}
-                \int_zero:N \l__op_trailing_int
-            }
-    }
-    \int_zero:N \l_tmpc_int
-    \int_while_do:nNnn { \l_tmpc_int } < { \l__op_trailing_int }
-    {
-        \tl_put_right:Nn #2 { 0 }
-        \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
-    }
+    \bool_if:NTF \l__op_corrige_bool
+        { \tl_put_right:Nn #2 { \__op_chiffrecache:n {#1} } }
+        { \tl_put_right:Nn #2 { \__op_underscore: } }
 }
 
-% Masquage : « |X » devient soit un rectangle gris (mode normal),
-% soit le chiffre X coloré (mode corrigé).
-\cs_new_protected:Npn \__op_masque:nN #1 #2
+\cs_new_protected:Npn \__op_analyser:nNN #1 #2 #3
 {
-    \tl_set:Nx \l_tmpa_tl { \tl_to_str:n {#1} }
+    \tl_set:Nx \l__op_ana_tl {#1}
+    \tl_replace_all:Nnn \l__op_ana_tl { ~ } { }
+    \str_set:Nx \l__op_ana_str { \tl_to_str:N \l__op_ana_tl }
     \tl_clear:N #2
-    \bool_set_false:N \l_tmpa_bool
-    \tl_map_inline:Nn \l_tmpa_tl
+    \tl_clear:N #3
+    \bool_set_false:N \l__op_ana_bool
+    \str_map_inline:Nn \l__op_ana_str
     {
-        \bool_if:NTF \l_tmpa_bool
+        \str_if_eq:nnTF {##1} { | }
             {
-                % On sort d'un « | » : émettre le masque ou le chiffre
-                \bool_if:NTF \l__op_corrige_bool
-                    { \tl_put_right:Nn #2 { \__op_chiffrecache:n {##1} } }
-                    { \tl_put_right:Nn #2 { \__op_underscore: } }
-                \tl_if_eq:nnTF {##1} { | }
-                    { }   % « || » : rester en mode masquage
-                    { \bool_set_false:N \l_tmpa_bool }
+                \bool_if:NT \l__op_ana_bool
+                    {
+                        \tl_put_right:Nn #2 { 0 }
+                        \__op_masquer:nN { 0 } #3
+                    }
+                \bool_set_true:N \l__op_ana_bool
             }
             {
-                \tl_if_eq:nnTF {##1} { | }
-                    { \bool_set_true:N \l_tmpa_bool }
-                    { \tl_put_right:Nn #2 {##1} }
+                \tl_put_right:Nn #2 {##1}
+                \bool_if:NTF \l__op_ana_bool
+                    { \__op_masquer:nN {##1} #3 }
+                    { \tl_put_right:Nn #3 {##1} }
+                \bool_set_false:N \l__op_ana_bool
             }
     }
-    % Si on finit sur un « | », insérer un masque ou un 0 implicite
-    \bool_if:NT \l_tmpa_bool
+    \bool_if:NT \l__op_ana_bool
         {
-            \bool_if:NTF \l__op_corrige_bool
-                { \tl_put_right:Nn #2 { \__op_chiffrecache:n {0} } }
-                { \tl_put_right:Nn #2 { \__op_underscore: } }
+            \tl_put_right:Nn #2 { 0 }
+            \__op_masquer:nN { 0 } #3
         }
 }
 
@@ -1244,11 +1281,9 @@
         \tl_replace_all:Nnn \l_tmpa_tl { \c_space_token } { }
         \tl_if_empty:NF \l_tmpa_tl
             {
-                % Version nettoyée (pour calcul)
-                \__op_nettoie:nN {##1} \l_tmpb_tl
+                % Version nettoyée (calcul) et masquée (affichage)
+                \__op_analyser:nNN {##1} \l_tmpb_tl \l_tmpc_tl
                 \seq_put_right:NV \l__op_liste_seq \l_tmpb_tl
-                % Version masquée (pour affichage)
-                \__op_masque:nN {##1} \l_tmpc_tl
                 \seq_put_right:NV \l__op_liste_masquee_seq \l_tmpc_tl
             }
     }
@@ -1269,12 +1304,13 @@
 }
 
 % ------------------------------------------------------------
-% Affiche un entier formaté (via siunitx)
+% Affiche un entier en chiffres bruts, sans espace des milliers,
+% pour rester aligné colonne par colonne avec les termes posés.
 % ------------------------------------------------------------
 \cs_new_protected:Npn \__op_afficher_nombre:n #1
 {
     \tl_set:Nx \l_tmpa_tl {#1}
-    \exp_args:NV \num \l_tmpa_tl
+    \tl_use:N \l_tmpa_tl
 }
 
 % ------------------------------------------------------------
@@ -1325,7 +1361,7 @@
     \raisebox{-0.5\height}{%
     \begin{tikzpicture}[
         x=1mm, y=1mm,
-        every~node/.style={font=\small, inner~sep=0pt}
+        every~node/.style={font=\__op_appliquer_taille:, inner~sep=0pt}
     ]
         % ----- Termes (version masquée pour l'affichage) -----
         \int_set:Nn \l_tmpc_int { 1 }
@@ -1427,7 +1463,7 @@
         \raisebox{-0.5\height}{%
         \begin{tikzpicture}[
             x=1mm, y=1mm,
-            every~node/.style={font=\small, inner~sep=0pt}
+            every~node/.style={font=\__op_appliquer_taille:, inner~sep=0pt}
         ]
             % Premier terme (version masquée)
             \node[anchor=east]
@@ -1495,6 +1531,12 @@
         \tl_set:Nx \l_tmpb_tl
             { \seq_item:Nn \l__op_liste_masquee_seq { 2 } }
 
+        \fp_compare:nNnT { ( \l_tmpc_tl ) * ( \l_tmpd_tl ) } > { 2147483647 }
+            {
+                \msg_error:nnn { outilsprof } { trop-grand } { multiplication }
+                \tl_set:Nn \l_tmpc_tl { 0 }
+                \tl_set:Nn \l_tmpd_tl { 0 }
+            }
         \int_set:Nn \l__op_a_int { \l_tmpc_tl }
         \int_set:Nn \l__op_b_int { \l_tmpd_tl }
 
@@ -1563,7 +1605,7 @@
         \raisebox{-0.5\height}{%
         \begin{tikzpicture}[
             x=1mm, y=1mm,
-            every~node/.style={font=\small, inner~sep=0pt}
+            every~node/.style={font=\__op_appliquer_taille:, inner~sep=0pt}
         ]
             % ----- Ligne 1 : multiplicande (version masquée) -----
             \node[anchor=east]
@@ -1804,8 +1846,10 @@
 %   qui suit (remplacé par un rectangle gris, ou affiché en couleur
 %   en mode corrigé). Le chiffre reste utilisé dans le calcul.
 %   Exemple : \additiondurees[solution]{3+1|2, 5+30}
-%              → calcul 3 j 12 h + 5 h 30 min
-%              → affichage « 3 j 1 ▢ h » + « 5 h 30 min »
+%              → calcul 3 j 12 h + 5 j 30 h
+%              → affichage « 3 j 1 ▢ h » + « 5 j 30 h »
+%   (le premier champ est toujours le jour : pour 5 h 30 min,
+%    écrire 0+5+30)
 %
 % Affichage : les composantes nulles à droite sont masquées,
 %             les colonnes sont alignées verticalement,
@@ -1829,14 +1873,9 @@
 \dim_new:N   \l__dop_fin_dim
 \tl_new:N    \l__dop_clean_tl
 \tl_new:N    \l__dop_masked_tl
-\str_new:N   \l__dop_str
-\bool_new:N  \l__dop_mask_bool
 \bool_new:N  \l__dop_solution_bool
 \bool_new:N  \l__dop_angles_bool
 \bool_new:N  \l__dop_addition_bool
-\int_new:N   \l__dop_trailing_int
-\bool_new:N  \l__dop_corrige_bool
-\tl_new:N    \l__dop_couleurcorrige_tl
 
 % Cumul global (réinitialisé à chaque appel)
 \int_new:N \g__dop_j_int
@@ -1858,9 +1897,9 @@
 {
     solution         .bool_set:N = \l__dop_solution_bool,
     solution         .initial:n  = false,
-    corrige          .bool_set:N = \l__dop_corrige_bool,
+    corrige          .bool_set:N = \l__op_corrige_bool,
     corrige          .initial:n  = false,
-    couleurcorrige   .tl_set:N   = \l__dop_couleurcorrige_tl,
+    couleurcorrige   .tl_set:N   = \l__op_couleurcorrige_tl,
     couleurcorrige   .initial:n  = blue!80!black,
 }
 
@@ -1871,66 +1910,18 @@
 % ------------------------------------------------------------
 \cs_new_protected:Npn \__dop_clean:n #1
 {
-    \str_set:Nx \l__dop_str { #1 }
-    \tl_clear:N \l__dop_clean_tl
-    \int_zero:N \l__dop_trailing_int
-    \str_map_inline:Nn \l__dop_str
-    {
-        \str_if_eq:nnTF {##1} { | }
-            { \int_incr:N \l__dop_trailing_int }
-            {
-                \tl_put_right:Nn \l__dop_clean_tl {##1}
-                \int_zero:N \l__dop_trailing_int
-            }
-    }
-    \int_zero:N \l_tmpc_int
-    \int_while_do:nNnn { \l_tmpc_int } < { \l__dop_trailing_int }
-    {
-        \tl_put_right:Nn \l__dop_clean_tl { 0 }
-        \int_set:Nn \l_tmpc_int { \l_tmpc_int + 1 }
-    }
+    \__op_analyser:nNN {#1} \l__dop_clean_tl \l__dop_masked_tl
+    \tl_if_empty:NT \l__dop_clean_tl
+        { \tl_set:Nn \l__dop_clean_tl { 0 } }
 }
 
 % ------------------------------------------------------------
-% Masquage d'une composante : chaque « |X » devient un rectangle
-% gris (mode normal) ou le chiffre X coloré (mode corrigé).
+% Masquage d'une composante (même règle que la section 3-B).
 % Résultat dans \dopMaskedContent (compatible TikZ).
 % ------------------------------------------------------------
 \cs_new_protected:Npn \__dop_mask:n #1
 {
-    \str_set:Nx \l__dop_str { #1 }
-    \tl_clear:N \l__dop_masked_tl
-    \bool_set_false:N \l__dop_mask_bool
-    \str_map_inline:Nn \l__dop_str
-    {
-        \bool_if:NTF \l__dop_mask_bool
-            {
-                \str_if_eq:nnTF {##1} { | }
-                    { }
-                    {
-                        \bool_if:NTF \l__dop_corrige_bool
-                            { \tl_put_right:Nn \l__dop_masked_tl
-                                { \__op_chiffrecache:n {##1} } }
-                            { \tl_put_right:Nn \l__dop_masked_tl
-                                { \__op_underscore: } }
-                        \bool_set_false:N \l__dop_mask_bool
-                    }
-            }
-            {
-                \str_if_eq:nnTF {##1} { | }
-                    { \bool_set_true:N \l__dop_mask_bool }
-                    { \tl_put_right:Nn \l__dop_masked_tl {##1} }
-            }
-    }
-    % Si on finit sur un « | », insérer un masque ou un 0 implicite
-    \bool_if:NT \l__dop_mask_bool
-        {
-            \bool_if:NTF \l__dop_corrige_bool
-                { \tl_put_right:Nn \l__dop_masked_tl
-                    { \__op_chiffrecache:n {0} } }
-                { \tl_put_right:Nn \l__dop_masked_tl
-                    { \__op_underscore: } }
-        }
+    \__op_analyser:nNN {#1} \l__dop_clean_tl \l__dop_masked_tl
     \cs_set:Npx \dopMaskedContent { \l__dop_masked_tl }
 }
 
