@@ -5,7 +5,23 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
-## [Non publié]
+## [1.12.4] - 2026-10-23
+
+### Ajouté
+- Opérations sur durées et angles : option `taille`, comme les
+  autres opérations posées. La figure (colonnes, interlignes)
+  s'agrandit avec la police. Sans l'option, rendu inchangé.
+
+### Corrigé
+- Opérations sur durées et angles : un résultat nul n'affichait
+  rien ; il s'écrit désormais `0` dans la dernière colonne utilisée
+  par les termes (`\soustractiondurees[solution]{1+2, 1+2}` → « 0 h »).
+- `\division` : un reste nul est écrit (convention scolaire).
+- Section 4-D : `\int_incr:N` remplacé, conformément à la note de
+  compatibilité expl3 2017 (TexpadTeX).
+
+### Ajouté (tests)
+- `tests/test-commandes.tex` : section 13, un cas par correction.
 
 ### Divers
 - Makefile : `make test` (et donc `make ci`) compile aussi les tests
@@ -13,6 +29,9 @@ et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
   make et affiche la fin du log.
 - Makefile : la compilation utilise le `.sty` du dépôt et non la
   copie installée dans `TEXMF_HOME`.
+
+### Version
+- 1.12.3 → 1.12.4
 
 ## [1.12.3] - 2026-10-23
 

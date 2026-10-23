@@ -2,12 +2,12 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.12.3
+% Version : 1.12.4
 % Date : 2026/10/23
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/10/23 v1.12.3 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/10/23 v1.12.4 Outils pour l'enseignement]
 
 % ============================================================
 % DÉPENDANCES
@@ -1057,27 +1057,25 @@
             % ===== Reste final (si solution) =====
             \bool_if:NT \l__op_solution_bool
             {
-                \int_compare:nT { \l__div_reste_int > 0 }
+                % Reste toujours écrit, même nul (convention scolaire)
+                \int_set:Nn \l__div_debut_int
+                    { \l__div_nbpositions_int
+                      - \tl_count:V \l__div_reste_tl + 1 }
+                \int_set:Nn \l_tmpd_int { 1 }
+                \int_while_do:nNnn { \l_tmpd_int }
+                    < { \tl_count:V \l__div_reste_tl + 1 }
                 {
-                    \int_set:Nn \l__div_debut_int
-                        { \l__div_nbpositions_int
-                          - \tl_count:V \l__div_reste_tl + 1 }
-                    \int_set:Nn \l_tmpd_int { 1 }
-                    \int_while_do:nNnn { \l_tmpd_int }
-                        < { \tl_count:V \l__div_reste_tl + 1 }
-                    {
-                        \__div_char:nn {\l__div_reste_tl}
-                            {\l_tmpd_int}
-                        \node[anchor=center]
-                            at ( { (\l__div_debut_int
-                                    + \l_tmpd_int - 1.5)
-                                   * \l__div_w_dim } ,
-                                 { -(\l_tmpb_int - 2)
-                                    * \l__div_h_dim } )
-                            { \l_tmpa_tl };
-                        \int_set:Nn \l_tmpd_int
-                            { \l_tmpd_int + 1 }
-                    }
+                    \__div_char:nn {\l__div_reste_tl}
+                        {\l_tmpd_int}
+                    \node[anchor=center]
+                        at ( { (\l__div_debut_int
+                                + \l_tmpd_int - 1.5)
+                               * \l__div_w_dim } ,
+                             { -(\l_tmpb_int - 2)
+                                * \l__div_h_dim } )
+                        { \l_tmpa_tl };
+                    \int_set:Nn \l_tmpd_int
+                        { \l_tmpd_int + 1 }
                 }
             }
         \end{tikzpicture}%
@@ -1868,6 +1866,8 @@
 %   solution         : bool — affiche le résultat (défaut : false)
 %   corrige          : bool — affiche les chiffres cachés en couleur
 %   couleurcorrige   : couleur des chiffres cachés (défaut : blue!80!black)
+%   taille           : taille de police (large, Large…) ; la figure
+%                      suit la police (défaut : texte courant)
 %
 % MASQUAGE : un « | » placé dans une composante masque le chiffre
 %   qui suit (remplacé par un rectangle gris, ou affiché en couleur
@@ -1882,7 +1882,8 @@
 %             les colonnes sont alignées verticalement,
 %             le trait s'arrête à la dernière colonne utilisée
 %             par les termes (le résultat n'intervient pas),
-%             un signe « − » apparaît si le résultat est négatif.
+%             un signe « − » apparaît si le résultat est négatif,
+%             un résultat nul s'écrit « 0 » dans la dernière colonne.
 % ============================================================
 
 \ExplSyntaxOn
@@ -1903,6 +1904,9 @@
 \bool_new:N  \l__dop_solution_bool
 \bool_new:N  \l__dop_angles_bool
 \bool_new:N  \l__dop_addition_bool
+\tl_new:N    \l__dop_taille_tl
+\tl_new:N    \l__dop_echelle_tl
+\tl_new:N    \g__dop_normal_tl
 
 % Cumul global (réinitialisé à chaque appel)
 \int_new:N \g__dop_j_int
@@ -1928,6 +1932,28 @@
     corrige          .initial:n  = false,
     couleurcorrige   .tl_set:N   = \l__op_couleurcorrige_tl,
     couleurcorrige   .initial:n  = blue!80!black,
+    % Vide par défaut : police du texte courant, rendu inchangé
+    taille           .tl_set:N   = \l__dop_taille_tl,
+    taille           .initial:n  = {},
+}
+
+% ------------------------------------------------------------
+% Taille : applique la police demandée et calcule l'échelle de
+% la figure (colonnes en mm) proportionnellement à \normalsize.
+% ------------------------------------------------------------
+\cs_new_protected:Npn \__dop_appliquer_taille:
+{
+    \tl_if_empty:NTF \l__dop_taille_tl
+        { \tl_set:Nn \l__dop_echelle_tl { 1 } }
+        {
+            \group_begin:
+                \normalsize
+                \tl_gset:Nx \g__dop_normal_tl { \f@size }
+            \group_end:
+            \use:c { \l__dop_taille_tl }
+            \tl_set:Nx \l__dop_echelle_tl
+                { \fp_eval:n { \f@size / \g__dop_normal_tl } }
+        }
 }
 
 % ------------------------------------------------------------
@@ -2124,6 +2150,44 @@
 }
 
 % ------------------------------------------------------------
+% Résultat nul : « 0 » dans la dernière colonne utilisée par les
+% termes (la première si tous les termes sont nuls)
+% ------------------------------------------------------------
+\cs_new_protected:Npn \__dop_resultat_nul:n #1
+{
+    \int_set:Nn \l_tmpa_int
+        { \int_max:nn { \l__dop_derniere_col_int } { 1 } }
+    \bool_if:NTF \l__dop_angles_bool
+        {
+            \int_compare:nT { \l_tmpa_int > 3 }
+                { \int_set:Nn \l_tmpa_int { 3 } }
+            \dim_set:Nn \l_tmpa_dim { 4mm + 18mm * \l_tmpa_int }
+        }
+        {
+            \dim_set:Nn \l_tmpa_dim
+                { \int_case:nn { \l_tmpa_int }
+                    { {1}{14mm} {2}{30mm} {3}{48mm} {4}{64mm} } }
+        }
+    \node[anchor=east]
+        at ( \l_tmpa_dim , { -(#1 - 0.5) * 6mm } )
+        { 0 };
+    \node[anchor=west]
+        at ( { \l_tmpa_dim + 1mm } , { -(#1 - 0.5) * 6mm } )
+        {
+            \bool_if:NTF \l__dop_angles_bool
+                {
+                    \int_case:nn { \l_tmpa_int }
+                        {
+                            {1}{ \ensuremath{{}^\circ} }
+                            {2}{ \ensuremath{{}^\prime} }
+                            {3}{ \ensuremath{{}^{\prime\prime}} }
+                        }
+                }
+                { \int_case:nn { \l_tmpa_int } { {1}{j} {2}{h} {3}{min} {4}{s} } }
+        };
+}
+
+% ------------------------------------------------------------
 % Affichage du résultat en colonnes alignées
 % ------------------------------------------------------------
 \cs_new_protected:Npn \__dop_resultat_colonnes:n #1
@@ -2212,6 +2276,10 @@
                         { s };
                 }
         }
+
+    \int_compare:nT
+        { \g__dop_j_int + \g__dop_h_int + \g__dop_m_int + \g__dop_s_int = 0 }
+        { \__dop_resultat_nul:n {#1} }
 }
 
 % ------------------------------------------------------------
@@ -2312,6 +2380,7 @@
 {
     \group_begin:
     \keys_set:nn { outilsprof / dureeop } { #1 }
+    \__dop_appliquer_taille:
     \seq_set_from_clist:Nn \l__dop_termes_seq { #2 }
     \int_set:Nn \l__dop_nb_int { \seq_count:N \l__dop_termes_seq }
 
@@ -2330,7 +2399,7 @@
                     { \__dop_cumul_add:n {##1} }
                     { \__dop_cumul_sub:n {##1} }
             }
-        \int_incr:N \l__dop_i_int
+        \int_set:Nn \l__dop_i_int { \l__dop_i_int + 1 }
     }
 
     % Total en secondes vérifié en flottant avant la normalisation
@@ -2363,10 +2432,10 @@
 
     \int_set:Nn \l__dop_hauteur_int { \l__dop_nb_int + 1 }
     \bool_if:NT \l__dop_solution_bool
-        { \int_incr:N \l__dop_hauteur_int }
+        { \int_set:Nn \l__dop_hauteur_int { \l__dop_hauteur_int + 1 } }
 
     \begin{center}
-    \begin{tikzpicture}[x=1mm, y=1mm]
+    \begin{tikzpicture}[x=1mm, y=1mm, scale=\l__dop_echelle_tl]
         \useasboundingbox
             (0, 3mm)
             rectangle ( { \l__dop_fin_dim + 3mm } ,
@@ -2390,7 +2459,7 @@
                     }
             }
             \__dop_terme_colonnes:nn {##1} { \l__dop_ligne_int }
-            \int_incr:N \l__dop_ligne_int
+            \int_set:Nn \l__dop_ligne_int { \l__dop_ligne_int + 1 }
         }
 
         \draw ( 5mm , { -\l__dop_ligne_int * 6mm + 2mm } )

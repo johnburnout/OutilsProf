@@ -379,4 +379,28 @@ Ce paragraphe ne doit pas être recouvert par les graduations.
 
 \division[dividende=1 234, diviseur=5, solution]
 
+% ============================================================
+\section*{13 — Non-régression v1.12.4 (audit 2, suite)}
+% ============================================================
+
+\subsection*{13.1 — Durées, taille large (attendu : texte et colonnes agrandis)}
+
+\additiondurees[solution, taille=large]{3+12+45, 5+30+20}
+
+\subsection*{13.2 — Angles, taille Large (attendu : 69° 16′ 5″, agrandi)}
+
+\additionangles[solution, taille=Large]{56+30+15, 12+45+50}
+
+\subsection*{13.3 — Durées, résultat nul (attendu : 0 h)}
+
+\soustractiondurees[solution]{1+2, 1+2}
+
+\subsection*{13.4 — Angles, résultat nul (attendu : 0′)}
+
+\soustractionangles[solution]{56+30, 56+30}
+
+\subsection*{13.5 — Division, reste nul (attendu : 1236 ÷ 12 = 103, reste 0 écrit)}
+
+\division[dividende=1236, diviseur=12, solution, etapes={12, 36}]
+
 \end{document}
