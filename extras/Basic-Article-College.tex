@@ -13,10 +13,8 @@
 \usepackage{fancyhdr}
 \usepackage{multirow}
 \usepackage{multicol}
-\usepackage{tikz}
-\usepackage{tcolorbox}
 \usepackage{geometry}
-\usepackage{outilsprof}
+\usepackage{outilsprof} % charge aussi tikz et tcolorbox
 \usepackage{qrcode}
 \tcbuselibrary{skins,breakable}
 
@@ -30,7 +28,9 @@
 
 % --- EN-TÊTE ---
 \pagestyle{fancy}
-\fancyhf{CH¿?-¿Titre?}
+\fancyhf{}
+\fancyhead[C]{\small CH? -- Titre}  % à remplir
+\setlength{\headheight}{15pt}
 \renewcommand{\headrulewidth}{0pt}
 \fancyhead[L]{\small{Classe de ?ème}}
 \fancyhead[R]{{\small 2026/27}}
