@@ -310,4 +310,50 @@ Le résultat est \reponse. \grandeReponse[0.5]
 
 \division[dividende=1234, diviseur=56]
 
+% ============================================================
+\section*{11 — Non-régression v1.12.2 (audit)}
+% ============================================================
+
+\subsection*{11.1 — Options non persistantes (attendu : 2\textsuperscript{e} axe de 0 à 100)}
+
+\axegradue[fin=400, pas=100]
+
+\axegradue
+
+\subsection*{11.2 — Échelle de l'axe (attendu : A exactement sur 100)}
+
+\axegradue[debut=0, fin=105, pas=10, points={A/100}]
+
+\subsection*{11.3 — Graduations décimales (attendu : 0 ; 0,1 ; 0,2 … 1)}
+
+\axegradue[debut=0, fin=1, pas=0.1]
+
+\subsection*{11.4 — Corrigé avec « || » (attendu : 400 + 56 = 456)}
+
+\addition[solution, corrige]{4||, 56}
+
+\subsection*{11.5 — « 1||4 » (attendu : 104, trois cases)}
+
+\addition[solution, corrige]{1||4, 0}
+
+\subsection*{11.6 — Durée, « | » final (attendu : 19 j 21 h, sans minutes)}
+
+\additiondurees[solution]{3+4||, 0+5}
+
+\subsection*{11.7 — Durée, couleur du corrigé (attendu : 400 en rouge)}
+
+\additiondurees[solution, corrige, couleurcorrige=red!80!black]{3+4||, 0+5}
+
+\subsection*{11.8 — 4\textsuperscript{e} champ masqué (attendu : 1 h 30 min 10 s)}
+
+\additiondurees[solution]{0+1+30+1|, 0+0+0+0}
+
+\subsection*{11.9 — Alignement du résultat (attendu : 6912, sans espace)}
+
+\addition[solution]{1234, 5678}
+
+\subsection*{11.10 — Taille de la division (attendu : plus grande)}
+
+\division[dividende=1234, diviseur=56, solution, taille=large]
+
 \end{document}

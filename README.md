@@ -274,7 +274,7 @@ Les trois commandes partagent les mêmes options nommées :
 Clé | Description | Défaut
 ---|---|---
 `solution` | Affiche le résultat | `false`
-`taille` | Taille de police (`normalsize`, `large`, `Large`, `small`…) | `normalsize`
+`taille` | Taille de police (`small`, `normalsize`, `large`, `Large`…) | `small`
 
 ### `\addition[options]{terme1, terme2, ...}`
 
