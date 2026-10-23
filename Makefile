@@ -11,6 +11,9 @@ STY          := $(PACKAGE).sty
 EXAMPLES_DIR := examples
 EXAMPLES     := $(wildcard $(EXAMPLES_DIR)/*.tex)
 EXAMPLES_PDF := $(EXAMPLES:.tex=.pdf)
+TESTS_DIR    := tests
+TESTS        := $(wildcard $(TESTS_DIR)/*.tex)
+TESTS_PDF    := $(TESTS:.tex=.pdf)
 
 # --- Détection de l'OS ---
 UNAME := $(shell uname -s)
@@ -26,6 +29,9 @@ TEXMF_DIR := $(TEXMF_HOME)/tex/latex/$(PACKAGE)
 # --- Moteur LaTeX (xelatex par défaut) ---
 LATEX    := xelatex
 LATEXOPT := -interaction=nonstopmode -halt-on-error
+# Le .sty du dépôt passe avant celui installé dans TEXMF_HOME
+# (compilation lancée depuis examples/ ou tests/)
+LATEXENV := TEXINPUTS=..:
 
 # --- Commandes utilitaires ---
 RM       := rm -f
@@ -37,9 +43,13 @@ GIT      := git
 # Cibles principales
 # ============================================================
 
-.PHONY: all help compile clean cleanall install uninstall \
+.PHONY: all help compile compile-tests clean cleanall install uninstall \
         check version tag git-commit test smoke-test ci distclean \
         compile-verbose
+
+# Un PDF dont la compilation échoue est supprimé : il ne passe pas
+# pour « à jour » au prochain appel de make
+.DELETE_ON_ERROR:
 
 # --- Cible par défaut : aide ---
 all: help
@@ -50,6 +60,7 @@ help:
 	@echo ""
 	@echo "Cibles disponibles :"
 	@echo "  make compile        Compile tous les exemples (PDF)"
+	@echo "  make compile-tests  Compile les tests de non-régression"
 	@echo "  make clean          Supprime les fichiers auxiliaires"
 	@echo "  make cleanall       Supprime aussi les PDF"
 	@echo "  make install        Installe le package dans TEXMF_HOME"
@@ -57,7 +68,7 @@ help:
 	@echo "  make check          Vérifie que le package est trouvé par TeX"
 	@echo "  make version        Affiche la version du package"
 	@echo "  make smoke-test     Test rapide (compile un fichier minimal)"
-	@echo "  make test           Compile et affiche un résumé"
+	@echo "  make test           Compile exemples et tests, affiche un résumé"
 	@echo "  make ci             CI locale (clean + compile + test)"
 	@echo "  make tag            Crée un tag Git v$(VERSION)"
 	@echo "  make git-commit     Commit et push toutes les modifications"
@@ -75,16 +86,28 @@ compile: $(EXAMPLES_PDF)
 # --- Règle générique pour compiler un .tex en .pdf ---
 $(EXAMPLES_DIR)/%.pdf: $(EXAMPLES_DIR)/%.tex $(STY)
 	@echo ">>> Compilation de $<"
-	@cd $(EXAMPLES_DIR) && $(LATEX) $(LATEXOPT) $(notdir $<) > /dev/null 2>&1 || true
-	@cd $(EXAMPLES_DIR) && $(LATEX) $(LATEXOPT) $(notdir $<) > /dev/null 2>&1 || true
-	@cd $(EXAMPLES_DIR) && $(LATEX) $(LATEXOPT) $(notdir $<) > /dev/null 2>&1
+	@cd $(EXAMPLES_DIR) && $(LATEXENV) $(LATEX) $(LATEXOPT) $(notdir $<) > /dev/null 2>&1 || true
+	@cd $(EXAMPLES_DIR) && $(LATEXENV) $(LATEX) $(LATEXOPT) $(notdir $<) > /dev/null 2>&1 || true
+	@cd $(EXAMPLES_DIR) && $(LATEXENV) $(LATEX) $(LATEXOPT) $(notdir $<) > /dev/null 2>&1
+	@echo ">>> $@ généré"
+
+# --- Compile les tests de non-régression ---
+compile-tests: $(TESTS_PDF)
+
+# --- Règle pour les tests : en cas d'erreur, affiche la fin du log ---
+$(TESTS_DIR)/%.pdf: $(TESTS_DIR)/%.tex $(STY)
+	@echo ">>> Compilation de $<"
+	@cd $(TESTS_DIR) && $(LATEXENV) $(LATEX) $(LATEXOPT) $(notdir $<) > /dev/null 2>&1 || true
+	@cd $(TESTS_DIR) && $(LATEXENV) $(LATEX) $(LATEXOPT) $(notdir $<) > /dev/null 2>&1 \
+	  || { echo ">>> ❌ Échec de $<, fin du log :"; \
+	       tail -20 $(*F).log; exit 1; }
 	@echo ">>> $@ généré"
 
 # --- Compilation avec sortie complète (pour debug) ---
 compile-verbose:
 	@for f in $(EXAMPLES); do \
 		echo ">>> Compilation de $$f"; \
-		cd $(EXAMPLES_DIR) && $(LATEX) $(LATEXOPT) $$(basename $$f); \
+		cd $(EXAMPLES_DIR) && $(LATEXENV) $(LATEX) $(LATEXOPT) $$(basename $$f); \
 	done
 
 # ============================================================
@@ -104,12 +127,15 @@ clean:
 	@$(RM) $(EXAMPLES_DIR)/*.nav
 	@$(RM) $(EXAMPLES_DIR)/*.snm
 	@$(RM) $(EXAMPLES_DIR)/*.vrb
+	@$(RM) $(TESTS_DIR)/*.aux $(TESTS_DIR)/*.log $(TESTS_DIR)/*.out
+	@$(RM) $(TESTS_DIR)/*.toc $(TESTS_DIR)/*.synctex.gz
 	@echo ">>> Fait."
 
 # --- Supprime aussi les PDF ---
 cleanall: clean
 	@echo ">>> Suppression des PDF"
 	@$(RM) $(EXAMPLES_DIR)/*.pdf
+	@$(RM) $(TESTS_PDF)
 	@echo ">>> Fait."
 
 # ============================================================
@@ -178,12 +204,12 @@ smoke-test:
 	fi
 
 # --- Test complet avec résumé ---
-test: compile
+test: compile compile-tests
 	@echo ""
 	@echo "============================="
 	@echo "  RÉSUMÉ DE COMPILATION"
 	@echo "============================="
-	@for pdf in $(EXAMPLES_PDF); do \
+	@for pdf in $(EXAMPLES_PDF) $(TESTS_PDF); do \
 		if [ -f "$$pdf" ]; then \
 			pages=$$(pdfinfo "$$pdf" 2>/dev/null | grep Pages | awk '{print $$2}'); \
 			size=$$(du -h "$$pdf" | awk '{print $$1}'); \

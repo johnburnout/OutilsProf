@@ -5,6 +5,15 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [Non publié]
+
+### Divers
+- Makefile : `make test` (et donc `make ci`) compile aussi les tests
+  de non-régression (`make compile-tests`) ; un test en échec arrête
+  make et affiche la fin du log.
+- Makefile : la compilation utilise le `.sty` du dépôt et non la
+  copie installée dans `TEXMF_HOME`.
+
 ## [1.12.3] - 2026-10-23
 
 ### Corrigé
