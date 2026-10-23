@@ -2,18 +2,19 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.12.7
+% Version : 1.12.8
 % Date : 2026/10/23
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/10/24 v1.12.7 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/10/24 v1.12.8 Outils pour l'enseignement]
 
 % ============================================================
 % DÉPENDANCES
 % ============================================================
 \RequirePackage{tikz}
-\RequirePackage{pgffor}
+% xparse : \NewDocumentCommand n'est dans le noyau que depuis LaTeX 2020-10
+% (nécessaire pour TexpadTeX 2017 ; sans effet sur les versions récentes)
 \RequirePackage{xparse}
 \RequirePackage{xstring}
 \RequirePackage{tcolorbox}
@@ -1486,8 +1487,6 @@
         }
         {
             % Échange : on permute les 4 variables
-            \tl_set_eq:NN \l__op_tmpc_tl \l_tmpa_tl
-            \tl_set_eq:NN \l__op_tmpd_tl \l_tmpb_tl
             \tl_set:Nx \l_tmpa_tl
                 { \seq_item:Nn \l__op_liste_masquee_seq { 2 } }
             \tl_set:Nx \l_tmpb_tl

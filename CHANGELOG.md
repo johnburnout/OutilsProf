@@ -5,6 +5,27 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.12.8] - 2026-10-24
+
+### Modifié
+- Dépendances : `pgffor` n'est plus chargé explicitement (TikZ le
+  charge déjà). `xparse` est gardé, avec un commentaire : il reste
+  nécessaire avant LaTeX 2020-10 (TexpadTeX 2017).
+- `\soustraction` : suppression de deux affectations inutiles dans
+  l'échange des termes (rendu inchangé).
+- Makefile :
+  - `VERSION` est lue dans le `.sty` : la version ne se change plus
+    qu'à un seul endroit.
+  - `make ci` part de `cleanall` : les PDF sont toujours recompilés
+    (avec `clean`, ils pouvaient paraître à jour).
+  - `make git-commit` ne fait plus `git add .` ni de push : il commite
+    les fichiers déjà indexés. Nouvelle cible `make push`.
+  - `make smoke-test` compile dans `tests/smoke/` avec le `.sty` du
+    dépôt, au lieu de `/tmp` et de la version installée.
+
+### Version
+- 1.12.7 → 1.12.8
+
 ## [1.12.7] - 2026-10-24
 
 ### Corrigé
