@@ -5,6 +5,30 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.12.3] - 2026-10-23
+
+### Corrigé
+- `\reperegradue` : quand l'origine n'est pas (0 ; 0), l'étiquette
+  masquée était celle de la valeur 0 et non celle de l'origine.
+  Avec `origine={(2,3)}`, « 2 » et « 3 » chevauchaient « Ω(2 ; 3) »
+  et le « 0 » manquait sur les deux axes.
+- `\reperegradue` : séparateur des milliers à la française
+  (`2 000` et non `2.000`), comme `\axegradue`.
+- `\reperegradue` : les étiquettes des graduations et le « O » sont
+  inclus dans la boîte englobante ; ils ne débordent plus sur le
+  texte voisin ni dans la marge.
+- `\addition` et opérations sur durées et angles : message d'erreur
+  clair au-delà de la limite de TeX, au lieu d'un résultat faux
+  (`2000000000 + 2000000000` donnait `-294967296`).
+- `\division` : les espaces dans `dividende` et `diviseur` sont
+  ignorés (`dividende=1 234` provoquait « Missing number »).
+
+### Ajouté (tests)
+- `tests/test-commandes.tex` : section 12, un cas par correction.
+
+### Version
+- 1.12.2 → 1.12.3
+
 ## [1.12.2] - 2026-10-23
 
 ### Corrigé

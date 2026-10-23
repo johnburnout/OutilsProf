@@ -2,12 +2,12 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.12.2
+% Version : 1.12.3
 % Date : 2026/10/23
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/10/23 v1.12.2 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/10/23 v1.12.3 Outils pour l'enseignement]
 
 % ============================================================
 % DÉPENDANCES
@@ -197,6 +197,12 @@
     \fi
 }
 
+% Nombre au format français : virgule décimale, espace des milliers
+% (« use comma » seul mettrait un point comme séparateur des milliers)
+\newcommand{\repereFormaterNombre}[1]{%
+    \pgfmathprintnumber[fixed, precision=2, use comma, 1000 sep={\,}]{#1}%
+}
+
 \newcounter{repereProfondeur}
 \def\repereListeElements{}
 \def\repereElementCourant{}
@@ -275,9 +281,9 @@
     \pgfmathsetmacro{\oriXfig}{(\oriX-\bgX)*\repereunite}%
     \pgfmathsetmacro{\oriYfig}{(\oriY-\bgY)*\repereunite}%
 
+    % Pas de \useasboundingbox : la boîte englobe aussi les étiquettes
+    % des graduations, qui ne débordent plus sur le texte voisin.
     \begin{tikzpicture}[every node/.style={font=\small}]
-        \useasboundingbox (0,0) rectangle (\largeurTotale pt,\hauteurTotale pt);
-
         \pgfmathparse{\repereGrille > 0 ? 1 : 0}%
         \ifnum\pgfmathresult=1
             \pgfmathsetmacro{\nbGrilleX}{int(\etendueX/\repereGrille)}%
@@ -309,11 +315,12 @@
                 \pgfmathsetmacro{\xFig}{(\x-\bgX)*\repereunite}%
                 \draw[thick]
                     (\xFig pt,\oriYfig pt) -- (\xFig pt,\oriYfig pt-0.2);
-                \pgfmathparse{abs(\x) < 0.001 ? 0 : 1}%
+                % Pas d'étiquette à l'origine (remplacée par O ou Ω)
+                \pgfmathparse{abs(\x-\oriX) < 0.001 ? 0 : 1}%
                 \ifnum\pgfmathresult=1
                     \node[below, font=\small, yshift=-2pt]
                         at (\xFig pt,\oriYfig pt)
-                        {\pgfmathprintnumber[fixed,precision=2,use comma]{\x}};
+                        {\repereFormaterNombre{\x}};
                 \fi
             \fi
         }%
@@ -326,11 +333,11 @@
                 \pgfmathsetmacro{\yFig}{(\y-\bgY)*\repereunite}%
                 \draw[thick]
                     (\oriXfig pt,\yFig pt) -- (\oriXfig pt+0.2,\yFig pt);
-                \pgfmathparse{abs(\y) < 0.001 ? 0 : 1}%
+                \pgfmathparse{abs(\y-\oriY) < 0.001 ? 0 : 1}%
                 \ifnum\pgfmathresult=1
                     \node[left, font=\small, xshift=-2pt]
                         at (\oriXfig pt,\yFig pt)
-                        {\pgfmathprintnumber[fixed,precision=2,use comma]{\y}};
+                        {\repereFormaterNombre{\y}};
                 \fi
             \fi
         }%
@@ -342,8 +349,8 @@
         \else
             \node[below left, font=\small, xshift=1pt, yshift=-2pt]
                 at (\oriXfig pt,\oriYfig pt)
-                {$\Omega(\pgfmathprintnumber[fixed,precision=2,use comma]{\oriX};%
-                          \pgfmathprintnumber[fixed,precision=2,use comma]{\oriY})$};
+                {$\Omega(\repereFormaterNombre{\oriX};%
+                          \repereFormaterNombre{\oriY})$};
         \fi
 
         \pgfmathsetmacro{\nbSecX}{\nbX*\repereNombreX}%
@@ -389,8 +396,8 @@
                 \node[below right, font=\scriptsize, black,
                       xshift=2pt, yshift=-1pt]
                     at (\pxFig pt,\pyFig pt)
-                    {(\pgfmathprintnumber[fixed,precision=2,use comma]{\px};%
-                      \pgfmathprintnumber[fixed,precision=2,use comma]{\py})};
+                    {(\repereFormaterNombre{\px};%
+                      \repereFormaterNombre{\py})};
             \fi
         }%
     \end{tikzpicture}%
@@ -619,9 +626,14 @@
 % ------------------------------------------------------------
 \keys_define:nn { outilsprof / division }
 {
-    dividende .tl_set:N   = \l__div_dividende_tl,
+    % Les espaces sont retirés : « 1 234 » est lu comme 1234
+    dividende .code:n     =
+        \tl_set:Nn \l__div_dividende_tl {#1}
+        \tl_remove_all:Nn \l__div_dividende_tl { ~ },
     dividende .initial:n  = 0,
-    diviseur  .tl_set:N   = \l__div_diviseur_tl,
+    diviseur  .code:n     =
+        \tl_set:Nn \l__div_diviseur_tl {#1}
+        \tl_remove_all:Nn \l__div_diviseur_tl { ~ },
     diviseur  .initial:n  = 1,
     solution  .bool_set:N = \l__op_solution_bool,
     solution  .initial:n  = false,
@@ -1298,14 +1310,24 @@
 % ------------------------------------------------------------
 % Calcule la somme des termes de la liste
 % ------------------------------------------------------------
+% Somme d'abord calculée en flottant : au-delà de la limite de TeX,
+% message d'erreur clair au lieu d'un résultat négatif aberrant.
+\fp_new:N \l__op_somme_fp
 \cs_new_protected:Npn \__op_calculer_somme:
 {
     \int_zero:N \l__op_somme_int
+    \fp_zero:N \l__op_somme_fp
     \seq_map_inline:Nn \l__op_liste_seq
-    {
-        \int_set:Nn \l_tmpa_int {##1}
-        \int_add:Nn \l__op_somme_int { \l_tmpa_int }
-    }
+        { \fp_add:Nn \l__op_somme_fp {##1} }
+    \fp_compare:nNnTF { \l__op_somme_fp } > { 2147483647 }
+        { \msg_error:nnn { outilsprof } { trop-grand } { addition } }
+        {
+            \seq_map_inline:Nn \l__op_liste_seq
+            {
+                \int_set:Nn \l_tmpa_int {##1}
+                \int_add:Nn \l__op_somme_int { \l_tmpa_int }
+            }
+        }
 }
 
 % ------------------------------------------------------------
@@ -2310,6 +2332,29 @@
             }
         \int_incr:N \l__dop_i_int
     }
+
+    % Total en secondes vérifié en flottant avant la normalisation
+    % (sinon dépassement silencieux de la limite de TeX).
+    \fp_compare:nNnT
+        { abs( \g__dop_j_int
+                 * \bool_if:NTF \l__dop_angles_bool { 3600 } { 86400 }
+               + \g__dop_h_int * 3600
+               + \g__dop_m_int * 60
+               + \g__dop_s_int ) }
+        > { 2147483647 }
+        {
+            \exp_args:Nnnx \msg_error:nnn { outilsprof } { trop-grand }
+                {
+                    \bool_if:NTF \l__dop_addition_bool
+                        { addition } { soustraction }
+                    \bool_if:NTF \l__dop_angles_bool
+                        { angles } { durees }
+                }
+            \int_gzero:N \g__dop_j_int
+            \int_gzero:N \g__dop_h_int
+            \int_gzero:N \g__dop_m_int
+            \int_gzero:N \g__dop_s_int
+        }
 
     \__dop_normaliser_et_signer:
 
