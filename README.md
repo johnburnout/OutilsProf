@@ -206,6 +206,20 @@ Boîte « Méthode de résolution » — couleur par défaut : **vert**.
         3. Calculer
     \end{methode}
 
+### `\begin{profbox}[titre][couleur] ... \end{profbox}`
+
+Encadré pour les fiches enseignant — titre par défaut : « Note pour
+l'enseignant », couleur par défaut : **gris foncé** (`couleurProf`).
+Sécable sur plusieurs pages.
+
+    \begin{profbox}[Objectifs]
+        Définir la proportion partie/tout.
+    \end{profbox}
+
+    \begin{profbox}[Timing — 20 min][couleurRetenir]
+        Version personnalisée en bleu.
+    \end{profbox}
+
 ### Commandes équivalentes
 
 Les mêmes boîtes sont accessibles sous forme de commandes :

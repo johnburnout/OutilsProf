@@ -5,6 +5,18 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.14.0] - 2026-11-06
+
+### Ajouté
+- Environnement `profbox` pour les fiches enseignant :
+  `\begin{profbox}[titre][couleur] ... \end{profbox}`. Titre par défaut
+  « Note pour l'enseignant », couleur par défaut `couleurProf` (gris
+  foncé). La boîte est sécable sur plusieurs pages (bibliothèque
+  tcolorbox `breakable`, désormais chargée par le package).
+
+### Version
+- 1.13.0 → 1.14.0
+
 ## [1.13.0] - 2026-11-06
 
 ### Modifié

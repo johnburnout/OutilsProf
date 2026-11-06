@@ -2,12 +2,12 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.13.0
+% Version : 1.14.0
 % Date : 2026/11/06
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/11/06 v1.13.0 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/11/06 v1.14.0 Outils pour l'enseignement]
 
 % Noms internes : préfixe \op@ (style LaTeX2e) ou __op, __div, __dop,
 % __repere (expl3) ; seules les commandes documentées sont sans préfixe.
@@ -22,7 +22,7 @@
 \RequirePackage{xstring}
 \RequirePackage{tcolorbox}
 \RequirePackage{siunitx}
-\tcbuselibrary{skins}
+\tcbuselibrary{skins,breakable}
 
 % Configuration siunitx pour le français
 \sisetup{
@@ -454,6 +454,7 @@
 \definecolor{couleurRetenir}{RGB}{0,102,204}
 \definecolor{couleurVigilance}{RGB}{204,0,0}
 \definecolor{couleurMethode}{RGB}{0,153,76}
+\colorlet{couleurProf}{gray!60!black}
 
 \NewDocumentCommand{\boiteRetenir}{O{couleurRetenir} m}{%
     \begin{tcolorbox}[
@@ -555,6 +556,24 @@
         boxrule=0.5pt,
         title={\textbf{Méthode de résolution}},
         top=3mm, bottom=3mm, left=3mm, right=3mm
+    ]
+}{%
+    \end{tcolorbox}%
+}
+
+% Encadré des notes enseignant (fiches prof) : titre et couleur optionnels,
+% sécable sur plusieurs pages.
+\NewDocumentEnvironment{profbox}{O{Note pour l'enseignant} O{couleurProf}}{%
+    \begin{tcolorbox}[
+        breakable,
+        colback=#2!5,
+        colframe=#2,
+        coltitle=white,
+        fonttitle=\bfseries,
+        arc=4pt,
+        boxrule=0.5pt,
+        title={#1},
+        top=2mm, bottom=2mm, left=3mm, right=3mm
     ]
 }{%
     \end{tcolorbox}%
