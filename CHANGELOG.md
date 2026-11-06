@@ -5,6 +5,17 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.13.0] - 2026-11-06
+
+### Modifié
+- Plus de coupure de formule en fin de ligne après un « = » ou un « + » :
+  le package fixe `\relpenalty=10000` et `\binoppenalty=10000`. Une
+  égalité qui ne tient pas en fin de ligne passe entière à la ligne
+  suivante. Ces deux lignes n'ont plus à figurer dans les préambules.
+
+### Version
+- 1.12.9 → 1.13.0
+
 ## [1.12.9] - 2026-10-24
 
 ### Modifié

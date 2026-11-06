@@ -2,12 +2,12 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.12.9
-% Date : 2026/10/23
+% Version : 1.13.0
+% Date : 2026/11/06
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/10/24 v1.12.9 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/11/06 v1.13.0 Outils pour l'enseignement]
 
 % Noms internes : préfixe \op@ (style LaTeX2e) ou __op, __div, __dop,
 % __repere (expl3) ; seules les commandes documentées sont sans préfixe.
@@ -30,6 +30,11 @@
     group-minimum-digits = 4,
     output-decimal-marker = {,},
 }
+
+% Pas de coupure de formule après une relation (=, <…) ni après un
+% opérateur (+, −…) : une égalité trop longue passe entière à la ligne.
+\relpenalty=10000
+\binoppenalty=10000
 
 % ============================================================
 % SECTION 1-A : AXE GRADUÉ
