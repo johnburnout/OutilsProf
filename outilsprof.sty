@@ -2,12 +2,22 @@
 % outilsprof.sty
 % Package d'outils pour l'enseignement
 % Auteur : Jean Roussie (Collège La Boétie - Sarlat, Dordogne)
-% Version : 1.14.0
-% Date : 2026/11/06
+% Version : 1.15.0
+% Date : 2026/11/07
 % ============================================================
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesPackage{outilsprof}[2026/11/06 v1.14.0 Outils pour l'enseignement]
+\ProvidesPackage{outilsprof}[2026/11/07 v1.15.0 Outils pour l'enseignement]
+
+% ============================================================
+% OPTIONS DU PACKAGE
+% ============================================================
+% coupureformules : autorise la coupure des formules en ligne après
+% =, + … (comportement de LaTeX ; par défaut, le package l'interdit)
+\newif\ifop@coupureformules
+\DeclareOption{coupureformules}{\op@coupureformulestrue}
+\DeclareOption*{\PackageWarning{outilsprof}{Option inconnue : \CurrentOption}}
+\ProcessOptions\relax
 
 % Noms internes : préfixe \op@ (style LaTeX2e) ou __op, __div, __dop,
 % __repere (expl3) ; seules les commandes documentées sont sans préfixe.
@@ -33,8 +43,12 @@
 
 % Pas de coupure de formule après une relation (=, <…) ni après un
 % opérateur (+, −…) : une égalité trop longue passe entière à la ligne.
-\relpenalty=10000
-\binoppenalty=10000
+% Option « coupureformules » : on garde les valeurs de LaTeX (500 et 700),
+% une formule en ligne peut alors être coupée (pas de débordement).
+\ifop@coupureformules\else
+    \relpenalty=10000
+    \binoppenalty=10000
+\fi
 
 % ============================================================
 % SECTION 1-A : AXE GRADUÉ
@@ -457,9 +471,11 @@
 \colorlet{couleurProf}{gray!60!black}
 
 \NewDocumentCommand{\boiteRetenir}{O{couleurRetenir} m}{%
+    \begingroup
+    \colorlet{op@couleur}{#1}%
     \begin{tcolorbox}[
-        colback=#1!10,
-        colframe=#1,
+        colback=op@couleur!10,
+        colframe=op@couleur,
         coltitle=white,
         fonttitle=\bfseries,
         arc=4pt,
@@ -469,12 +485,15 @@
     ]
         #2
     \end{tcolorbox}%
+    \endgroup
 }
 
 \NewDocumentCommand{\boiteVigilance}{O{couleurVigilance} m}{%
+    \begingroup
+    \colorlet{op@couleur}{#1}%
     \begin{tcolorbox}[
-        colback=#1!10,
-        colframe=#1,
+        colback=op@couleur!10,
+        colframe=op@couleur,
         coltitle=white,
         fonttitle=\bfseries,
         arc=4pt,
@@ -484,12 +503,15 @@
     ]
         #2
     \end{tcolorbox}%
+    \endgroup
 }
 
 \NewDocumentCommand{\boiteMethode}{O{couleurMethode} m}{%
+    \begingroup
+    \colorlet{op@couleur}{#1}%
     \begin{tcolorbox}[
-        colback=#1!5,
-        colframe=#1,
+        colback=op@couleur!5,
+        colframe=op@couleur,
         coltitle=white,
         fonttitle=\bfseries,
         arc=4pt,
@@ -499,6 +521,7 @@
     ]
         #2
     \end{tcolorbox}%
+    \endgroup
 }
 
 \NewDocumentCommand{\boitecalcul}{O{10cm} O{3cm} O{}}{%
@@ -517,9 +540,10 @@
 }
 
 \NewDocumentEnvironment{retenir}{O{couleurRetenir}}{%
+    \colorlet{op@couleur}{#1}%
     \begin{tcolorbox}[
-        colback=#1!10,
-        colframe=#1,
+        colback=op@couleur!10,
+        colframe=op@couleur,
         coltitle=white,
         fonttitle=\bfseries,
         arc=4pt,
@@ -532,9 +556,10 @@
 }
 
 \NewDocumentEnvironment{vigilance}{O{couleurVigilance}}{%
+    \colorlet{op@couleur}{#1}%
     \begin{tcolorbox}[
-        colback=#1!10,
-        colframe=#1,
+        colback=op@couleur!10,
+        colframe=op@couleur,
         coltitle=white,
         fonttitle=\bfseries,
         arc=4pt,
@@ -547,9 +572,10 @@
 }
 
 \NewDocumentEnvironment{methode}{O{couleurMethode}}{%
+    \colorlet{op@couleur}{#1}%
     \begin{tcolorbox}[
-        colback=#1!5,
-        colframe=#1,
+        colback=op@couleur!5,
+        colframe=op@couleur,
         coltitle=white,
         fonttitle=\bfseries,
         arc=4pt,
@@ -562,17 +588,19 @@
 }
 
 % Encadré des notes enseignant (fiches prof) : titre et couleur optionnels,
-% sécable sur plusieurs pages.
-\NewDocumentEnvironment{profbox}{O{Note pour l'enseignant} O{couleurProf}}{%
+% sécable sur plusieurs pages. Titre vide → titre par défaut, ce qui
+% permet de ne changer que la couleur : \begin{profbox}[][couleurRetenir]
+\NewDocumentEnvironment{profbox}{O{} O{couleurProf}}{%
+    \colorlet{op@couleur}{#2}%
     \begin{tcolorbox}[
         breakable,
-        colback=#2!5,
-        colframe=#2,
+        colback=op@couleur!5,
+        colframe=op@couleur,
         coltitle=white,
         fonttitle=\bfseries,
         arc=4pt,
         boxrule=0.5pt,
-        title={#1},
+        title={\if\relax\detokenize{#1}\relax Note pour l'enseignant\else #1\fi},
         top=2mm, bottom=2mm, left=3mm, right=3mm
     ]
 }{%

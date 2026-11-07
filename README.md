@@ -18,6 +18,18 @@ Jean Roussie — Collège La Boétie, Sarlat (Dordogne)
 
 Placez `outilsprof.sty` dans un dossier reconnu par TeX Live, puis lancez `texhash`.
 
+### Option `coupureformules`
+
+Par défaut, le package interdit la coupure d'une formule en ligne après
+un « = » ou un « + » (`\relpenalty=10000`, `\binoppenalty=10000`) :
+une égalité qui ne tient pas en fin de ligne passe entière à la ligne
+suivante. Contrepartie : une formule plus longue que la ligne déborde
+dans la marge (`Overfull \hbox`), notamment en colonne étroite.
+
+Pour retrouver le comportement de LaTeX (coupure autorisée) :
+
+    \usepackage[coupureformules]{outilsprof}
+
 ## Commandes disponibles
 
 - `\axegradue` et `\axegraduepoints` — axe gradué horizontal
@@ -212,12 +224,22 @@ Encadré pour les fiches enseignant — titre par défaut : « Note pour
 l'enseignant », couleur par défaut : **gris foncé** (`couleurProf`).
 Sécable sur plusieurs pages.
 
+Attention à l'ordre : contrairement aux autres boîtes, le **premier**
+argument optionnel est le titre, le second la couleur.
+`\begin{profbox}[couleurRetenir]` donne donc le *titre* « couleurRetenir ».
+Pour ne changer que la couleur, laisser le titre vide : il reprend
+alors sa valeur par défaut.
+
     \begin{profbox}[Objectifs]
         Définir la proportion partie/tout.
     \end{profbox}
 
     \begin{profbox}[Timing — 20 min][couleurRetenir]
         Version personnalisée en bleu.
+    \end{profbox}
+
+    \begin{profbox}[][couleurMethode]
+        Titre par défaut, en vert.
     \end{profbox}
 
 ### Commandes équivalentes
@@ -232,6 +254,11 @@ Les mêmes boîtes sont accessibles sous forme de commandes :
 
     \boiteMethode{Contenu}
     \boiteMethode[cyan]{Contenu personnalisé}
+
+`profbox` n'a pas de commande équivalente.
+
+Toutes les boîtes acceptent une couleur composée xcolor
+(`red!50`, `blue!60!black`…).
 
 ### `\boitecalcul[largeur][hauteur]{contenu}`
 
@@ -254,6 +281,7 @@ Les couleurs par défaut sont définies et peuvent être redéfinies dans le pr�
     \definecolor{couleurRetenir}{RGB}{0,102,204}    % Bleu
     \definecolor{couleurVigilance}{RGB}{204,0,0}    % Rouge
     \definecolor{couleurMethode}{RGB}{0,153,76}     % Vert
+    \colorlet{couleurProf}{gray!60!black}           % Gris foncé (profbox)
 
   ### Lignes de réponse
 
