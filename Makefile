@@ -150,7 +150,13 @@ cleanall: clean
 install: $(STY)
 	@echo ">>> Installation dans $(TEXMF_DIR)"
 	@$(MKDIR) $(TEXMF_DIR)
-	@$(CP) $(STY) $(TEXMF_DIR)/
+	@# Lien symbolique vers le .sty du dépôt : déjà à jour, pas de copie
+	@# (cp refuserait de copier un fichier sur lui-même)
+	@if [ $(STY) -ef $(TEXMF_DIR)/$(STY) ]; then \
+	  echo ">>> $(TEXMF_DIR)/$(STY) pointe déjà sur le dépôt : pas de copie"; \
+	else \
+	  $(CP) $(STY) $(TEXMF_DIR)/; \
+	fi
 	@$(TEXHASH)
 	@echo ">>> Installation terminée."
 	@echo ">>> Test : kpsewhich $(STY)"
