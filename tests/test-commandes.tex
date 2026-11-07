@@ -430,4 +430,55 @@ Ce paragraphe ne doit pas être recouvert par les graduations.
 
 \division[dividende=17, diviseur=4, decimales=2, solution, taille=Large]
 
+% ============================================================
+\section*{16 — Non-régression v1.15.0}
+% ============================================================
+
+\subsection*{16.1 — profbox : titre par défaut, titre seul, titre + couleur}
+
+\begin{profbox}
+    Attendu : titre « Note pour l'enseignant », gris foncé.
+\end{profbox}
+
+\begin{profbox}[Objectifs]
+    Attendu : titre « Objectifs », gris foncé.
+\end{profbox}
+
+\begin{profbox}[Timing — 20 min][couleurRetenir]
+    Attendu : titre « Timing — 20 min », bleu.
+\end{profbox}
+
+\subsection*{16.2 — profbox : titre vide (attendu : titre par défaut, vert)}
+
+\begin{profbox}[][couleurMethode]
+    Seule la couleur change.
+\end{profbox}
+
+\subsection*{16.3 — Couleurs composées (attendu : aucune erreur xcolor)}
+
+\begin{retenir}[red!50]Retenir en \texttt{red!50}.\end{retenir}
+\begin{vigilance}[blue!60!black]Vigilance en \texttt{blue!60!black}.\end{vigilance}
+\begin{methode}[orange!70]Méthode en \texttt{orange!70}.\end{methode}
+\boiteRetenir[green!40!black]{\texttt{\textbackslash boiteRetenir} en \texttt{green!40!black}.}
+\begin{profbox}[Composée][violet!50]profbox en \texttt{violet!50}.\end{profbox}
+
+\subsection*{16.4 — Boîtes imbriquées (attendu : cadre extérieur bleu, intérieur rouge)}
+
+\begin{profbox}[Extérieure][blue]
+    \begin{vigilance}[red]Intérieure.\end{vigilance}
+    Suite de la boîte extérieure.
+\end{profbox}
+
+\subsection*{16.5 — profbox sur plusieurs pages (attendu : boîte coupée, sans erreur)}
+
+\begin{profbox}[Longue]
+    \foreach \i in {1,...,60}{Ligne \i.\par}
+\end{profbox}
+
+\subsection*{16.6 — Pas de coupure après = ou + (attendu : l'égalité passe entière à la ligne)}
+
+\begin{minipage}{6cm}
+    Texte de remplissage pour arriver en fin de ligne : $12 + 30 = 42$.
+\end{minipage}
+
 \end{document}

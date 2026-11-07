@@ -5,6 +5,38 @@ Toutes les modifications notables de ce projet sont documentées dans ce fichier
 Le format est basé sur [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/)
 et ce projet adhère au [Semantic Versioning](https://semver.org/lang/fr/).
 
+## [1.15.0] - 2026-11-07
+
+### Ajouté
+- Option `coupureformules` : `\usepackage[coupureformules]{outilsprof}`
+  rend à LaTeX ses valeurs de `\relpenalty` et `\binoppenalty`
+  (coupure des formules en ligne autorisée, pas de débordement en
+  colonne étroite). Une option inconnue déclenche un avertissement.
+
+### Modifié
+- `profbox` : un titre vide (`\begin{profbox}[][couleur]`) donne le
+  titre par défaut au lieu d'une barre de titre vide ; on peut ainsi
+  changer la couleur seule.
+
+### Corrigé
+- Couleur composée dans les boîtes (`retenir`, `vigilance`, `methode`,
+  `profbox` et les commandes `\boite…`) : `[red!50]` provoquait
+  l'erreur « Undefined color » (`red!50!10`). La couleur passe
+  désormais par `\colorlet`, ce qui marche aussi pour les boîtes
+  imbriquées.
+
+### Documentation
+- README : option `coupureformules`, ordre des arguments de `profbox`,
+  `couleurProf` dans les couleurs par défaut.
+
+### Tests
+- Section 16 de `tests/test-commandes.tex` : `profbox`, couleurs
+  composées, boîtes imbriquées, coupure sur plusieurs pages, formule
+  non coupée.
+
+### Version
+- 1.14.0 → 1.15.0
+
 ## [1.14.0] - 2026-11-06
 
 ### Ajouté
